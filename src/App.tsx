@@ -10,6 +10,12 @@ import BotPage from "@/pages/BotPage";
 import Reports from "@/pages/Reports";
 import DecisionIntelligence from "@/pages/DecisionIntelligence";
 import Admin from "@/pages/Admin";
+import AdminLayout from "@/pages/admin/AdminLayout";
+import Tenants from "@/pages/admin/Tenants";
+import Organizations from "@/pages/admin/Organizations";
+import UserRoles from "@/pages/admin/UserRoles";
+import Users from "@/pages/admin/Users";
+import UserSessions from "@/pages/admin/UserSessions";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,7 +34,14 @@ const App = () => (
             <Route path="/bot" element={<BotPage />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Admin />} />
+              <Route path="tenants" element={<Tenants />} />
+              <Route path="organizations" element={<Organizations />} />
+              <Route path="user-roles" element={<UserRoles />} />
+              <Route path="users" element={<Users />} />
+              <Route path="user-sessions" element={<UserSessions />} />
+            </Route>
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
