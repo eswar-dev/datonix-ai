@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Sparkles, ArrowRight, GripVertical, Save, X } from "lucide-react";
+import { Lock, Sparkles, ArrowRight, Save, X, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 const inferences = [
   {
@@ -32,6 +32,19 @@ const recommendations = [
   { priority: "Med", summary: "Adjust Q1 inventory orders based on seasonal patterns", impact: "Med" },
   { priority: "Low", summary: "Review marketing spend allocation across channels", impact: "Low" },
 ];
+
+const actions = [
+  { id: "1", title: "Review revenue anomaly in APAC region", status: "New" as const, assignee: "Unassigned" },
+  { id: "2", title: "Investigate supplier delivery delays", status: "New" as const, assignee: "Unassigned" },
+  { id: "3", title: "Customer churn mitigation plan", status: "In Progress" as const, assignee: "Sarah K." },
+  { id: "4", title: "Updated inventory safety stock levels", status: "Resolved" as const, assignee: "Mike T." },
+];
+
+const statusColor: Record<string, string> = {
+  "New": "bg-accent/10 text-accent border-accent/20",
+  "In Progress": "bg-warning/10 text-warning border-warning/20",
+  "Resolved": "bg-success/10 text-success border-success/20",
+};
 
 type KanbanColumn = "New" | "In Progress" | "Resolved";
 
@@ -67,7 +80,6 @@ export default function DecisionIntelligence() {
       <Tabs defaultValue="insights" className="space-y-4">
         <TabsList className="rounded-button">
           <TabsTrigger value="insights" className="rounded-button">Insights</TabsTrigger>
-          <TabsTrigger value="actions" className="rounded-button">Actions Tracker</TabsTrigger>
           <TabsTrigger value="agents" className="rounded-button">
             Agent Builder
             <Badge variant="outline" className="ml-1.5 text-[10px] border-purple text-purple">Enterprise</Badge>
@@ -101,6 +113,28 @@ export default function DecisionIntelligence() {
             </div>
           </div>
 
+          {/* Actions */}
+          <div>
+            <h2 className="mb-3 text-sm font-semibold">Actions</h2>
+            <div className="space-y-2">
+              {actions.map((action) => {
+                const StatusIcon = action.status === "Resolved" ? CheckCircle2 : action.status === "In Progress" ? Clock : AlertCircle;
+                return (
+                  <Card key={action.id} className="flex items-center justify-between rounded-card p-4">
+                    <div className="flex items-center gap-3">
+                      <StatusIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm">{action.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{action.assignee}</span>
+                      <Badge variant="outline" className={statusColor[action.status]}>{action.status}</Badge>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Recommendations */}
           <div>
             <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
@@ -122,27 +156,6 @@ export default function DecisionIntelligence() {
                 </Card>
               ))}
             </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="actions" className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            {(Object.keys(initialKanban) as KanbanColumn[]).map((col) => (
-              <div key={col}>
-                <div className="mb-3 flex items-center gap-2">
-                  <h3 className="text-sm font-semibold">{col}</h3>
-                  <Badge variant="secondary" className="text-[10px]">{initialKanban[col].length}</Badge>
-                </div>
-                <div className="space-y-2">
-                  {initialKanban[col].map((item) => (
-                    <Card key={item.id} className="flex items-center gap-2 rounded-card p-3 cursor-grab">
-                      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-xs">{item.title}</span>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
         </TabsContent>
 
