@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Sparkles, ArrowRight, GripVertical, Save, X } from "lucide-react";
+import { Lock, Sparkles, ArrowRight, Save, X, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 const inferences = [
   {
