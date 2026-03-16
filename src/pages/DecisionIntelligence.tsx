@@ -33,6 +33,19 @@ const recommendations = [
   { priority: "Low", summary: "Review marketing spend allocation across channels", impact: "Low" },
 ];
 
+const actions = [
+  { id: "1", title: "Review revenue anomaly in APAC region", status: "New" as const, assignee: "Unassigned" },
+  { id: "2", title: "Investigate supplier delivery delays", status: "New" as const, assignee: "Unassigned" },
+  { id: "3", title: "Customer churn mitigation plan", status: "In Progress" as const, assignee: "Sarah K." },
+  { id: "4", title: "Updated inventory safety stock levels", status: "Resolved" as const, assignee: "Mike T." },
+];
+
+const statusColor: Record<string, string> = {
+  "New": "bg-accent/10 text-accent border-accent/20",
+  "In Progress": "bg-warning/10 text-warning border-warning/20",
+  "Resolved": "bg-success/10 text-success border-success/20",
+};
+
 type KanbanColumn = "New" | "In Progress" | "Resolved";
 
 const initialKanban: Record<KanbanColumn, { id: string; title: string }[]> = {
