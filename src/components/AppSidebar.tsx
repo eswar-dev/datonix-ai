@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Database,
   LayoutDashboard,
@@ -8,11 +8,16 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
+  Building2,
+  Users,
+  ShieldCheck,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 
-const navItems = [
+const mainNavItems = [
   { title: "Data Sources", path: "/data-sources", icon: Database },
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Datonix Bot", path: "/bot", icon: Bot },
@@ -21,9 +26,21 @@ const navItems = [
   { title: "Administration", path: "/admin", icon: Shield },
 ];
 
+const adminNavItems = [
+  { title: "Tenants", path: "/admin/tenants", icon: Building2 },
+  { title: "Organizations", path: "/admin/organizations", icon: Building2 },
+  { title: "User Roles", path: "/admin/user-roles", icon: ShieldCheck },
+  { title: "Users", path: "/admin/users", icon: Users },
+  { title: "User Sessions", path: "/admin/user-sessions", icon: Clock },
+];
+
 export function AppSidebar() {
   const { collapsed, toggle } = useSidebarState();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const navItems = isAdminRoute ? adminNavItems : mainNavItems;
 
   return (
     <aside
@@ -43,9 +60,28 @@ export function AppSidebar() {
         )}
       </div>
 
+      {/* Back button for admin */}
+      {isAdminRoute && (
+        <div className="px-2 pt-3 pb-1">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className={cn(
+              "flex items-center gap-3 rounded-button px-3 py-2 text-sm font-medium transition-colors w-full",
+              "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            )}
+            title="Back to Home"
+          >
+            <ArrowLeft className="h-5 w-5 shrink-0" />
+            {!collapsed && <span>Back to Home</span>}
+          </button>
+        </div>
+      )}
+
       <nav className="flex-1 space-y-1 px-2 py-3 overflow-y-auto">
         {navItems.map((item) => {
-          const active = location.pathname.startsWith(item.path);
+          const active = isAdminRoute
+            ? location.pathname === item.path
+            : location.pathname.startsWith(item.path);
           return (
             <Link
               key={item.path}
