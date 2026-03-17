@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Search, Bell, ChevronRight } from "lucide-react";
+import profileAvatar from "@/assets/profile-avatar.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
