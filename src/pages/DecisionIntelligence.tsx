@@ -31,9 +31,78 @@ import {
 
 // ─── Insights data ───
 const inferences = [
-  { title: "Seasonal revenue pattern detected", confidence: 87, snippet: "Q4 shows 23% higher revenue consistently across 3 years of data", impact: "High" as const },
-  { title: "Customer churn correlated with support tickets", confidence: 74, snippet: "Users with 3+ support tickets in 30 days have 5x churn probability", impact: "High" as const },
-  { title: "Inventory optimization opportunity", confidence: 65, snippet: "15% of SKUs account for 80% of carrying cost with low turnover", impact: "Med" as const },
+  {
+    title: "Seasonal revenue pattern detected",
+    confidence: 87,
+    snippet: "Q4 shows 23% higher revenue consistently across 3 years of data",
+    impact: "High" as const,
+    explanation: {
+      summary: "A strong seasonal revenue pattern has been identified, with Q4 consistently outperforming other quarters by approximately 23% over a 3-year period.",
+      methodology: "Time-series decomposition was applied to monthly revenue data from Jan 2023 – Dec 2025. The model separated trend, seasonal, and residual components using STL decomposition with a 12-month seasonal window.",
+      keyFindings: [
+        "Q4 revenue averages $2.4M compared to $1.95M across Q1–Q3.",
+        "The seasonal uplift is strongest in November (28% above mean) and December (31% above mean).",
+        "October shows a ramp-up effect with 12% above the quarterly average.",
+        "The pattern has strengthened year-over-year, growing from 18% uplift in 2023 to 27% in 2025.",
+      ],
+      dataPoints: "36 monthly data points analyzed across 4 revenue streams (Product Sales, Subscriptions, Services, Licensing).",
+      businessImplications: [
+        "Allocate additional inventory and staffing resources for Q4 to capture maximum demand.",
+        "Front-load marketing spend in September to capitalize on the October ramp-up.",
+        "Adjust annual forecasting models to account for seasonal weighting.",
+        "Consider running promotional campaigns in Q1–Q2 to smooth revenue distribution.",
+      ],
+      limitations: "The model assumes historical patterns will continue. External factors such as economic downturns, new competitors, or regulatory changes could alter the pattern. 3 years of data provides moderate confidence; 5+ years would strengthen the finding.",
+    },
+  },
+  {
+    title: "Customer churn correlated with support tickets",
+    confidence: 74,
+    snippet: "Users with 3+ support tickets in 30 days have 5x churn probability",
+    impact: "High" as const,
+    explanation: {
+      summary: "A significant correlation has been found between support ticket frequency and customer churn, where users submitting 3 or more tickets within a 30-day window are 5 times more likely to cancel their subscription.",
+      methodology: "Logistic regression and survival analysis were applied to 18 months of customer data (N=12,450 users). Support ticket counts were binned into frequency buckets and cross-referenced with churn events within 60-day follow-up windows.",
+      keyFindings: [
+        "Users with 0–1 tickets/month have a 4.2% churn rate.",
+        "Users with 2 tickets/month have an 8.7% churn rate (2.1x baseline).",
+        "Users with 3+ tickets/month have a 21.3% churn rate (5.1x baseline).",
+        "The most common ticket categories preceding churn are: Billing Issues (34%), Product Bugs (28%), and Feature Requests (22%).",
+      ],
+      dataPoints: "12,450 user accounts analyzed with 47,800 support tickets over 18 months. 1,890 churn events recorded.",
+      businessImplications: [
+        "Implement proactive outreach when a user files their 2nd ticket within 30 days.",
+        "Create a dedicated retention team for high-ticket users.",
+        "Prioritize fixing product bugs that generate repeat tickets.",
+        "Offer service credits or dedicated support for at-risk accounts.",
+      ],
+      limitations: "Correlation does not imply causation — high ticket volume may indicate engaged users facing issues, not necessarily dissatisfied users. Further A/B testing of interventions is recommended.",
+    },
+  },
+  {
+    title: "Inventory optimization opportunity",
+    confidence: 65,
+    snippet: "15% of SKUs account for 80% of carrying cost with low turnover",
+    impact: "Med" as const,
+    explanation: {
+      summary: "An ABC analysis reveals that 15% of SKUs contribute to 80% of total carrying costs while maintaining below-average inventory turnover rates, indicating significant optimization potential.",
+      methodology: "Pareto analysis combined with inventory turnover ratio calculations across all 3,200 SKUs. Carrying costs include warehousing, insurance, depreciation, and opportunity cost of capital at 8% annual rate.",
+      keyFindings: [
+        "480 SKUs (15%) account for $3.2M in annual carrying costs out of $4M total.",
+        "These high-cost SKUs have an average turnover ratio of 2.1x vs. the company average of 6.8x.",
+        "72% of these slow-moving SKUs have not been reordered in the past 90 days.",
+        "Potential annual savings of $800K–$1.2M through inventory right-sizing.",
+      ],
+      dataPoints: "3,200 SKUs analyzed across 5 warehouse locations. 24 months of sales and inventory movement data.",
+      businessImplications: [
+        "Implement safety stock recalculations for the identified 480 SKUs.",
+        "Negotiate return or markdown agreements with suppliers for excess stock.",
+        "Transition slow-moving items to just-in-time ordering where supplier lead times allow.",
+        "Review product lifecycle status — some SKUs may be candidates for discontinuation.",
+      ],
+      limitations: "Analysis does not account for strategic inventory (safety stock for critical items) or items with long lead times that require buffer stock. Seasonal demand variations for specific SKUs need individual review.",
+    },
+  },
 ];
 
 const recommendations = [
