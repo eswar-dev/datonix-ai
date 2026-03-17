@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import datonixLogo from "@/assets/datonix-logo.png";
+import profileAvatar from "@/assets/profile-avatar.png";
 
 const mainNavItems = [
   { title: "Data Sources", path: "/data-sources", icon: Database },
