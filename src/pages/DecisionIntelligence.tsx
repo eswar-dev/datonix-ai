@@ -162,6 +162,7 @@ const outputLevels = [
 export default function DecisionIntelligence() {
   const [tier] = useState<"lite" | "enterprise">("lite");
   const [viewOption, setViewOption] = useState("missing");
+  const [explainIndex, setExplainIndex] = useState<number | null>(null);
 
   // Prediction state
   const [predictionRun, setPredictionRun] = useState(false);
