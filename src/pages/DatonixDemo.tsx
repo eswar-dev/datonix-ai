@@ -1,0 +1,321 @@
+import { useState, useEffect, useRef } from "react";
+
+/* ──────────────────────────── SVG LOGOS ──────────────────────────── */
+
+function SidebarLogo() {
+  return (
+    <svg viewBox="0 0 170 38" width="170" height="38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Hexagon */}
+      <polygon points="16,19 25,5 45,5 54,19 45,33 25,33" stroke="#89D8F8" strokeWidth="2" fill="none" />
+      {/* 7 dots */}
+      <circle cx="35" cy="19" r="4.8" fill="#0099FF" />
+      <circle cx="46" cy="19" r="3.6" fill="#0099FF" />
+      <circle cx="35" cy="10" r="3.3" fill="#0099FF" />
+      <circle cx="24" cy="19" r="3" fill="#0099FF" />
+      <circle cx="35" cy="28" r="3" fill="#0099FF" />
+      <circle cx="45" cy="28" r="1.8" fill="#0099FF" />
+      <circle cx="25" cy="10" r="1.4" fill="#0099FF" />
+      {/* Text */}
+      <text x="62" y="24" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="16" fill="#0099FF">Datonix</text>
+      <text x="62" y="32" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="3.8" fill="#7aaabb" letterSpacing="2.2">AI THAT MAKES DECISIONS ACTIONABLE</text>
+    </svg>
+  );
+}
+
+function ModalLogo() {
+  return (
+    <svg viewBox="0 0 200 44" width="200" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,22 31,6 53,6 64,22 53,38 31,38" stroke="#89D8F8" strokeWidth="2.5" fill="none" />
+      <circle cx="42" cy="22" r="5.5" fill="#0099FF" />
+      <circle cx="54" cy="19" r="4.2" fill="#0099FF" />
+      <circle cx="42" cy="12" r="4" fill="#0099FF" />
+      <circle cx="30" cy="19" r="3.6" fill="#0099FF" />
+      <circle cx="42" cy="31" r="3.6" fill="#0099FF" />
+      <circle cx="53" cy="29" r="2.2" fill="#0099FF" />
+      <circle cx="31" cy="13" r="1.6" fill="#0099FF" />
+      <text x="72" y="28" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="20" fill="#0099FF">Datonix</text>
+      <text x="72" y="38" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="4.2" fill="#888" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
+    </svg>
+  );
+}
+
+/* ──────────────────────────── NAV ICONS ──────────────────────────── */
+
+const navIcons: Record<string, JSX.Element> = {
+  "Data Sources": (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+  ),
+  Dashboard: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+  ),
+  "Datonix AI": (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect x="8" y="8" width="8" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+  ),
+  Reports: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+  ),
+  "Decision Intelligence": (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3 4 4.5 4.5 0 0 1-3-4"/><path d="M12 18v-3"/></svg>
+  ),
+  Administration: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+  ),
+};
+
+const navItems = ["Data Sources", "Dashboard", "Datonix AI", "Reports", "Decision Intelligence", "Administration"];
+
+/* ──────────────────────────── KPI DATA ──────────────────────────── */
+
+const kpis = [
+  { label: "Total Records", value: "2.4M", delta: "+12.5%", up: true },
+  { label: "Data Quality Score", value: "94.2%", delta: "-1.3%", up: false },
+  { label: "Active Sources", value: "18", delta: "+3", up: true },
+  { label: "Insights Generated", value: "342", delta: "+28%", up: true },
+];
+
+/* ──────────────────────────── GOOGLE G ICON ──────────────────────────── */
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+  );
+}
+
+function GitHubIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#111">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+  );
+}
+
+/* ──────────────────────────── MAIN COMPONENT ──────────────────────────── */
+
+export default function DatonixDemo() {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const avatarRef = useRef<HTMLButtonElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
+
+  const handleLogout = () => {
+    setDropdownOpen(false);
+    setShowOverlay(true);
+  };
+
+  return (
+    <div style={{ position: "relative", display: "flex", width: "100%", height: "600px", borderRadius: "12px", overflow: "hidden", background: "#f0f2f5", fontFamily: "Arial, sans-serif" }}>
+      {/* ─── SIDEBAR ─── */}
+      <aside style={{ width: 220, minWidth: 220, background: "#0f1e2d", display: "flex", flexDirection: "column" }}>
+        {/* Logo */}
+        <div style={{ padding: "16px 14px 12px" }}>
+          <SidebarLogo />
+        </div>
+
+        {/* User */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>JD</div>
+          <div>
+            <div style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>John Doe</div>
+            <div style={{ color: "#7a9ab5", fontSize: 10 }}>Sales Manager</div>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+          {navItems.map((item) => {
+            const active = item === "Dashboard";
+            return (
+              <button
+                key={item}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer",
+                  background: active ? "#1e3a52" : "transparent",
+                  color: active ? "#fff" : "#8aaec8",
+                  fontSize: 12.5, fontWeight: active ? 700 : 500,
+                  textAlign: "left", width: "100%",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => { if (!active) (e.currentTarget.style.background = "rgba(255,255,255,0.04)"); }}
+                onMouseLeave={(e) => { if (!active) (e.currentTarget.style.background = "transparent"); }}
+              >
+                <span style={{ display: "flex", alignItems: "center" }}>{navIcons[item]}</span>
+                {item}
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* ─── MAIN AREA ─── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* Top bar */}
+        <header style={{ height: 50, minHeight: 50, background: "#fff", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px" }}>
+          {/* Search */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f5f5f5", border: "1px solid #e5e7eb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#999", cursor: "pointer" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>Search...</span>
+            <span style={{ background: "#eee", borderRadius: 4, padding: "2px 6px", fontSize: 10, color: "#888", marginLeft: 16 }}>⌘K</span>
+          </div>
+
+          {/* Right icons */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+            {/* Bell */}
+            <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#0099FF" }} />
+            </button>
+
+            {/* Avatar + dropdown */}
+            <div style={{ position: "relative" }}>
+              <button
+                ref={avatarRef}
+                onClick={(e) => { e.stopPropagation(); setDropdownOpen((v) => !v); }}
+                style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer" }}
+              >
+                JD
+              </button>
+
+              {dropdownOpen && (
+                <div
+                  ref={dropdownRef}
+                  style={{ position: "absolute", top: 38, right: 0, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.10)", width: 160, zIndex: 50, overflow: "hidden" }}
+                >
+                  <button style={{ ...dropdownItemStyle }}>Profile</button>
+                  <button style={{ ...dropdownItemStyle }}>Settings</button>
+                  <div style={{ height: 1, background: "#e5e7eb" }} />
+                  <button style={{ ...dropdownItemStyle, color: "#e53e3e" }} onClick={handleLogout}>Logout</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main style={{ flex: 1, padding: "24px 28px", overflowY: "auto" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111", margin: "0 0 20px" }}>Dashboard</h1>
+
+          {/* KPI Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            {kpis.map((kpi) => (
+              <div key={kpi.label} style={{ background: "#fff", border: "1px solid #e9ecef", borderRadius: 10, padding: "18px 20px" }}>
+                <div style={{ fontSize: 11, color: "#888", marginBottom: 6 }}>{kpi.label}</div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: "#111" }}>{kpi.value}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 12 }}>
+                  <span style={{ color: kpi.up ? "#16a34a" : "#dc2626" }}>
+                    {kpi.up ? "▲" : "▼"} {kpi.delta}
+                  </span>
+                </div>
+                <div style={{ fontSize: 9, color: "#aaa", marginTop: 8 }}>Updated 5m ago</div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ fontSize: 12, color: "#999", marginTop: 20, textAlign: "center" }}>
+            Click the <strong>JD</strong> avatar (top-right) → <strong style={{ color: "#e53e3e" }}>Logout</strong> to see the login modal
+          </p>
+        </main>
+      </div>
+
+      {/* ─── LOGIN OVERLAY ─── */}
+      {showOverlay && (
+        <div
+          style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
+            borderRadius: 12, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {/* Modal card */}
+          <div style={{ background: "#f5f4f2", borderRadius: 16, width: 440, padding: "34px 38px 26px", position: "relative" }}>
+            {/* Close button */}
+            <button
+              onClick={() => setShowOverlay(false)}
+              style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#888", lineHeight: 1 }}
+            >
+              ✕
+            </button>
+
+            {/* Logo */}
+            <div style={{ marginBottom: 22 }}>
+              <ModalLogo />
+            </div>
+
+            {/* Headings */}
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 4px" }}>Start Building.</h2>
+            <p style={{ fontSize: 22, fontWeight: 700, color: "#bbb", margin: "0 0 24px" }}>Log in to your account</p>
+
+            {/* Google button */}
+            <div style={{ position: "relative", marginBottom: 10 }}>
+              <button style={{ ...oauthBtnStyle, border: "1.5px solid #0099FF" }}>
+                <GoogleIcon />
+                <span>Continue with Google</span>
+              </button>
+              <span style={{ position: "absolute", top: -8, right: 12, background: "#eef2ff", color: "#4f6ef7", border: "1px solid #c7d2fe", borderRadius: 20, fontSize: 10, padding: "2px 10px", fontWeight: 600 }}>Last used</span>
+            </div>
+
+            {/* GitHub button */}
+            <button style={{ ...oauthBtnStyle, border: "1.5px solid #ddd", marginBottom: 18 }}>
+              <GitHubIcon />
+              <span>Continue with GitHub</span>
+            </button>
+
+            {/* OR divider */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <div style={{ flex: 1, height: 1, background: "#ddd" }} />
+              <span style={{ color: "#bbb", fontSize: 11, letterSpacing: 1 }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: "#ddd" }} />
+            </div>
+
+            {/* Email button */}
+            <button style={{ width: "100%", padding: "12px 0", background: "#111", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>
+              Continue with email
+            </button>
+
+            {/* Footer */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 11, color: "#888" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>SSO available on</span>
+              <span style={{ color: "#111", textDecoration: "underline", cursor: "pointer" }}>Business and Enterprise</span>
+              <span>plans</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── SHARED STYLES ─── */
+
+const dropdownItemStyle: React.CSSProperties = {
+  display: "block", width: "100%", padding: "9px 16px",
+  background: "none", border: "none", textAlign: "left",
+  fontSize: 13, color: "#333", cursor: "pointer",
+};
+
+const oauthBtnStyle: React.CSSProperties = {
+  width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+  padding: "11px 0", background: "#fff", borderRadius: 10,
+  fontSize: 14, fontWeight: 600, color: "#111", cursor: "pointer",
+};

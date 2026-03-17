@@ -17,6 +17,7 @@ import UserRoles from "@/pages/admin/UserRoles";
 import Users from "@/pages/admin/Users";
 import UserSessions from "@/pages/admin/UserSessions";
 import NotFound from "@/pages/NotFound";
+import DatonixDemo from "@/pages/DatonixDemo";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="user-sessions" element={<UserSessions />} />
             </Route>
           </Route>
+          <Route path="/demo" element={<DatonixDemo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
