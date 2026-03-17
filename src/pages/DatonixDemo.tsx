@@ -22,22 +22,6 @@ function SidebarLogo() {
   );
 }
 
-function ModalLogo() {
-  return (
-    <svg viewBox="0 0 200 44" width="200" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="20,22 31,6 53,6 64,22 53,38 31,38" stroke="#89D8F8" strokeWidth="2.5" fill="none" />
-      <circle cx="42" cy="22" r="5.5" fill="#0099FF" />
-      <circle cx="54" cy="19" r="4.2" fill="#0099FF" />
-      <circle cx="42" cy="12" r="4" fill="#0099FF" />
-      <circle cx="30" cy="19" r="3.6" fill="#0099FF" />
-      <circle cx="42" cy="31" r="3.6" fill="#0099FF" />
-      <circle cx="53" cy="29" r="2.2" fill="#0099FF" />
-      <circle cx="31" cy="13" r="1.6" fill="#0099FF" />
-      <text x="72" y="28" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="20" fill="#0099FF">Datonix</text>
-      <text x="72" y="38" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="4.2" fill="#888" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
-    </svg>
-  );
-}
 
 /* ──────────────────────────── NAV ICONS ──────────────────────────── */
 
