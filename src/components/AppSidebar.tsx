@@ -59,7 +59,7 @@ export function AppSidebar() {
             D
           </div>
         ) : (
-          <img src={datonixLogo} alt="Datonix" className="h-9 object-contain" />
+          <img src={datonixLogo} alt="Datonix" className="h-9 object-contain mix-blend-lighten" />
         )}
       </div>
 
