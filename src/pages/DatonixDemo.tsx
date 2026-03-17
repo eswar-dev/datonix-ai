@@ -61,31 +61,6 @@ const kpis = [
 /* ──────────────────────────── MAIN COMPONENT ──────────────────────────── */
 
 export default function DatonixDemo() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const avatarRef = useRef<HTMLButtonElement>(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        avatarRef.current &&
-        !avatarRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
-
-  const handleLogout = () => {
-    setDropdownOpen(false);
-    setShowOverlay(true);
-  };
 
   return (
     <div style={{ position: "relative", display: "flex", width: "100%", height: "600px", borderRadius: "12px", overflow: "hidden", background: "#f0f2f5", fontFamily: "Arial, sans-serif" }}>
