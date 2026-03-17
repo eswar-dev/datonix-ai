@@ -44,6 +44,7 @@ const App = () => (
               <Route path="user-sessions" element={<UserSessions />} />
             </Route>
           </Route>
+          <Route path="/demo" element={<DatonixDemo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
