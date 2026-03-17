@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        sora: ["Sora", "system-ui", "sans-serif"],
       },
       spacing: {
         "sidebar-expanded": "240px",
@@ -64,6 +65,8 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
           muted: "hsl(var(--sidebar-muted))",
+          deep: "hsl(var(--sidebar-deep))",
+          cyan: "hsl(var(--sidebar-cyan))",
         },
         teal: {
           DEFAULT: "hsl(var(--teal))",
