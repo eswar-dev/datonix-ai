@@ -203,72 +203,155 @@ export default function DecisionIntelligence() {
 
         {/* ─── Insights Tab ─── */}
         <TabsContent value="insights" className="space-y-6">
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Pattern Inferences</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {inferences.map((inf, i) => (
-                <Card key={i} className="rounded-card p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-medium leading-tight">{inf.title}</h3>
-                    <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact}</Badge>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Confidence</span><span>{inf.confidence}%</span>
-                    </div>
-                    <Progress value={inf.confidence} className="h-1.5" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{inf.snippet}</p>
-                  <Button variant="outline" size="sm" className="w-full rounded-button text-xs">
-                    Explain <ArrowRight className="ml-1 h-3 w-3" />
+          {explainIndex !== null ? (
+            // ─── Explain Detail View ───
+            (() => {
+              const inf = inferences[explainIndex];
+              const exp = inf.explanation;
+              return (
+                <div className="space-y-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-button text-xs text-muted-foreground"
+                    onClick={() => setExplainIndex(null)}
+                  >
+                    <ArrowRight className="mr-1 h-3 w-3 rotate-180" /> Back to Insights
                   </Button>
-                </Card>
-              ))}
-            </div>
-          </div>
 
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Actions</h2>
-            <div className="space-y-2">
-              {actions.map((action) => {
-                const StatusIcon = action.status === "Resolved" ? CheckCircle2 : action.status === "In Progress" ? Clock : AlertCircle;
-                return (
-                  <Card key={action.id} className="flex items-center justify-between rounded-card p-4">
-                    <div className="flex items-center gap-3">
-                      <StatusIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm">{action.title}</span>
+                  <Card className="rounded-card p-6 space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold">{inf.title}</h2>
+                        <p className="text-sm text-muted-foreground mt-1">{exp.summary}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact} Impact</Badge>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">{inf.confidence}% Confidence</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{action.assignee}</span>
-                      <Badge variant="outline" className={statusColor[action.status]}>{action.status}</Badge>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card className="rounded-card border p-5 space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" /> Methodology
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{exp.methodology}</p>
+                        <div className="rounded-button bg-muted/30 border p-3">
+                          <p className="text-[11px] text-muted-foreground"><span className="font-semibold text-foreground">Data Scope:</span> {exp.dataPoints}</p>
+                        </div>
+                      </Card>
+
+                      <Card className="rounded-card border p-5 space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <Lightbulb className="h-4 w-4 text-warning" /> Key Findings
+                        </h3>
+                        <ul className="space-y-2">
+                          {exp.keyFindings.map((f, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </Card>
                     </div>
+
+                    <Card className="rounded-card border p-5 space-y-3">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" /> Business Implications
+                      </h3>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {exp.businessImplications.map((impl, i) => (
+                          <div key={i} className="flex items-start gap-2.5 rounded-button border bg-muted/20 p-3">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">{i + 1}</span>
+                            <p className="text-xs text-muted-foreground">{impl}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+
+                    <Card className="rounded-card border border-warning/20 bg-warning/5 p-5 space-y-2">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-warning" /> Limitations & Caveats
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{exp.limitations}</p>
+                    </Card>
                   </Card>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+              );
+            })()
+          ) : (
+            // ─── Main Insights View ───
+            <>
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Pattern Inferences</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {inferences.map((inf, i) => (
+                    <Card key={i} className="rounded-card p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-sm font-medium leading-tight">{inf.title}</h3>
+                        <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact}</Badge>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                          <span>Confidence</span><span>{inf.confidence}%</span>
+                        </div>
+                        <Progress value={inf.confidence} className="h-1.5" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">{inf.snippet}</p>
+                      <Button variant="outline" size="sm" className="w-full rounded-button text-xs" onClick={() => setExplainIndex(i)}>
+                        Explain <ArrowRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </Card>
+                  ))}
+                </div>
+              </div>
 
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
-            <div className="space-y-2">
-              {recommendations.map((rec, i) => (
-                <Card key={i} className="flex items-center justify-between rounded-card p-4">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className={impactColor[rec.priority]}>{rec.priority}</Badge>
-                    <span className="text-sm">{rec.summary}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button">
-                      <Save className="mr-1 h-3 w-3" /> Save
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button text-muted-foreground">
-                      <X className="mr-1 h-3 w-3" /> Dismiss
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Actions</h2>
+                <div className="space-y-2">
+                  {actions.map((action) => {
+                    const StatusIcon = action.status === "Resolved" ? CheckCircle2 : action.status === "In Progress" ? Clock : AlertCircle;
+                    return (
+                      <Card key={action.id} className="flex items-center justify-between rounded-card p-4">
+                        <div className="flex items-center gap-3">
+                          <StatusIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm">{action.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{action.assignee}</span>
+                          <Badge variant="outline" className={statusColor[action.status]}>{action.status}</Badge>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
+                <div className="space-y-2">
+                  {recommendations.map((rec, i) => (
+                    <Card key={i} className="flex items-center justify-between rounded-card p-4">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className={impactColor[rec.priority]}>{rec.priority}</Badge>
+                        <span className="text-sm">{rec.summary}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button">
+                          <Save className="mr-1 h-3 w-3" /> Save
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button text-muted-foreground">
+                          <X className="mr-1 h-3 w-3" /> Dismiss
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ─── Missing Value Treatment Tab ─── */}
