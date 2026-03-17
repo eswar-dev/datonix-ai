@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, AlertTriangle, Lightbulb, X } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Lightbulb, X, Info } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -14,6 +14,13 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Mock data
 const chartData = [
@@ -90,6 +97,26 @@ function Sparkline({ data, up }: { data: number[]; up: boolean }) {
   );
 }
 
+function ChartInfoDialog({ title, description }: { title: string; description: string }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Chart info">
+          <Info className="h-4 w-4" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>{description}</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<typeof periods[number]>("Month");
@@ -103,7 +130,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        {/* Period selector */}
         <div className="flex rounded-button border bg-card p-0.5">
           {periods.map((p) => (
             <button
@@ -152,7 +178,13 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main chart */}
         <Card className="rounded-card p-5 lg:col-span-2">
-          <h2 className="mb-4 text-sm font-semibold">Data Ingestion Trend</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold">Data Ingestion Trend</h2>
+            <ChartInfoDialog
+              title="Data Ingestion Trend"
+              description="This chart displays the monthly data ingestion volume over the current and previous periods. The X-axis represents months (Jan–Dec) and the Y-axis represents the number of records ingested. The solid line shows the current period's ingestion, while the dashed line represents the previous period for comparison. Use this to identify seasonal patterns, growth trends, and any anomalies in your data pipeline throughput."
+            />
+          </div>
           {loading ? (
             <div className="h-[300px] skeleton-shimmer rounded" />
           ) : (
@@ -166,8 +198,17 @@ export default function Dashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    label={{ value: "Month", position: "insideBottom", offset: -2, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    label={{ value: "Records", angle: -90, position: "insideLeft", offset: 10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "hsl(var(--card))",

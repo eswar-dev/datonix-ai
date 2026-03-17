@@ -4,33 +4,42 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Sparkles, ArrowRight, Save, X, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Lock, Sparkles, ArrowRight, Save, X, CheckCircle2, Clock, AlertCircle,
+  Lightbulb, Play, TrendingUp, BarChart3,
+} from "lucide-react";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
 
+// ─── Insights data ───
 const inferences = [
-  {
-    title: "Seasonal revenue pattern detected",
-    confidence: 87,
-    snippet: "Q4 shows 23% higher revenue consistently across 3 years of data",
-    impact: "High" as const,
-  },
-  {
-    title: "Customer churn correlated with support tickets",
-    confidence: 74,
-    snippet: "Users with 3+ support tickets in 30 days have 5x churn probability",
-    impact: "High" as const,
-  },
-  {
-    title: "Inventory optimization opportunity",
-    confidence: 65,
-    snippet: "15% of SKUs account for 80% of carrying cost with low turnover",
-    impact: "Med" as const,
-  },
+  { title: "Seasonal revenue pattern detected", confidence: 87, snippet: "Q4 shows 23% higher revenue consistently across 3 years of data", impact: "High" as const },
+  { title: "Customer churn correlated with support tickets", confidence: 74, snippet: "Users with 3+ support tickets in 30 days have 5x churn probability", impact: "High" as const },
+  { title: "Inventory optimization opportunity", confidence: 65, snippet: "15% of SKUs account for 80% of carrying cost with low turnover", impact: "Med" as const },
 ];
 
 const recommendations = [
-  { priority: "High", summary: "Implement proactive support outreach for high-ticket users", impact: "High" },
-  { priority: "Med", summary: "Adjust Q1 inventory orders based on seasonal patterns", impact: "Med" },
-  { priority: "Low", summary: "Review marketing spend allocation across channels", impact: "Low" },
+  { priority: "High", summary: "Implement proactive support outreach for high-ticket users" },
+  { priority: "Med", summary: "Adjust Q1 inventory orders based on seasonal patterns" },
+  { priority: "Low", summary: "Review marketing spend allocation across channels" },
 ];
 
 const actions = [
@@ -46,29 +55,62 @@ const statusColor: Record<string, string> = {
   "Resolved": "bg-success/10 text-success border-success/20",
 };
 
-type KanbanColumn = "New" | "In Progress" | "Resolved";
-
-const initialKanban: Record<KanbanColumn, { id: string; title: string }[]> = {
-  "New": [
-    { id: "1", title: "Review revenue anomaly in APAC region" },
-    { id: "2", title: "Investigate supplier delivery delays" },
-  ],
-  "In Progress": [
-    { id: "3", title: "Customer churn mitigation plan" },
-  ],
-  "Resolved": [
-    { id: "4", title: "Updated inventory safety stock levels" },
-  ],
-};
-
 const impactColor: Record<string, string> = {
   High: "bg-destructive/10 text-destructive border-destructive/20",
   Med: "bg-warning/10 text-warning border-warning/20",
   Low: "bg-success/10 text-success border-success/20",
 };
 
+// ─── Missing Values data ───
+const missingValuesData = [
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:50:54.025", engine_speed: 1834.5, engine_load: 0, vehicle_speed: 3.691, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:50:43.993", engine_speed: 1910, engine_load: 0, vehicle_speed: 8.33, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:50:33.961", engine_speed: 1727.5, engine_load: 0, vehicle_speed: 9.904, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:49:43.796", engine_speed: 1570, engine_load: 100, vehicle_speed: 9.948, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:46:43.163", engine_speed: 1854.5, engine_load: 0, vehicle_speed: 11.668, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:46:03.034", engine_speed: 1748, engine_load: 0, vehicle_speed: 10.882, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:45:52.996", engine_speed: 1861, engine_load: 0, vehicle_speed: 11.504, fuel_rate: 0, engine_hours: 3477600 },
+  { vin: "YK5W305D0PS263028", timestamp: "2026-01-16T17:45:42.970", engine_speed: 1769, engine_load: 0, vehicle_speed: 10.913, fuel_rate: 0, engine_hours: 3477600 },
+];
+
+// ─── Forecast data ───
+const forecastChartData = [
+  { date: "2025-01-24", value: 1411.0 },
+  { date: "2025-01-25", value: 1411.1 },
+  { date: "2025-01-26", value: 1411.0 },
+  { date: "2025-01-27", value: 1411.05 },
+  { date: "2025-01-28", value: 1411.1 },
+];
+
+// ─── Prediction data ───
+const outputLevels = [
+  { level: "LOW", range: "0 – 752" },
+  { level: "MEDIUM", range: "752 – 1608" },
+  { level: "HIGH", range: "1608 – 1837.5" },
+  { level: "CRITICAL", range: "1837.5 – 2794.5" },
+];
+
 export default function DecisionIntelligence() {
   const [tier] = useState<"lite" | "enterprise">("lite");
+  const [viewOption, setViewOption] = useState("missing");
+
+  // Prediction state
+  const [predictionRun, setPredictionRun] = useState(false);
+  const [predTargetCol, setPredTargetCol] = useState("engine_speed");
+  const [predForm, setPredForm] = useState({
+    vin: "YK5W305D0PS263028",
+    timestamp: "09/01/2026, 07:04 AM",
+    engine_load: "0",
+    vehicle_speed: "2.785",
+    fuel_rate: "0",
+    engine_hours: "3434400",
+  });
+
+  // Forecast state
+  const [forecastRun, setForecastRun] = useState(false);
+  const [forecastTarget, setForecastTarget] = useState("engine_speed");
+  const [forecastFreq, setForecastFreq] = useState("Days");
+  const [forecastPeriod, setForecastPeriod] = useState("5 days");
 
   return (
     <div className="space-y-6">
@@ -80,14 +122,17 @@ export default function DecisionIntelligence() {
       <Tabs defaultValue="insights" className="space-y-4">
         <TabsList className="rounded-button">
           <TabsTrigger value="insights" className="rounded-button">Insights</TabsTrigger>
+          <TabsTrigger value="missing" className="rounded-button">Missing Value Treatment</TabsTrigger>
+          <TabsTrigger value="prediction" className="rounded-button">Prediction</TabsTrigger>
+          <TabsTrigger value="forecast" className="rounded-button">Forecast</TabsTrigger>
           <TabsTrigger value="agents" className="rounded-button">
             Agent Builder
             <Badge variant="outline" className="ml-1.5 text-[10px] border-purple text-purple">Enterprise</Badge>
           </TabsTrigger>
         </TabsList>
 
+        {/* ─── Insights Tab ─── */}
         <TabsContent value="insights" className="space-y-6">
-          {/* Inferences */}
           <div>
             <h2 className="mb-3 text-sm font-semibold">Pattern Inferences</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,8 +144,7 @@ export default function DecisionIntelligence() {
                   </div>
                   <div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Confidence</span>
-                      <span>{inf.confidence}%</span>
+                      <span>Confidence</span><span>{inf.confidence}%</span>
                     </div>
                     <Progress value={inf.confidence} className="h-1.5" />
                   </div>
@@ -113,7 +157,6 @@ export default function DecisionIntelligence() {
             </div>
           </div>
 
-          {/* Actions */}
           <div>
             <h2 className="mb-3 text-sm font-semibold">Actions</h2>
             <div className="space-y-2">
@@ -135,7 +178,6 @@ export default function DecisionIntelligence() {
             </div>
           </div>
 
-          {/* Recommendations */}
           <div>
             <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
             <div className="space-y-2">
@@ -159,6 +201,305 @@ export default function DecisionIntelligence() {
           </div>
         </TabsContent>
 
+        {/* ─── Missing Value Treatment Tab ─── */}
+        <TabsContent value="missing" className="space-y-6">
+          <Card className="rounded-card p-6 space-y-5">
+            <h2 className="text-lg font-semibold">Missing Values Analysis</h2>
+
+            <div className="flex items-center gap-3">
+              <Label className="text-xs font-medium text-muted-foreground">View Options</Label>
+              <Select value={viewOption} onValueChange={setViewOption}>
+                <SelectTrigger className="w-64 rounded-button">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-warning" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="missing">Only Missing Rows (500)</SelectItem>
+                  <SelectItem value="all">All Rows</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="rounded-card border overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-xs font-semibold text-primary">vin</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">timestampmessage</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">engine_speed</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">engine_load</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">vehicle_speed</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">fuel_rate</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary">engine_hours</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {missingValuesData.map((row, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="text-xs font-mono">{row.vin}</TableCell>
+                      <TableCell className="text-xs">{row.timestamp}</TableCell>
+                      <TableCell className="text-xs">{row.engine_speed}</TableCell>
+                      <TableCell className="text-xs">{row.engine_load}</TableCell>
+                      <TableCell className="text-xs">{row.vehicle_speed}</TableCell>
+                      <TableCell className={`text-xs font-semibold ${row.fuel_rate === 0 ? "text-destructive bg-destructive/5" : ""}`}>
+                        {row.fuel_rate}
+                      </TableCell>
+                      <TableCell className="text-xs">{row.engine_hours}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* ─── Prediction Tab ─── */}
+        <TabsContent value="prediction" className="space-y-6">
+          <Card className="rounded-card p-6 space-y-5">
+            <p className="text-sm text-muted-foreground">Categorize data into distinct groups using supervised learning</p>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Target Column</Label>
+                <Select value={predTargetCol} onValueChange={setPredTargetCol}>
+                  <SelectTrigger className="mt-1.5 rounded-button">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="engine_speed">engine_speed</SelectItem>
+                    <SelectItem value="vehicle_speed">vehicle_speed</SelectItem>
+                    <SelectItem value="fuel_rate">fuel_rate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={() => setPredictionRun(true)}
+                className="w-full rounded-button bg-primary hover:bg-primary/90"
+                size="lg"
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Run Prediction Analysis
+              </Button>
+            </div>
+          </Card>
+
+          {predictionRun && (
+            <Card className="rounded-card p-6 space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold">Prediction Analysis</h2>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
+                  <CheckCircle2 className="h-4 w-4 text-success" /> Model Status: Successfully Trained
+                </p>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Input form */}
+                <Card className="rounded-card border p-5 space-y-4">
+                  <h3 className="text-sm font-semibold">Enter Values for Engine Speed Prediction:</h3>
+                  {Object.entries(predForm).map(([key, val]) => (
+                    <div key={key}>
+                      <Label className="text-xs font-medium capitalize">{key.replace(/_/g, " ")}</Label>
+                      <Input
+                        value={val}
+                        onChange={(e) => setPredForm((f) => ({ ...f, [key]: e.target.value }))}
+                        className="mt-1 rounded-button"
+                      />
+                    </div>
+                  ))}
+                  <Button className="w-full rounded-button bg-primary hover:bg-primary/90">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Get Prediction
+                  </Button>
+                </Card>
+
+                {/* Output */}
+                <div className="space-y-4">
+                  <Card className="rounded-card border p-5 space-y-3">
+                    <h3 className="text-sm font-semibold">Output Levels</h3>
+                    <div className="rounded-button border p-3 text-xs text-muted-foreground bg-muted/20">
+                      Value: Predicted engine speed is <span className="font-semibold text-foreground">1454.62</span>
+                    </div>
+                    <Badge className="bg-warning/15 text-warning border-warning/30">Predicted: Medium</Badge>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Level</TableHead>
+                          <TableHead className="text-xs">Range</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {outputLevels.map((l) => (
+                          <TableRow key={l.level}>
+                            <TableCell className="text-xs font-semibold">{l.level}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{l.range}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Card>
+
+                  <Card className="rounded-card border p-5 space-y-2">
+                    <h3 className="text-sm font-semibold">Prediction Result</h3>
+                    <p className="text-xs text-muted-foreground">Engine Speed</p>
+                    <div className="rounded-card bg-primary/5 border border-primary/20 p-6 text-center">
+                      <p className="text-xl font-bold text-primary">Predicted engine_speed value is 1454.62</p>
+                    </div>
+                  </Card>
+
+                  <Card className="rounded-card border p-5 space-y-3">
+                    <h3 className="text-sm font-semibold">Input Analysis</h3>
+                    <ul className="space-y-2 text-xs text-muted-foreground list-disc pl-4">
+                      <li>The engine speed input value of 1454.615 is above the 25th percentile (752.0) and below the 75th percentile (1608.0), indicating a normal operating range.</li>
+                      <li>The engine hours of 3434400 are also above the 25th percentile (2780400.0), reflecting a significant operational time.</li>
+                    </ul>
+                  </Card>
+
+                  <Card className="rounded-card border p-5 space-y-3">
+                    <h3 className="text-sm font-semibold">Prediction Interpretation</h3>
+                    <ul className="space-y-2 text-xs text-muted-foreground list-disc pl-4">
+                      <li>The predicted engine speed of 1454.615 falls within the Medium category, suggesting the vehicle is operating efficiently but may not be maximizing performance.</li>
+                    </ul>
+                  </Card>
+                </div>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* ─── Forecast Tab ─── */}
+        <TabsContent value="forecast" className="space-y-6">
+          <Card className="rounded-card p-6 space-y-5">
+            <p className="text-sm text-muted-foreground">Time-series forecasting for trend analysis</p>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Target Column</Label>
+                <Select value={forecastTarget} onValueChange={setForecastTarget}>
+                  <SelectTrigger className="mt-1.5 rounded-button">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="engine_speed">engine_speed</SelectItem>
+                    <SelectItem value="vehicle_speed">vehicle_speed</SelectItem>
+                    <SelectItem value="fuel_rate">fuel_rate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Frequency</Label>
+                <Select value={forecastFreq} onValueChange={setForecastFreq}>
+                  <SelectTrigger className="mt-1.5 rounded-button">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Hours">Hours</SelectItem>
+                    <SelectItem value="Days">Days</SelectItem>
+                    <SelectItem value="Weeks">Weeks</SelectItem>
+                    <SelectItem value="Months">Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Forecast Period</Label>
+                <Select value={forecastPeriod} onValueChange={setForecastPeriod}>
+                  <SelectTrigger className="mt-1.5 rounded-button">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3 days">3 days</SelectItem>
+                    <SelectItem value="5 days">5 days</SelectItem>
+                    <SelectItem value="7 days">7 days</SelectItem>
+                    <SelectItem value="14 days">14 days</SelectItem>
+                    <SelectItem value="30 days">30 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={() => setForecastRun(true)}
+                className="w-full rounded-button bg-primary hover:bg-primary/90"
+                size="lg"
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Run Forecast Analysis
+              </Button>
+            </div>
+          </Card>
+
+          {forecastRun && (
+            <Card className="rounded-card p-6 space-y-6">
+              <h2 className="text-lg font-semibold">Time Series Forecast Results</h2>
+
+              <Card className="rounded-card border border-primary/20 bg-primary/5 p-5">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-primary">Business Insights:</h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      This forecast analysis predicts future trends for <span className="font-semibold text-foreground">{forecastTarget}</span> over the next {forecastPeriod}. The model identifies seasonal patterns, trends, and potential future values to support strategic planning and resource allocation.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  Forecast Status: Successfully Generated
+                </p>
+
+                <Card className="rounded-card border p-5">
+                  <h3 className="text-sm font-semibold mb-4">Forecasted {forecastTarget} values Over Time</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={forecastChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 11 }}
+                          stroke="hsl(var(--muted-foreground))"
+                          angle={-30}
+                          textAnchor="end"
+                          height={60}
+                          label={{ value: "Date", position: "insideBottom", offset: -5, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11 }}
+                          stroke="hsl(var(--muted-foreground))"
+                          domain={["dataMin - 1", "dataMax + 1"]}
+                          label={{ value: "Values", angle: -90, position: "insideLeft", offset: 10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                          name={forecastTarget}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* ─── Agent Builder (Enterprise locked) ─── */}
         <TabsContent value="agents">
           {tier === "lite" ? (
             <Card className="relative rounded-card overflow-hidden">
