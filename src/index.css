@@ -62,6 +62,8 @@
     --sidebar-border: 213 52% 30%;
     --sidebar-ring: 220 91% 54%;
     --sidebar-muted: 213 40% 40%;
+    --sidebar-deep: 210 50% 10%;
+    --sidebar-cyan: 180 80% 50%;
   }
 
   .dark {
