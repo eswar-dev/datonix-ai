@@ -119,34 +119,16 @@ export default function DatonixDemo() {
           </div>
 
           {/* Right icons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {/* Bell */}
             <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
               <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#0099FF" }} />
             </button>
 
-            {/* Avatar + dropdown */}
-            <div style={{ position: "relative" }}>
-              <button
-                ref={avatarRef}
-                onClick={(e) => { e.stopPropagation(); setDropdownOpen((v) => !v); }}
-                style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer" }}
-              >
-                JD
-              </button>
-
-              {dropdownOpen && (
-                <div
-                  ref={dropdownRef}
-                  style={{ position: "absolute", top: 38, right: 0, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.10)", width: 160, zIndex: 50, overflow: "hidden" }}
-                >
-                  <button style={{ ...dropdownItemStyle }}>Profile</button>
-                  <button style={{ ...dropdownItemStyle }}>Settings</button>
-                  <div style={{ height: 1, background: "#e5e7eb" }} />
-                  <button style={{ ...dropdownItemStyle, color: "#e53e3e" }} onClick={handleLogout}>Logout</button>
-                </div>
-              )}
+            {/* Avatar */}
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 11, fontWeight: 700 }}>
+              JD
             </div>
           </div>
         </header>
