@@ -31,9 +31,78 @@ import {
 
 // ─── Insights data ───
 const inferences = [
-  { title: "Seasonal revenue pattern detected", confidence: 87, snippet: "Q4 shows 23% higher revenue consistently across 3 years of data", impact: "High" as const },
-  { title: "Customer churn correlated with support tickets", confidence: 74, snippet: "Users with 3+ support tickets in 30 days have 5x churn probability", impact: "High" as const },
-  { title: "Inventory optimization opportunity", confidence: 65, snippet: "15% of SKUs account for 80% of carrying cost with low turnover", impact: "Med" as const },
+  {
+    title: "Seasonal revenue pattern detected",
+    confidence: 87,
+    snippet: "Q4 shows 23% higher revenue consistently across 3 years of data",
+    impact: "High" as const,
+    explanation: {
+      summary: "A strong seasonal revenue pattern has been identified, with Q4 consistently outperforming other quarters by approximately 23% over a 3-year period.",
+      methodology: "Time-series decomposition was applied to monthly revenue data from Jan 2023 – Dec 2025. The model separated trend, seasonal, and residual components using STL decomposition with a 12-month seasonal window.",
+      keyFindings: [
+        "Q4 revenue averages $2.4M compared to $1.95M across Q1–Q3.",
+        "The seasonal uplift is strongest in November (28% above mean) and December (31% above mean).",
+        "October shows a ramp-up effect with 12% above the quarterly average.",
+        "The pattern has strengthened year-over-year, growing from 18% uplift in 2023 to 27% in 2025.",
+      ],
+      dataPoints: "36 monthly data points analyzed across 4 revenue streams (Product Sales, Subscriptions, Services, Licensing).",
+      businessImplications: [
+        "Allocate additional inventory and staffing resources for Q4 to capture maximum demand.",
+        "Front-load marketing spend in September to capitalize on the October ramp-up.",
+        "Adjust annual forecasting models to account for seasonal weighting.",
+        "Consider running promotional campaigns in Q1–Q2 to smooth revenue distribution.",
+      ],
+      limitations: "The model assumes historical patterns will continue. External factors such as economic downturns, new competitors, or regulatory changes could alter the pattern. 3 years of data provides moderate confidence; 5+ years would strengthen the finding.",
+    },
+  },
+  {
+    title: "Customer churn correlated with support tickets",
+    confidence: 74,
+    snippet: "Users with 3+ support tickets in 30 days have 5x churn probability",
+    impact: "High" as const,
+    explanation: {
+      summary: "A significant correlation has been found between support ticket frequency and customer churn, where users submitting 3 or more tickets within a 30-day window are 5 times more likely to cancel their subscription.",
+      methodology: "Logistic regression and survival analysis were applied to 18 months of customer data (N=12,450 users). Support ticket counts were binned into frequency buckets and cross-referenced with churn events within 60-day follow-up windows.",
+      keyFindings: [
+        "Users with 0–1 tickets/month have a 4.2% churn rate.",
+        "Users with 2 tickets/month have an 8.7% churn rate (2.1x baseline).",
+        "Users with 3+ tickets/month have a 21.3% churn rate (5.1x baseline).",
+        "The most common ticket categories preceding churn are: Billing Issues (34%), Product Bugs (28%), and Feature Requests (22%).",
+      ],
+      dataPoints: "12,450 user accounts analyzed with 47,800 support tickets over 18 months. 1,890 churn events recorded.",
+      businessImplications: [
+        "Implement proactive outreach when a user files their 2nd ticket within 30 days.",
+        "Create a dedicated retention team for high-ticket users.",
+        "Prioritize fixing product bugs that generate repeat tickets.",
+        "Offer service credits or dedicated support for at-risk accounts.",
+      ],
+      limitations: "Correlation does not imply causation — high ticket volume may indicate engaged users facing issues, not necessarily dissatisfied users. Further A/B testing of interventions is recommended.",
+    },
+  },
+  {
+    title: "Inventory optimization opportunity",
+    confidence: 65,
+    snippet: "15% of SKUs account for 80% of carrying cost with low turnover",
+    impact: "Med" as const,
+    explanation: {
+      summary: "An ABC analysis reveals that 15% of SKUs contribute to 80% of total carrying costs while maintaining below-average inventory turnover rates, indicating significant optimization potential.",
+      methodology: "Pareto analysis combined with inventory turnover ratio calculations across all 3,200 SKUs. Carrying costs include warehousing, insurance, depreciation, and opportunity cost of capital at 8% annual rate.",
+      keyFindings: [
+        "480 SKUs (15%) account for $3.2M in annual carrying costs out of $4M total.",
+        "These high-cost SKUs have an average turnover ratio of 2.1x vs. the company average of 6.8x.",
+        "72% of these slow-moving SKUs have not been reordered in the past 90 days.",
+        "Potential annual savings of $800K–$1.2M through inventory right-sizing.",
+      ],
+      dataPoints: "3,200 SKUs analyzed across 5 warehouse locations. 24 months of sales and inventory movement data.",
+      businessImplications: [
+        "Implement safety stock recalculations for the identified 480 SKUs.",
+        "Negotiate return or markdown agreements with suppliers for excess stock.",
+        "Transition slow-moving items to just-in-time ordering where supplier lead times allow.",
+        "Review product lifecycle status — some SKUs may be candidates for discontinuation.",
+      ],
+      limitations: "Analysis does not account for strategic inventory (safety stock for critical items) or items with long lead times that require buffer stock. Seasonal demand variations for specific SKUs need individual review.",
+    },
+  },
 ];
 
 const recommendations = [
@@ -93,6 +162,7 @@ const outputLevels = [
 export default function DecisionIntelligence() {
   const [tier] = useState<"lite" | "enterprise">("lite");
   const [viewOption, setViewOption] = useState("missing");
+  const [explainIndex, setExplainIndex] = useState<number | null>(null);
 
   // Prediction state
   const [predictionRun, setPredictionRun] = useState(false);
@@ -133,72 +203,155 @@ export default function DecisionIntelligence() {
 
         {/* ─── Insights Tab ─── */}
         <TabsContent value="insights" className="space-y-6">
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Pattern Inferences</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {inferences.map((inf, i) => (
-                <Card key={i} className="rounded-card p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-medium leading-tight">{inf.title}</h3>
-                    <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact}</Badge>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Confidence</span><span>{inf.confidence}%</span>
-                    </div>
-                    <Progress value={inf.confidence} className="h-1.5" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{inf.snippet}</p>
-                  <Button variant="outline" size="sm" className="w-full rounded-button text-xs">
-                    Explain <ArrowRight className="ml-1 h-3 w-3" />
+          {explainIndex !== null ? (
+            // ─── Explain Detail View ───
+            (() => {
+              const inf = inferences[explainIndex];
+              const exp = inf.explanation;
+              return (
+                <div className="space-y-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-button text-xs text-muted-foreground"
+                    onClick={() => setExplainIndex(null)}
+                  >
+                    <ArrowRight className="mr-1 h-3 w-3 rotate-180" /> Back to Insights
                   </Button>
-                </Card>
-              ))}
-            </div>
-          </div>
 
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Actions</h2>
-            <div className="space-y-2">
-              {actions.map((action) => {
-                const StatusIcon = action.status === "Resolved" ? CheckCircle2 : action.status === "In Progress" ? Clock : AlertCircle;
-                return (
-                  <Card key={action.id} className="flex items-center justify-between rounded-card p-4">
-                    <div className="flex items-center gap-3">
-                      <StatusIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm">{action.title}</span>
+                  <Card className="rounded-card p-6 space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold">{inf.title}</h2>
+                        <p className="text-sm text-muted-foreground mt-1">{exp.summary}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact} Impact</Badge>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">{inf.confidence}% Confidence</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{action.assignee}</span>
-                      <Badge variant="outline" className={statusColor[action.status]}>{action.status}</Badge>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card className="rounded-card border p-5 space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" /> Methodology
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{exp.methodology}</p>
+                        <div className="rounded-button bg-muted/30 border p-3">
+                          <p className="text-[11px] text-muted-foreground"><span className="font-semibold text-foreground">Data Scope:</span> {exp.dataPoints}</p>
+                        </div>
+                      </Card>
+
+                      <Card className="rounded-card border p-5 space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <Lightbulb className="h-4 w-4 text-warning" /> Key Findings
+                        </h3>
+                        <ul className="space-y-2">
+                          {exp.keyFindings.map((f, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </Card>
                     </div>
+
+                    <Card className="rounded-card border p-5 space-y-3">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" /> Business Implications
+                      </h3>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {exp.businessImplications.map((impl, i) => (
+                          <div key={i} className="flex items-start gap-2.5 rounded-button border bg-muted/20 p-3">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">{i + 1}</span>
+                            <p className="text-xs text-muted-foreground">{impl}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+
+                    <Card className="rounded-card border border-warning/20 bg-warning/5 p-5 space-y-2">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-warning" /> Limitations & Caveats
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{exp.limitations}</p>
+                    </Card>
                   </Card>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+              );
+            })()
+          ) : (
+            // ─── Main Insights View ───
+            <>
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Pattern Inferences</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {inferences.map((inf, i) => (
+                    <Card key={i} className="rounded-card p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-sm font-medium leading-tight">{inf.title}</h3>
+                        <Badge variant="outline" className={impactColor[inf.impact]}>{inf.impact}</Badge>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                          <span>Confidence</span><span>{inf.confidence}%</span>
+                        </div>
+                        <Progress value={inf.confidence} className="h-1.5" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">{inf.snippet}</p>
+                      <Button variant="outline" size="sm" className="w-full rounded-button text-xs" onClick={() => setExplainIndex(i)}>
+                        Explain <ArrowRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </Card>
+                  ))}
+                </div>
+              </div>
 
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
-            <div className="space-y-2">
-              {recommendations.map((rec, i) => (
-                <Card key={i} className="flex items-center justify-between rounded-card p-4">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className={impactColor[rec.priority]}>{rec.priority}</Badge>
-                    <span className="text-sm">{rec.summary}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button">
-                      <Save className="mr-1 h-3 w-3" /> Save
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button text-muted-foreground">
-                      <X className="mr-1 h-3 w-3" /> Dismiss
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Actions</h2>
+                <div className="space-y-2">
+                  {actions.map((action) => {
+                    const StatusIcon = action.status === "Resolved" ? CheckCircle2 : action.status === "In Progress" ? Clock : AlertCircle;
+                    return (
+                      <Card key={action.id} className="flex items-center justify-between rounded-card p-4">
+                        <div className="flex items-center gap-3">
+                          <StatusIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm">{action.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{action.assignee}</span>
+                          <Badge variant="outline" className={statusColor[action.status]}>{action.status}</Badge>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="mb-3 text-sm font-semibold">Recommendations</h2>
+                <div className="space-y-2">
+                  {recommendations.map((rec, i) => (
+                    <Card key={i} className="flex items-center justify-between rounded-card p-4">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className={impactColor[rec.priority]}>{rec.priority}</Badge>
+                        <span className="text-sm">{rec.summary}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button">
+                          <Save className="mr-1 h-3 w-3" /> Save
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs rounded-button text-muted-foreground">
+                          <X className="mr-1 h-3 w-3" /> Dismiss
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ─── Missing Value Treatment Tab ─── */}

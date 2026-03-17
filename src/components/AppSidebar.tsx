@@ -67,8 +67,8 @@ export function AppSidebar() {
         "border-b border-sidebar-border px-3 py-3",
         collapsed ? "flex justify-center" : "flex items-center gap-3"
       )}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent">
-          <User className="h-4 w-4 text-sidebar-accent-foreground" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+          JD
         </div>
         {!collapsed && (
           <div className="min-w-0">
