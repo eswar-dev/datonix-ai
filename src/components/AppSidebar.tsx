@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import datonixLogo from "@/assets/datonix-logo.png";
+import profileAvatar from "@/assets/profile-avatar.png";
 
 const mainNavItems = [
   { title: "Data Sources", path: "/data-sources", icon: Database },
@@ -67,9 +68,7 @@ export function AppSidebar() {
         "border-b border-sidebar-border px-3 py-3",
         collapsed ? "flex justify-center" : "flex items-center gap-3"
       )}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
-          JD
-        </div>
+        <img src={profileAvatar} alt="John Doe" className="h-8 w-8 shrink-0 rounded-full object-cover" />
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-xs font-medium text-sidebar-foreground truncate">John Doe</p>
