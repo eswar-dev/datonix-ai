@@ -37,56 +37,46 @@ const adminNavItems = [
 
 function HexagonLogo({ collapsed }: { collapsed: boolean }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <div className="relative shrink-0">
         <svg
-          width={collapsed ? 36 : 40}
-          height={collapsed ? 36 : 40}
-          viewBox="0 0 48 48"
+          width={collapsed ? 32 : 36}
+          height={collapsed ? 28 : 32}
+          viewBox="0 0 52 44"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Hexagon outline */}
+          {/* Flat-top hexagon, wider than tall */}
           <path
-            d="M24 2L44 14V34L24 46L4 34V14L24 2Z"
-            stroke="url(#hexGrad)"
+            d="M13 2L39 2L52 22L39 42L13 42L0 22Z"
+            stroke="#89D8F8"
             strokeWidth="2"
-            fill="rgba(0,210,211,0.08)"
+            fill="none"
           />
-          {/* Network nodes */}
-          <circle cx="24" cy="14" r="3" fill="url(#nodeGrad)" />
-          <circle cx="14" cy="28" r="3" fill="url(#nodeGrad)" />
-          <circle cx="34" cy="28" r="3" fill="url(#nodeGrad)" />
-          <circle cx="24" cy="36" r="2.5" fill="url(#nodeGrad)" opacity="0.7" />
-          <circle cx="24" cy="24" r="4" fill="url(#nodeGrad)" />
+          {/* 7 dots: center biggest, then varying sizes */}
+          <circle cx="26" cy="22" r="4.5" fill="#0099FF" />
+          <circle cx="36" cy="23" r="3.8" fill="#0099FF" />
+          <circle cx="26" cy="12" r="3.5" fill="#0099FF" />
+          <circle cx="16" cy="22" r="3.2" fill="#0099FF" />
+          <circle cx="26" cy="33" r="3.2" fill="#0099FF" />
+          <circle cx="36" cy="33" r="1.8" fill="#0099FF" />
+          <circle cx="16" cy="12" r="1.4" fill="#0099FF" />
           {/* Connecting lines */}
-          <line x1="24" y1="14" x2="24" y2="24" stroke="hsl(180,80%,50%)" strokeWidth="1.2" opacity="0.6" />
-          <line x1="14" y1="28" x2="24" y2="24" stroke="hsl(180,80%,50%)" strokeWidth="1.2" opacity="0.6" />
-          <line x1="34" y1="28" x2="24" y2="24" stroke="hsl(180,80%,50%)" strokeWidth="1.2" opacity="0.6" />
-          <line x1="24" y1="24" x2="24" y2="36" stroke="hsl(180,80%,50%)" strokeWidth="1.2" opacity="0.4" />
-          <line x1="24" y1="14" x2="14" y2="28" stroke="hsl(180,80%,50%)" strokeWidth="0.8" opacity="0.3" />
-          <line x1="24" y1="14" x2="34" y2="28" stroke="hsl(180,80%,50%)" strokeWidth="0.8" opacity="0.3" />
-          <defs>
-            <linearGradient id="hexGrad" x1="4" y1="2" x2="44" y2="46">
-              <stop offset="0%" stopColor="hsl(180,80%,50%)" />
-              <stop offset="100%" stopColor="hsl(200,80%,45%)" />
-            </linearGradient>
-            <radialGradient id="nodeGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="hsl(180,90%,65%)" />
-              <stop offset="100%" stopColor="hsl(180,80%,50%)" />
-            </radialGradient>
-          </defs>
+          <line x1="26" y1="22" x2="36" y2="23" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
+          <line x1="26" y1="22" x2="26" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
+          <line x1="26" y1="22" x2="16" y2="22" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
+          <line x1="26" y1="22" x2="26" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
+          <line x1="26" y1="22" x2="36" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
+          <line x1="26" y1="22" x2="16" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
         </svg>
-        {/* Glow effect */}
-        <div className="absolute inset-0 rounded-full blur-md opacity-20 bg-[hsl(180,80%,50%)]" />
       </div>
       {!collapsed && (
         <div className="min-w-0">
-          <h1 className="font-sora text-base font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-[18px] font-black tracking-tight leading-tight" style={{ fontFamily: "'Arial Black', 'Arial', sans-serif", color: "#0099FF" }}>
             Datonix
           </h1>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-sidebar-cyan">
-            AI-Driven Decisions
+          <p className="text-[4px] font-bold uppercase tracking-[2.2px]" style={{ color: "#aaccdd" }}>
+            AI THAT MAKES DECISIONS ACTIONABLE
           </p>
         </div>
       )}
@@ -105,15 +95,19 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col bg-sidebar-deep text-sidebar-foreground transition-all duration-200",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col transition-all duration-200 rounded-[10px]",
         collapsed ? "w-sidebar-collapsed" : "w-sidebar-expanded"
       )}
+      style={{ background: "#1a2a3a" }}
     >
-      {/* Logo */}
-      <div className={cn(
-        "flex h-16 items-center border-b border-white/[0.06]",
-        collapsed ? "justify-center px-2" : "px-4"
-      )}>
+      {/* Logo header */}
+      <div
+        className={cn(
+          "flex items-center border-b border-white/[0.06]",
+          collapsed ? "justify-center px-2 h-16" : "px-4 h-16"
+        )}
+        style={{ background: "#152030", borderRadius: collapsed ? "10px 10px 0 0" : "10px 10px 0 0" }}
+      >
         <HexagonLogo collapsed={collapsed} />
       </div>
 
@@ -126,14 +120,14 @@ export function AppSidebar() {
           <img
             src={profileAvatar}
             alt="John Doe"
-            className="h-9 w-9 rounded-full object-cover ring-2 ring-sidebar-cyan/30"
+            className="h-9 w-9 rounded-full object-cover ring-2 ring-white/10"
           />
-          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar-deep bg-emerald-400" />
+          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-400" style={{ borderColor: "#1a2a3a" }} />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-white truncate">John Doe</p>
-            <p className="text-[10px] text-sidebar-cyan/70 truncate">Sales Manager</p>
+            <p className="text-[13px] font-bold text-white truncate">John Doe</p>
+            <p className="text-[11px] truncate" style={{ color: "#7a9ab5" }}>Sales Manager</p>
           </div>
         )}
       </div>
@@ -144,9 +138,9 @@ export function AppSidebar() {
           <button
             onClick={() => navigate("/dashboard")}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full",
-              "text-white/50 hover:bg-white/[0.06] hover:text-white"
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-white/[0.06]"
             )}
+            style={{ color: "#8aaec8" }}
             title="Back to Home"
           >
             <ArrowLeft className="h-5 w-5 shrink-0" />
@@ -155,7 +149,7 @@ export function AppSidebar() {
         </div>
       )}
 
-      <nav className="flex-1 space-y-1 px-2 py-3 overflow-y-auto">
+      <nav className="flex-1 space-y-[2px] px-2 py-3 overflow-y-auto">
         {navItems.map((item) => {
           const active = isAdminRoute
             ? location.pathname === item.path
@@ -166,22 +160,22 @@ export function AppSidebar() {
               to={item.path}
               title={item.title}
               className={cn(
-                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
-                active
-                  ? "bg-white/[0.08] text-white shadow-[inset_3px_0_0_0_hsl(180,80%,50%)]"
-                  : "text-white/60 hover:bg-white/[0.05] hover:text-white/90"
+                "group flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150",
+                active ? "font-bold text-white" : "hover:bg-white/[0.05]"
               )}
+              style={{
+                padding: "10px 12px",
+                borderRadius: "8px",
+                ...(active
+                  ? { background: "#2a4a6a", color: "#ffffff" }
+                  : { color: "#8aaec8" }),
+              }}
             >
               <item.icon
-                className={cn(
-                  "h-[18px] w-[18px] shrink-0 transition-colors",
-                  active ? "text-sidebar-cyan" : "text-white/40 group-hover:text-white/70"
-                )}
+                className="h-[18px] w-[18px] shrink-0"
+                style={{ color: active ? "#ffffff" : "#8aaec8" }}
               />
               {!collapsed && <span>{item.title}</span>}
-              {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full bg-sidebar-cyan shadow-[0_0_8px_hsl(180,80%,50%,0.5)]" />
-              )}
             </Link>
           );
         })}
@@ -189,7 +183,8 @@ export function AppSidebar() {
 
       <button
         onClick={toggle}
-        className="flex h-10 items-center justify-center border-t border-white/[0.06] text-white/30 hover:text-white/60 transition-colors"
+        className="flex h-10 items-center justify-center border-t border-white/[0.06] transition-colors"
+        style={{ color: "#8aaec8" }}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
