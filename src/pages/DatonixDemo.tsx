@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React from "react";
 
 /* ──────────────────────────── SVG LOGOS ──────────────────────────── */
 
@@ -22,22 +22,6 @@ function SidebarLogo() {
   );
 }
 
-function ModalLogo() {
-  return (
-    <svg viewBox="0 0 200 44" width="200" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="20,22 31,6 53,6 64,22 53,38 31,38" stroke="#89D8F8" strokeWidth="2.5" fill="none" />
-      <circle cx="42" cy="22" r="5.5" fill="#0099FF" />
-      <circle cx="54" cy="19" r="4.2" fill="#0099FF" />
-      <circle cx="42" cy="12" r="4" fill="#0099FF" />
-      <circle cx="30" cy="19" r="3.6" fill="#0099FF" />
-      <circle cx="42" cy="31" r="3.6" fill="#0099FF" />
-      <circle cx="53" cy="29" r="2.2" fill="#0099FF" />
-      <circle cx="31" cy="13" r="1.6" fill="#0099FF" />
-      <text x="72" y="28" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="20" fill="#0099FF">Datonix</text>
-      <text x="72" y="38" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="4.2" fill="#888" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
-    </svg>
-  );
-}
 
 /* ──────────────────────────── NAV ICONS ──────────────────────────── */
 
@@ -73,55 +57,10 @@ const kpis = [
   { label: "Insights Generated", value: "342", delta: "+28%", up: true },
 ];
 
-/* ──────────────────────────── GOOGLE G ICON ──────────────────────────── */
-
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 48 48">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-    </svg>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#111">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-    </svg>
-  );
-}
 
 /* ──────────────────────────── MAIN COMPONENT ──────────────────────────── */
 
 export default function DatonixDemo() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const avatarRef = useRef<HTMLButtonElement>(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        avatarRef.current &&
-        !avatarRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
-
-  const handleLogout = () => {
-    setDropdownOpen(false);
-    setShowOverlay(true);
-  };
 
   return (
     <div style={{ position: "relative", display: "flex", width: "100%", height: "600px", borderRadius: "12px", overflow: "hidden", background: "#f0f2f5", fontFamily: "Arial, sans-serif" }}>
@@ -180,34 +119,16 @@ export default function DatonixDemo() {
           </div>
 
           {/* Right icons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {/* Bell */}
             <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
               <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#0099FF" }} />
             </button>
 
-            {/* Avatar + dropdown */}
-            <div style={{ position: "relative" }}>
-              <button
-                ref={avatarRef}
-                onClick={(e) => { e.stopPropagation(); setDropdownOpen((v) => !v); }}
-                style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer" }}
-              >
-                JD
-              </button>
-
-              {dropdownOpen && (
-                <div
-                  ref={dropdownRef}
-                  style={{ position: "absolute", top: 38, right: 0, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.10)", width: 160, zIndex: 50, overflow: "hidden" }}
-                >
-                  <button style={{ ...dropdownItemStyle }}>Profile</button>
-                  <button style={{ ...dropdownItemStyle }}>Settings</button>
-                  <div style={{ height: 1, background: "#e5e7eb" }} />
-                  <button style={{ ...dropdownItemStyle, color: "#e53e3e" }} onClick={handleLogout}>Logout</button>
-                </div>
-              )}
+            {/* Avatar */}
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1e3a52", display: "flex", alignItems: "center", justifyContent: "center", color: "#5ba3d9", fontSize: 11, fontWeight: 700 }}>
+              JD
             </div>
           </div>
         </header>
@@ -232,90 +153,9 @@ export default function DatonixDemo() {
             ))}
           </div>
 
-          <p style={{ fontSize: 12, color: "#999", marginTop: 20, textAlign: "center" }}>
-            Click the <strong>JD</strong> avatar (top-right) → <strong style={{ color: "#e53e3e" }}>Logout</strong> to see the login modal
-          </p>
         </main>
       </div>
 
-      {/* ─── LOGIN OVERLAY ─── */}
-      {showOverlay && (
-        <div
-          style={{
-            position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
-            borderRadius: 12, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          {/* Modal card */}
-          <div style={{ background: "#f5f4f2", borderRadius: 16, width: 440, padding: "34px 38px 26px", position: "relative" }}>
-            {/* Close button */}
-            <button
-              onClick={() => setShowOverlay(false)}
-              style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#888", lineHeight: 1 }}
-            >
-              ✕
-            </button>
-
-            {/* Logo */}
-            <div style={{ marginBottom: 22 }}>
-              <ModalLogo />
-            </div>
-
-            {/* Headings */}
-            <h2 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 4px" }}>Start Building.</h2>
-            <p style={{ fontSize: 22, fontWeight: 700, color: "#bbb", margin: "0 0 24px" }}>Log in to your account</p>
-
-            {/* Google button */}
-            <div style={{ position: "relative", marginBottom: 10 }}>
-              <button style={{ ...oauthBtnStyle, border: "1.5px solid #0099FF" }}>
-                <GoogleIcon />
-                <span>Continue with Google</span>
-              </button>
-              <span style={{ position: "absolute", top: -8, right: 12, background: "#eef2ff", color: "#4f6ef7", border: "1px solid #c7d2fe", borderRadius: 20, fontSize: 10, padding: "2px 10px", fontWeight: 600 }}>Last used</span>
-            </div>
-
-            {/* GitHub button */}
-            <button style={{ ...oauthBtnStyle, border: "1.5px solid #ddd", marginBottom: 18 }}>
-              <GitHubIcon />
-              <span>Continue with GitHub</span>
-            </button>
-
-            {/* OR divider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <div style={{ flex: 1, height: 1, background: "#ddd" }} />
-              <span style={{ color: "#bbb", fontSize: 11, letterSpacing: 1 }}>OR</span>
-              <div style={{ flex: 1, height: 1, background: "#ddd" }} />
-            </div>
-
-            {/* Email button */}
-            <button style={{ width: "100%", padding: "12px 0", background: "#111", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>
-              Continue with email
-            </button>
-
-            {/* Footer */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 11, color: "#888" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span>SSO available on</span>
-              <span style={{ color: "#111", textDecoration: "underline", cursor: "pointer" }}>Business and Enterprise</span>
-              <span>plans</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
-/* ─── SHARED STYLES ─── */
-
-const dropdownItemStyle: React.CSSProperties = {
-  display: "block", width: "100%", padding: "9px 16px",
-  background: "none", border: "none", textAlign: "left",
-  fontSize: 13, color: "#333", cursor: "pointer",
-};
-
-const oauthBtnStyle: React.CSSProperties = {
-  width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-  padding: "11px 0", background: "#fff", borderRadius: 10,
-  fontSize: 14, fontWeight: 600, color: "#111", cursor: "pointer",
-};
