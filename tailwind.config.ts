@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        sora: ["Sora", "system-ui", "sans-serif"],
       },
       spacing: {
         "sidebar-expanded": "240px",
