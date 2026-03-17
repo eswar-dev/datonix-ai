@@ -13,14 +13,16 @@ import {
   Users,
   ShieldCheck,
   Clock,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
+import datonixLogo from "@/assets/datonix-logo.png";
 
 const mainNavItems = [
   { title: "Data Sources", path: "/data-sources", icon: Database },
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { title: "Datonix Bot", path: "/bot", icon: Bot },
+  { title: "Datonix AI", path: "/bot", icon: Bot },
   { title: "Reports", path: "/reports", icon: FileText },
   { title: "Decision Intelligence", path: "/decision-intelligence", icon: Brain },
   { title: "Administration", path: "/admin", icon: Shield },
@@ -49,14 +51,30 @@ export function AppSidebar() {
         collapsed ? "w-sidebar-collapsed" : "w-sidebar-expanded"
       )}
     >
-      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-button bg-sidebar-primary font-semibold text-sidebar-primary-foreground text-sm">
-          D
+      {/* Logo */}
+      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-3">
+        {collapsed ? (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-button bg-sidebar-primary font-semibold text-sidebar-primary-foreground text-sm">
+            D
+          </div>
+        ) : (
+          <img src={datonixLogo} alt="Datonix" className="h-9 object-contain" />
+        )}
+      </div>
+
+      {/* User Profile */}
+      <div className={cn(
+        "border-b border-sidebar-border px-3 py-3",
+        collapsed ? "flex justify-center" : "flex items-center gap-3"
+      )}>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent">
+          <User className="h-4 w-4 text-sidebar-accent-foreground" />
         </div>
         {!collapsed && (
-          <span className="text-base font-semibold tracking-tight text-sidebar-primary-foreground">
-            Datonix
-          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-sidebar-foreground truncate">John Doe</p>
+            <p className="text-[10px] text-sidebar-muted truncate">Sales Manager</p>
+          </div>
         )}
       </div>
 
