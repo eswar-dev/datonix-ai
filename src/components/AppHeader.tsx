@@ -71,9 +71,7 @@ export function AppHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full" aria-label="User menu">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                  JD
-                </div>
+                <img src={profileAvatar} alt="John Doe" className="h-8 w-8 rounded-full object-cover" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
