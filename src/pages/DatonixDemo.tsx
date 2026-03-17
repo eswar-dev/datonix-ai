@@ -171,9 +171,6 @@ export default function DatonixDemo() {
             ))}
           </div>
 
-          <p style={{ fontSize: 12, color: "#999", marginTop: 20, textAlign: "center" }}>
-            Click the <strong>JD</strong> avatar (top-right) → <strong style={{ color: "#e53e3e" }}>Logout</strong> to see the login modal
-          </p>
         </main>
       </div>
 
