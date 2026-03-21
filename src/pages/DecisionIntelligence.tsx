@@ -421,14 +421,28 @@ export default function DecisionIntelligence() {
               <div>
                 <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> Forecast Status: Successfully Generated</p>
                 <Card className="rounded-card border p-5">
-                  <h3 className="text-sm font-semibold mb-4">Forecasted {forecastTarget} values Over Time</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold">Forecasted {forecastTarget} values Over Time</h3>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+                            <Info className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-[300px]">
+                          <p className="text-xs leading-relaxed">{data.forecast.insightText}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={data.forecast.chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" angle={-30} textAnchor="end" height={60} />
                         <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" domain={["dataMin - 1", "dataMax + 1"]} />
-                        <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
+                        <RechartsTooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
                         <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: "hsl(var(--primary))", r: 4 }} name={forecastTarget} />
                       </LineChart>
                     </ResponsiveContainer>
