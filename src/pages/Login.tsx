@@ -42,7 +42,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ minHeight: 600 }}>
+    <div className="flex min-h-screen" style={{ minHeight: 600, background: "#152030" }}>
       {/* LEFT SIDE — Dark navy theme */}
       <div
         className="flex flex-1 flex-col justify-center"
