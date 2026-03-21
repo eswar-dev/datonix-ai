@@ -65,6 +65,21 @@ interface ForecastConfig {
   insightText: string;
 }
 
+export interface BotResponse {
+  type: "text" | "table" | "chart";
+  content: string;
+  chartData?: { name: string; value: number }[];
+  chartTitle?: string;
+  chartInfo?: string;
+  tableHeaders?: string[];
+  tableRows?: string[][];
+}
+
+export interface SuggestedPrompt {
+  text: string;
+  type: "text" | "table" | "chart";
+}
+
 interface RoleDataShape {
   dashboard: {
     stats: { label: string; value: string; change: string; trend: "up" | "down" }[];
@@ -101,10 +116,10 @@ interface RoleDataShape {
   };
   botConfig: {
     greeting: string;
-    suggestedPrompts: string[];
+    suggestedPrompts: SuggestedPrompt[];
     datasets: { value: string; label: string }[];
     chatHistory: { id: string; title: string; pinned: boolean }[];
-    mockResponses: Record<string, string>;
+    mockResponses: Record<string, BotResponse>;
   };
   administration: {
     users: { name: string; role: string; status: string; lastLogin: string }[];
