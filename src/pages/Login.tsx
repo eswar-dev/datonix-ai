@@ -16,7 +16,7 @@ function LoginLogo() {
       <circle cx="59" cy="34" r="2.6" fill="#0099FF" />
       <circle cx="34" cy="14" r="2" fill="#0099FF" />
       <text x="78" y="32" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="28" fill="#0099FF">Datonix</text>
-      <text x="78" y="44" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="5.5" fill="#888" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
+      <text x="78" y="44" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="5.5" fill="#6a9ab8" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
     </svg>
   );
 }
@@ -43,16 +43,19 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen" style={{ minHeight: 600 }}>
-      {/* LEFT SIDE */}
-      <div className="flex flex-1 flex-col justify-center bg-white" style={{ padding: "60px 70px" }}>
+      {/* LEFT SIDE — Dark navy theme */}
+      <div
+        className="flex flex-1 flex-col justify-center"
+        style={{ background: "#1a2a3a", padding: "60px 70px" }}
+      >
         <div className="mb-8">
           <LoginLogo />
         </div>
 
-        <h1 className="mb-6 text-[22px] font-normal" style={{ color: "#222" }}>Login</h1>
+        <h1 className="mb-6 text-[22px] font-normal text-white/90">Login</h1>
 
         {error && (
-          <div className="mb-4 max-w-[420px] rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="mb-4 max-w-[420px] rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
             {error}
           </div>
         )}
@@ -60,26 +63,26 @@ export default function Login() {
         <form onSubmit={handleLogin} className="flex flex-col gap-5 max-w-[420px]">
           {/* Email */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" style={{ color: "#222" }}>
-              Email<span className="text-red-500">*</span>
+            <label className="text-sm font-medium text-white/70">
+              Email<span className="text-red-400">*</span>
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 w-full rounded-full border px-5 text-sm outline-none transition-colors"
-              style={{ borderColor: "#d0d0d0" }}
-              onFocus={(e) => (e.target.style.borderColor = "#0099FF")}
-              onBlur={(e) => (e.target.style.borderColor = "#d0d0d0")}
+              className="h-11 w-full rounded-full border bg-white/5 px-5 text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+              style={{ borderColor: "rgba(255,255,255,0.15)" }}
+              onFocus={(e) => (e.target.style.borderColor = "#2563EB")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
               placeholder="Enter your email"
             />
           </div>
 
           {/* Password */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" style={{ color: "#222" }}>
-              Password<span className="text-red-500">*</span>
+            <label className="text-sm font-medium text-white/70">
+              Password<span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <input
@@ -87,16 +90,16 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 w-full rounded-full border px-5 pr-12 text-sm outline-none transition-colors"
-                style={{ borderColor: "#d0d0d0" }}
-                onFocus={(e) => (e.target.style.borderColor = "#0099FF")}
-                onBlur={(e) => (e.target.style.borderColor = "#d0d0d0")}
+                className="h-11 w-full rounded-full border bg-white/5 px-5 pr-12 text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                style={{ borderColor: "rgba(255,255,255,0.15)" }}
+                onFocus={(e) => (e.target.style.borderColor = "#2563EB")}
+                onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                 placeholder="Enter your password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -105,16 +108,16 @@ export default function Login() {
 
           {/* Remember + Forgot */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: "#222" }}>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-white/70">
               <input
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 accent-[#3d7a5e]"
+                className="h-4 w-4 rounded border-white/20 accent-[#2563EB]"
               />
               Remember me
             </label>
-            <button type="button" className="text-sm font-medium hover:underline" style={{ color: "#0099FF" }}>
+            <button type="button" className="text-sm font-medium hover:underline" style={{ color: "#2563EB" }}>
               Forgot Password?
             </button>
           </div>
@@ -123,34 +126,38 @@ export default function Login() {
           <button
             type="submit"
             className="h-11 w-full rounded-full text-sm font-bold text-white uppercase transition-colors"
-            style={{ backgroundColor: "#3d7a5e", letterSpacing: "1.5px" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2e5e47")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#3d7a5e")}
+            style={{ backgroundColor: "#2563EB", letterSpacing: "1.5px" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1d4ed8")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
           >
             LOGIN
           </button>
         </form>
 
-        <p className="mt-10 text-xs text-center max-w-[420px]" style={{ color: "#999" }}>
+        <p className="mt-10 text-xs text-center max-w-[420px]" style={{ color: "rgba(255,255,255,0.3)" }}>
           © All Rights Reserved, AI-PRIORI 2026
         </p>
       </div>
 
-      {/* RIGHT SIDE */}
+      {/* RIGHT SIDE — Matching dark theme */}
       <div
-        className="hidden md:flex w-1/2 flex-col items-center"
-        style={{ backgroundColor: "#fdfde8", padding: "36px 40px" }}
+        className="hidden md:flex w-1/2 flex-col items-center justify-center"
+        style={{ background: "#152030", padding: "36px 40px" }}
       >
         <h2
           className="mb-6 text-center text-[22px] font-bold uppercase"
-          style={{ color: "#2e7d32", letterSpacing: "1px" }}
+          style={{ color: "#2563EB", letterSpacing: "1px" }}
         >
           WELCOME TO DATONIX
         </h2>
+        <p className="mb-6 text-center text-sm max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
+          Decision Intelligence Platform — Role-first analytics for AEC, Manufacturing & Retail
+        </p>
         <img
           src={factoryImg}
           alt="Factory worker with AR panels"
           className="w-full max-w-[520px] rounded-[14px] object-cover"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
         />
       </div>
     </div>
