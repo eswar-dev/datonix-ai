@@ -1,19 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, ThumbsUp, ThumbsDown, Pin, Trash2, Search } from "lucide-react";
-
-const suggestedPrompts = [
-  "Show revenue trends for Q4",
-  "Compare customer segments",
-  "Identify top-performing products",
-  "Analyze churn risk factors",
-  "Summarize data quality issues",
-  "Forecast next quarter sales",
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { roleData } from "@/data/roleData";
 
 interface Message {
   id: string;
@@ -22,33 +14,47 @@ interface Message {
   type?: "text" | "chart" | "table";
 }
 
-const mockHistory = [
-  { id: "1", title: "Revenue analysis", pinned: true },
-  { id: "2", title: "Customer churn investigation", pinned: false },
-  { id: "3", title: "Inventory optimization", pinned: false },
-];
-
 export default function BotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: "Hello! I'm Datonix Bot. Select a dataset and ask me anything about your data. I can generate charts, tables, and insights.",
-      type: "text",
-    },
-  ]);
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const botConfig = user ? roleData[user.role].botConfig : null;
+
+  // Initialize greeting when user/role changes
+  useEffect(() => {
+    if (botConfig) {
+      setMessages([{
+        id: "1",
+        role: "assistant",
+        content: botConfig.greeting,
+        type: "text",
+      }]);
+    }
+  }, [user?.role]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
+  const getMockResponse = (query: string): string => {
+    if (!botConfig) return "";
+    const lowerQuery = query.toLowerCase();
+    for (const [keyword, response] of Object.entries(botConfig.mockResponses)) {
+      if (keyword !== "default" && lowerQuery.includes(keyword)) {
+        return response;
+      }
+    }
+    return botConfig.mockResponses.default || `Based on your query "${query}", here's what I found:\n\nThe dataset shows significant patterns that warrant further investigation. I've identified 3 key anomalies in the selected period.`;
+  };
+
   const handleSend = () => {
     if (!input.trim()) return;
     const userMsg: Message = { id: Date.now().toString(), role: "user", content: input, type: "text" };
     setMessages((prev) => [...prev, userMsg]);
+    const queryText = input;
     setInput("");
     setTyping(true);
 
@@ -57,7 +63,7 @@ export default function BotPage() {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Based on your query "${userMsg.content}", here's what I found:\n\nThe dataset shows a 12.5% increase in the key metric over the selected period. There are 3 notable anomalies that warrant further investigation.`,
+        content: getMockResponse(queryText),
         type: "text",
       };
       setMessages((prev) => [...prev, aiMsg]);
@@ -71,6 +77,8 @@ export default function BotPage() {
     }
   };
 
+  if (!user || !botConfig) return null;
+
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Left panel */}
@@ -80,16 +88,16 @@ export default function BotPage() {
             <SelectValue placeholder="Select dataset" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sales">sales_q4_2025.csv</SelectItem>
-            <SelectItem value="customers">customer_segments.xlsx</SelectItem>
-            <SelectItem value="inventory">inventory_feed.json</SelectItem>
+            {botConfig.datasets.map((ds) => (
+              <SelectItem key={ds.value} value={ds.value}>{ds.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         <div>
           <p className="mb-2 text-xs font-medium text-muted-foreground">Suggested Prompts</p>
           <div className="flex flex-wrap gap-1.5">
-            {suggestedPrompts.map((p) => (
+            {botConfig.suggestedPrompts.map((p) => (
               <button
                 key={p}
                 onClick={() => setInput(p)}
@@ -110,7 +118,7 @@ export default function BotPage() {
             <Input placeholder="Search…" className="h-7 pl-7 text-xs rounded-input" />
           </div>
           <div className="space-y-1">
-            {mockHistory.map((h) => (
+            {botConfig.chatHistory.map((h) => (
               <div
                 key={h.id}
                 className="flex items-center justify-between rounded-button px-2 py-1.5 text-xs hover:bg-muted transition-colors cursor-pointer"

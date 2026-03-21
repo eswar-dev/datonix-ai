@@ -15,14 +15,6 @@ import { FileText, Download, Share2, Maximize2, ZoomIn, ZoomOut, Plus, Search, B
 import { useAuth } from "@/contexts/AuthContext";
 import { roleData } from "@/data/roleData";
 
-interface MockReport {
-  id: string;
-  name: string;
-  type: string;
-  date: string;
-  author: string;
-}
-
 export default function Reports() {
   const { user } = useAuth();
   const [selectedReportId, setSelectedReportId] = useState("1");
@@ -32,16 +24,19 @@ export default function Reports() {
 
   if (!user) return null;
   const data = roleData[user.role].reports;
+  const datasets = roleData[user.role].dataSources.datasets;
 
-  const roleReports: MockReport[] = data.available.map((r, i) => ({
+  const roleReports = data.available.map((r, i) => ({
     id: String(i + 1),
     name: r.name,
     type: r.category,
     date: r.lastRun,
+    status: r.status,
     author: user.name,
   }));
 
   const selectedReport = roleReports.find((r) => r.id === selectedReportId) || roleReports[0];
+  const reportContent = data.reportContent[selectedReport.name];
 
   const filtered = roleReports.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
@@ -68,30 +63,27 @@ export default function Reports() {
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1">
-            {filtered.map((r) => {
-              const roleReport = data.available.find((a) => a.name === r.name);
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => setSelectedReportId(r.id)}
-                  className={`w-full rounded-button border px-3 py-2 text-left text-xs transition-colors ${
-                    selectedReport.id === r.id ? "border-accent bg-accent/5" : "hover:bg-muted"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-medium truncate flex-1">{r.name}</p>
-                    {roleReport?.status === "Alert" && (
-                      <Badge variant="destructive" className="text-[9px] px-1 py-0 gap-0.5">
-                        <Bell className="h-2.5 w-2.5" />
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-muted-foreground">
-                    {r.type} · {r.date}
-                  </p>
-                </button>
-              );
-            })}
+            {filtered.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedReportId(r.id)}
+                className={`w-full rounded-button border px-3 py-2 text-left text-xs transition-colors ${
+                  selectedReport.id === r.id ? "border-accent bg-accent/5" : "hover:bg-muted"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <p className="font-medium truncate flex-1">{r.name}</p>
+                  {r.status === "Alert" && (
+                    <Badge variant="destructive" className="text-[9px] px-1 py-0 gap-0.5">
+                      <Bell className="h-2.5 w-2.5" />
+                    </Badge>
+                  )}
+                </div>
+                <p className="mt-0.5 text-muted-foreground">
+                  {r.type} · {r.date}
+                </p>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -106,7 +98,9 @@ export default function Reports() {
               <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Zoom out">
                 <ZoomOut className="h-4 w-4" />
               </Button>
-              <span className="text-xs text-muted-foreground">Page 1 / 4</span>
+              <span className="text-xs text-muted-foreground">
+                {reportContent ? `${reportContent.sections.length} sections` : "Page 1 / 4"}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Fullscreen">
@@ -124,20 +118,59 @@ export default function Reports() {
           </div>
 
           {/* Report canvas */}
-          <div className="flex-1 flex items-center justify-center bg-muted/30 p-8">
+          <div className="flex-1 flex items-center justify-center bg-muted/30 p-8 overflow-y-auto">
             <div className="w-full max-w-2xl rounded-card border bg-card p-12 shadow-sm">
               <h2 className="text-xl font-semibold">{selectedReport.name}</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Generated on {selectedReport.date} by {selectedReport.author}
               </p>
-              <div className="mt-8 space-y-4">
-                <div className="h-4 skeleton-shimmer rounded w-full" />
-                <div className="h-4 skeleton-shimmer rounded w-5/6" />
-                <div className="h-4 skeleton-shimmer rounded w-4/6" />
-                <div className="mt-6 h-48 skeleton-shimmer rounded" />
-                <div className="h-4 skeleton-shimmer rounded w-full" />
-                <div className="h-4 skeleton-shimmer rounded w-3/4" />
-              </div>
+
+              {reportContent ? (
+                <div className="mt-6 space-y-6">
+                  {/* Summary */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Executive Summary</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{reportContent.summary}</p>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+                    {reportContent.keyMetrics.map((m) => (
+                      <div key={m.label} className="rounded-lg border p-3 text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</p>
+                        <p className="text-lg font-bold mt-1">{m.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sections */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3">Report Sections</h3>
+                    <div className="space-y-2">
+                      {reportContent.sections.map((section, i) => (
+                        <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent">{i + 1}</span>
+                          <span className="text-sm">{section}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Chart placeholder */}
+                  <div className="h-48 rounded-lg bg-muted/50 border-2 border-dashed border-muted flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">📊 Interactive chart visualization</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-8 space-y-4">
+                  <div className="h-4 skeleton-shimmer rounded w-full" />
+                  <div className="h-4 skeleton-shimmer rounded w-5/6" />
+                  <div className="h-4 skeleton-shimmer rounded w-4/6" />
+                  <div className="mt-6 h-48 skeleton-shimmer rounded" />
+                  <div className="h-4 skeleton-shimmer rounded w-full" />
+                  <div className="h-4 skeleton-shimmer rounded w-3/4" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -148,7 +181,9 @@ export default function Reports() {
               <span>·</span>
               <span>Author: {selectedReport.author}</span>
               <span>·</span>
-              <Badge variant="secondary" className="text-[10px]">Shared</Badge>
+              <Badge variant={selectedReport.status === "Alert" ? "destructive" : "secondary"} className="text-[10px]">
+                {selectedReport.status === "Alert" ? "⚠️ Alert" : "Ready"}
+              </Badge>
             </div>
           </div>
         </Card>
@@ -185,9 +220,9 @@ export default function Reports() {
                   <SelectValue placeholder="Choose dataset" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sales">sales_q4_2025.csv</SelectItem>
-                  <SelectItem value="customers">customer_segments.xlsx</SelectItem>
-                  <SelectItem value="inventory">inventory_feed.json</SelectItem>
+                  {datasets.map((ds) => (
+                    <SelectItem key={ds.id} value={ds.id}>{ds.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
