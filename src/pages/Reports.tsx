@@ -73,7 +73,7 @@ export default function Reports() {
               return (
                 <button
                   key={r.id}
-                  onClick={() => setSelectedReport(r)}
+                  onClick={() => setSelectedReportId(r.id)}
                   className={`w-full rounded-button border px-3 py-2 text-left text-xs transition-colors ${
                     selectedReport.id === r.id ? "border-accent bg-accent/5" : "hover:bg-muted"
                   }`}
