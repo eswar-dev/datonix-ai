@@ -45,15 +45,14 @@ function confidenceColor(c: number) {
 
 export default function DecisionIntelligence() {
   const { user } = useAuth();
+  const role = user?.role ?? "aec_principal";
+  const data = roleData[role].decisionIntelligence;
+
   const [tier] = useState<"lite" | "enterprise">("lite");
   const [viewOption, setViewOption] = useState("missing");
   const [explainIndex, setExplainIndex] = useState<number | null>(null);
   const [predictionRun, setPredictionRun] = useState(false);
   const [forecastRun, setForecastRun] = useState(false);
-
-  if (!user) return null;
-  const data = roleData[user.role].decisionIntelligence;
-
   const [predTargetCol, setPredTargetCol] = useState(data.prediction.defaultTarget);
   const [predForm, setPredForm] = useState(() =>
     Object.fromEntries(data.prediction.inputFields.map((f) => [f.key, f.defaultValue]))
@@ -61,6 +60,8 @@ export default function DecisionIntelligence() {
   const [forecastTarget, setForecastTarget] = useState(data.forecast.defaultTarget);
   const [forecastFreq, setForecastFreq] = useState("Days");
   const [forecastPeriod, setForecastPeriod] = useState("5 days");
+
+  if (!user) return null;
 
   return (
     <div className="space-y-6">
