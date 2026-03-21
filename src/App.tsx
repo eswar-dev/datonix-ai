@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import DataSources from "@/pages/DataSources";
@@ -24,33 +26,37 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner position="bottom-right" />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/data-sources" element={<DataSources />} />
-            <Route path="/bot" element={<BotPage />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Admin />} />
-              <Route path="tenants" element={<Tenants />} />
-              <Route path="organizations" element={<Organizations />} />
-              <Route path="user-roles" element={<UserRoles />} />
-              <Route path="users" element={<Users />} />
-              <Route path="user-sessions" element={<UserSessions />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner position="bottom-right" />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/demo" element={<DatonixDemo />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/data-sources" element={<DataSources />} />
+                <Route path="/bot" element={<BotPage />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<Admin />} />
+                  <Route path="tenants" element={<Tenants />} />
+                  <Route path="organizations" element={<Organizations />} />
+                  <Route path="user-roles" element={<UserRoles />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="user-sessions" element={<UserSessions />} />
+                </Route>
+              </Route>
             </Route>
-          </Route>
-          <Route path="/demo" element={<DatonixDemo />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

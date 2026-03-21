@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import factoryImg from "@/assets/factory-worker.jpg";
 
 function LoginLogo() {
@@ -22,14 +23,22 @@ function LoginLogo() {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/dashboard");
+    setError("");
+    const err = login(email, password);
+    if (err) {
+      setError(err);
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -41,6 +50,12 @@ export default function Login() {
         </div>
 
         <h1 className="mb-6 text-[22px] font-normal" style={{ color: "#222" }}>Login</h1>
+
+        {error && (
+          <div className="mb-4 max-w-[420px] rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="flex flex-col gap-5 max-w-[420px]">
           {/* Email */}
@@ -57,6 +72,7 @@ export default function Login() {
               style={{ borderColor: "#d0d0d0" }}
               onFocus={(e) => (e.target.style.borderColor = "#0099FF")}
               onBlur={(e) => (e.target.style.borderColor = "#d0d0d0")}
+              placeholder="Enter your email"
             />
           </div>
 
@@ -75,6 +91,7 @@ export default function Login() {
                 style={{ borderColor: "#d0d0d0" }}
                 onFocus={(e) => (e.target.style.borderColor = "#0099FF")}
                 onBlur={(e) => (e.target.style.borderColor = "#d0d0d0")}
+                placeholder="Enter your password"
               />
               <button
                 type="button"
@@ -114,7 +131,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Footer */}
         <p className="mt-10 text-xs text-center max-w-[420px]" style={{ color: "#999" }}>
           © All Rights Reserved, AI-PRIORI 2026
         </p>
@@ -122,7 +138,7 @@ export default function Login() {
 
       {/* RIGHT SIDE */}
       <div
-        className="flex w-1/2 flex-col items-center"
+        className="hidden md:flex w-1/2 flex-col items-center"
         style={{ backgroundColor: "#fdfde8", padding: "36px 40px" }}
       >
         <h2

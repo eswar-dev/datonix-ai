@@ -1,22 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Database,
-  LayoutDashboard,
-  Bot,
-  FileText,
-  Brain,
-  Shield,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  Building2,
-  Users,
-  ShieldCheck,
-  Clock,
+  Database, LayoutDashboard, Bot, FileText, Brain, Shield,
+  ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
-import profileAvatar from "@/assets/profile-avatar.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 const mainNavItems = [
   { title: "Data Sources", path: "/data-sources", icon: Database },
@@ -46,14 +35,7 @@ function HexagonLogo({ collapsed }: { collapsed: boolean }) {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Flat-top hexagon, wider than tall */}
-          <path
-            d="M13 2L39 2L52 22L39 42L13 42L0 22Z"
-            stroke="#89D8F8"
-            strokeWidth="2"
-            fill="none"
-          />
-          {/* 7 dots: center biggest, then varying sizes */}
+          <path d="M13 2L39 2L52 22L39 42L13 42L0 22Z" stroke="#89D8F8" strokeWidth="2" fill="none" />
           <circle cx="26" cy="22" r="4.5" fill="#0099FF" />
           <circle cx="36" cy="23" r="3.8" fill="#0099FF" />
           <circle cx="26" cy="12" r="3.5" fill="#0099FF" />
@@ -61,7 +43,6 @@ function HexagonLogo({ collapsed }: { collapsed: boolean }) {
           <circle cx="26" cy="33" r="3.2" fill="#0099FF" />
           <circle cx="36" cy="33" r="1.8" fill="#0099FF" />
           <circle cx="16" cy="12" r="1.4" fill="#0099FF" />
-          {/* Connecting lines */}
           <line x1="26" y1="22" x2="36" y2="23" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
           <line x1="26" y1="22" x2="26" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
           <line x1="26" y1="22" x2="16" y2="22" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
@@ -88,9 +69,15 @@ export function AppSidebar() {
   const { collapsed, toggle } = useSidebarState();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const navItems = isAdminRoute ? adminNavItems : mainNavItems;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <aside
@@ -106,7 +93,7 @@ export function AppSidebar() {
           "flex items-center border-b border-white/[0.06]",
           collapsed ? "justify-center px-2 h-16" : "px-4 h-16"
         )}
-        style={{ background: "#152030", borderRadius: collapsed ? "10px 10px 0 0" : "10px 10px 0 0" }}
+        style={{ background: "#152030", borderRadius: "10px 10px 0 0" }}
       >
         <HexagonLogo collapsed={collapsed} />
       </div>
@@ -117,17 +104,17 @@ export function AppSidebar() {
         collapsed ? "flex justify-center" : "flex items-center gap-3"
       )}>
         <div className="relative h-9 w-9 shrink-0">
-          <img
-            src={profileAvatar}
-            alt="John Doe"
-            className="h-9 w-9 rounded-full object-cover ring-2 ring-white/10"
-          />
+          <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2a4a6a" }}>
+            {user?.initials || "?"}
+          </div>
           <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-400" style={{ borderColor: "#1a2a3a" }} />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-[13px] font-bold text-white truncate">John Doe</p>
-            <p className="text-[11px] truncate" style={{ color: "#7a9ab5" }}>Sales Manager</p>
+            <p className="text-[13px] font-bold text-white truncate">{user?.name || "Guest"}</p>
+            <p className="text-[11px] truncate" style={{ color: "#7a9ab5" }}>
+              {user?.industry} • {user?.title}
+            </p>
           </div>
         )}
       </div>
@@ -180,6 +167,20 @@ export function AppSidebar() {
           );
         })}
       </nav>
+
+      {/* Sign Out */}
+      <button
+        onClick={handleLogout}
+        className={cn(
+          "flex items-center gap-3 border-t border-white/[0.06] px-4 py-3 text-sm font-medium transition-colors hover:bg-white/[0.06]",
+          collapsed ? "justify-center px-2" : ""
+        )}
+        style={{ color: "#8aaec8" }}
+        title="Sign Out"
+      >
+        <LogOut className="h-4 w-4 shrink-0" />
+        {!collapsed && <span>Sign Out</span>}
+      </button>
 
       <button
         onClick={toggle}
