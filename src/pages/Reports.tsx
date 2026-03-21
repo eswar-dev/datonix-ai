@@ -25,11 +25,14 @@ interface MockReport {
 
 export default function Reports() {
   const { user } = useAuth();
+  const [selectedReportId, setSelectedReportId] = useState("1");
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
+  const [search, setSearch] = useState("");
 
   if (!user) return null;
   const data = roleData[user.role].reports;
 
-  // Build report list from role data
   const roleReports: MockReport[] = data.available.map((r, i) => ({
     id: String(i + 1),
     name: r.name,
@@ -38,10 +41,7 @@ export default function Reports() {
     author: user.name,
   }));
 
-  const [selectedReport, setSelectedReport] = useState<MockReport>(roleReports[0]);
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [wizardStep, setWizardStep] = useState(1);
-  const [search, setSearch] = useState("");
+  const selectedReport = roleReports.find((r) => r.id === selectedReportId) || roleReports[0];
 
   const filtered = roleReports.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
