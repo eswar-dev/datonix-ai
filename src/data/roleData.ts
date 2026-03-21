@@ -365,12 +365,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello Alex! I'm Datonix AI, your AEC decision intelligence assistant. I can help analyze project margins, resource utilization, backlog health, and cash flow. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show portfolio margin trends by vertical",
-        "Which projects are at risk of margin erosion?",
-        "Compare resource utilization across teams",
-        "Analyze WIP aging and billing lag",
-        "Forecast cash runway for next 90 days",
-        "Identify underbilled T&M contracts",
+        { text: "Which projects are at risk of margin erosion?", type: "text" },
+        { text: "Explain resource utilization imbalance", type: "text" },
+        { text: "Show project margin breakdown by vertical", type: "table" },
+        { text: "List underbilled T&M contracts", type: "table" },
+        { text: "Show portfolio margin trends by vertical", type: "chart" },
+        { text: "Compare resource utilization across teams", type: "chart" },
       ],
       datasets: [
         { value: "financials", label: "project_financials_q4.csv" },
@@ -383,9 +383,69 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Cash runway projection", pinned: false },
       ],
       mockResponses: {
-        "margin": "Based on your portfolio data, 3 projects are trending below the 8% minimum margin threshold:\n\n| Project | Current Margin | Trend |\n|---------|---------------|-------|\n| Atlas | 11.2% | ↓ Declining |\n| Nexus | 7.8% | ↓ Critical |\n| Solaris | 9.1% | → Flat |\n\nRecommendation: Immediate scope renegotiation on Atlas and Nexus. Combined exposure: $485K.",
-        "resource": "Resource utilization analysis across verticals:\n\n• Civil: 130% (⚠️ OVERLOADED — 14 staff)\n• Commercial: 88% (✅ Optimal)\n• Healthcare: 62% (⚡ Underutilized — 8 staff)\n• Residential: 91% (✅ Optimal)\n\nAction: Cross-assign 2 structural engineers from civil to healthcare to balance load and capture $240K in available healthcare project revenue.",
-        "default": "Based on your query, I analyzed the AEC portfolio data. The dataset shows significant variance in project performance across verticals. Civil projects lead in margin (22.4% avg) but face resource strain at 130% utilization. Healthcare shows growth opportunity with 38% capacity available.",
+        "margin erosion": {
+          type: "text",
+          content: "**3 projects are at risk of margin erosion:**\n\n1. **Project Atlas** — Current margin at 11.2%, declining steadily over the last 3 months due to uncontrolled scope creep. Burn rate is 11% above plan.\n\n2. **Project Nexus** — Margin has dropped to 7.8% (below the 8% critical threshold). WIP aging at 45+ days with $408K exposure.\n\n3. **Project Solaris** — Margin flat at 9.1% but trending toward the threshold. Change order processing lag of 18 days is eroding effective margin.\n\n**Recommendation:** Immediate scope renegotiation on Atlas and Nexus. Combined exposure: $485K. Implement mandatory scope change impact assessments."
+        },
+        "resource utilization imbalance": {
+          type: "text",
+          content: "**Resource Utilization Imbalance Analysis:**\n\nSignificant imbalance detected across verticals:\n\n• **Civil:** 130% utilization (⚠️ OVERLOADED — 14 staff) — Overtime costs increased 45% this quarter\n• **Commercial:** 88% (✅ Optimal)\n• **Healthcare:** 62% (⚡ Underutilized — 8 staff, capacity available)\n• **Residential:** 91% (✅ Optimal)\n\n**Root Cause:** Civil vertical has won 3 large infrastructure projects without proportional hiring. Healthcare is ramping down a project phase.\n\n**Action:** Cross-assign 2-3 structural engineers from civil to healthcare. Hire 1 mid-level civil engineer within 30 days. This could improve overall margins by 4%."
+        },
+        "margin breakdown": {
+          type: "table",
+          content: "Here's the project margin breakdown across all active verticals:",
+          tableHeaders: ["Vertical", "Avg Margin", "# Projects", "At Risk", "Trend"],
+          tableRows: [
+            ["Civil", "22.4%", "12", "0", "↑ Stable"],
+            ["Commercial", "18.1%", "15", "1", "→ Flat"],
+            ["Healthcare", "11.2%", "8", "2", "↓ Declining"],
+            ["Residential", "19.8%", "7", "0", "↑ Growing"],
+            ["Infrastructure", "15.6%", "5", "0", "→ Flat"],
+          ]
+        },
+        "underbilled": {
+          type: "table",
+          content: "The following T&M contracts have significant unbilled revenue:",
+          tableHeaders: ["Project", "Contract Value", "Unbilled Amount", "Billing Lag (Days)", "Priority"],
+          tableRows: [
+            ["Project Helios", "$95,000", "$68,200", "34", "🔴 Critical"],
+            ["Project Atlas", "$245,000", "$112,400", "22", "🔴 High"],
+            ["Project Nexus", "$180,000", "$78,600", "18", "🟡 Medium"],
+            ["Project HC-Med", "$150,000", "$64,200", "15", "🟡 Medium"],
+            ["Project Bridge", "$280,000", "$56,800", "12", "🟢 Low"],
+          ]
+        },
+        "margin trends": {
+          type: "chart",
+          content: "Portfolio margin trends over the last 6 months by vertical:",
+          chartTitle: "Portfolio Margin Trends by Vertical",
+          chartInfo: "This chart shows the monthly average margin percentage for each vertical. Civil leads at 22.4% while Healthcare is declining and needs attention. The dashed line represents the 8% minimum threshold.",
+          chartData: [
+            { name: "Jan", value: 17.2 },
+            { name: "Feb", value: 17.8 },
+            { name: "Mar", value: 18.4 },
+            { name: "Apr", value: 17.6 },
+            { name: "May", value: 18.0 },
+            { name: "Jun", value: 18.4 },
+          ]
+        },
+        "resource utilization across": {
+          type: "chart",
+          content: "Resource utilization comparison across verticals (target: 85%):",
+          chartTitle: "Resource Utilization by Vertical",
+          chartInfo: "This bar chart shows current utilization rates across verticals. The optimal range is 80-90%. Civil at 130% indicates critical overload with burnout risk. Healthcare at 62% represents untapped capacity.",
+          chartData: [
+            { name: "Civil", value: 130 },
+            { name: "Commercial", value: 88 },
+            { name: "Healthcare", value: 62 },
+            { name: "Residential", value: 91 },
+            { name: "Infrastructure", value: 84 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the AEC portfolio data. The dataset shows significant variance in project performance across verticals.\n\n**Key Findings:**\n• Civil projects lead in margin (22.4% avg) but face resource strain at 130% utilization\n• Healthcare shows growth opportunity with 38% capacity available\n• 3 projects trending below 8% margin threshold\n• $380K in unbilled T&M revenue needs immediate billing action\n\nWould you like me to dive deeper into any of these areas?"
+        },
       },
     },
     administration: {
