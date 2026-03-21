@@ -65,6 +65,21 @@ interface ForecastConfig {
   insightText: string;
 }
 
+export interface BotResponse {
+  type: "text" | "table" | "chart";
+  content: string;
+  chartData?: { name: string; value: number }[];
+  chartTitle?: string;
+  chartInfo?: string;
+  tableHeaders?: string[];
+  tableRows?: string[][];
+}
+
+export interface SuggestedPrompt {
+  text: string;
+  type: "text" | "table" | "chart";
+}
+
 interface RoleDataShape {
   dashboard: {
     stats: { label: string; value: string; change: string; trend: "up" | "down" }[];
@@ -101,10 +116,10 @@ interface RoleDataShape {
   };
   botConfig: {
     greeting: string;
-    suggestedPrompts: string[];
+    suggestedPrompts: SuggestedPrompt[];
     datasets: { value: string; label: string }[];
     chatHistory: { id: string; title: string; pinned: boolean }[];
-    mockResponses: Record<string, string>;
+    mockResponses: Record<string, BotResponse>;
   };
   administration: {
     users: { name: string; role: string; status: string; lastLogin: string }[];
@@ -350,12 +365,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello Alex! I'm Datonix AI, your AEC decision intelligence assistant. I can help analyze project margins, resource utilization, backlog health, and cash flow. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show portfolio margin trends by vertical",
-        "Which projects are at risk of margin erosion?",
-        "Compare resource utilization across teams",
-        "Analyze WIP aging and billing lag",
-        "Forecast cash runway for next 90 days",
-        "Identify underbilled T&M contracts",
+        { text: "Which projects are at risk of margin erosion?", type: "text" },
+        { text: "Explain resource utilization imbalance", type: "text" },
+        { text: "Show project margin breakdown by vertical", type: "table" },
+        { text: "List underbilled T&M contracts", type: "table" },
+        { text: "Show portfolio margin trends by vertical", type: "chart" },
+        { text: "Compare resource utilization across teams", type: "chart" },
       ],
       datasets: [
         { value: "financials", label: "project_financials_q4.csv" },
@@ -368,9 +383,69 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Cash runway projection", pinned: false },
       ],
       mockResponses: {
-        "margin": "Based on your portfolio data, 3 projects are trending below the 8% minimum margin threshold:\n\n| Project | Current Margin | Trend |\n|---------|---------------|-------|\n| Atlas | 11.2% | ↓ Declining |\n| Nexus | 7.8% | ↓ Critical |\n| Solaris | 9.1% | → Flat |\n\nRecommendation: Immediate scope renegotiation on Atlas and Nexus. Combined exposure: $485K.",
-        "resource": "Resource utilization analysis across verticals:\n\n• Civil: 130% (⚠️ OVERLOADED — 14 staff)\n• Commercial: 88% (✅ Optimal)\n• Healthcare: 62% (⚡ Underutilized — 8 staff)\n• Residential: 91% (✅ Optimal)\n\nAction: Cross-assign 2 structural engineers from civil to healthcare to balance load and capture $240K in available healthcare project revenue.",
-        "default": "Based on your query, I analyzed the AEC portfolio data. The dataset shows significant variance in project performance across verticals. Civil projects lead in margin (22.4% avg) but face resource strain at 130% utilization. Healthcare shows growth opportunity with 38% capacity available.",
+        "margin erosion": {
+          type: "text",
+          content: "**3 projects are at risk of margin erosion:**\n\n1. **Project Atlas** — Current margin at 11.2%, declining steadily over the last 3 months due to uncontrolled scope creep. Burn rate is 11% above plan.\n\n2. **Project Nexus** — Margin has dropped to 7.8% (below the 8% critical threshold). WIP aging at 45+ days with $408K exposure.\n\n3. **Project Solaris** — Margin flat at 9.1% but trending toward the threshold. Change order processing lag of 18 days is eroding effective margin.\n\n**Recommendation:** Immediate scope renegotiation on Atlas and Nexus. Combined exposure: $485K. Implement mandatory scope change impact assessments."
+        },
+        "resource utilization imbalance": {
+          type: "text",
+          content: "**Resource Utilization Imbalance Analysis:**\n\nSignificant imbalance detected across verticals:\n\n• **Civil:** 130% utilization (⚠️ OVERLOADED — 14 staff) — Overtime costs increased 45% this quarter\n• **Commercial:** 88% (✅ Optimal)\n• **Healthcare:** 62% (⚡ Underutilized — 8 staff, capacity available)\n• **Residential:** 91% (✅ Optimal)\n\n**Root Cause:** Civil vertical has won 3 large infrastructure projects without proportional hiring. Healthcare is ramping down a project phase.\n\n**Action:** Cross-assign 2-3 structural engineers from civil to healthcare. Hire 1 mid-level civil engineer within 30 days. This could improve overall margins by 4%."
+        },
+        "margin breakdown": {
+          type: "table",
+          content: "Here's the project margin breakdown across all active verticals:",
+          tableHeaders: ["Vertical", "Avg Margin", "# Projects", "At Risk", "Trend"],
+          tableRows: [
+            ["Civil", "22.4%", "12", "0", "↑ Stable"],
+            ["Commercial", "18.1%", "15", "1", "→ Flat"],
+            ["Healthcare", "11.2%", "8", "2", "↓ Declining"],
+            ["Residential", "19.8%", "7", "0", "↑ Growing"],
+            ["Infrastructure", "15.6%", "5", "0", "→ Flat"],
+          ]
+        },
+        "underbilled": {
+          type: "table",
+          content: "The following T&M contracts have significant unbilled revenue:",
+          tableHeaders: ["Project", "Contract Value", "Unbilled Amount", "Billing Lag (Days)", "Priority"],
+          tableRows: [
+            ["Project Helios", "$95,000", "$68,200", "34", "🔴 Critical"],
+            ["Project Atlas", "$245,000", "$112,400", "22", "🔴 High"],
+            ["Project Nexus", "$180,000", "$78,600", "18", "🟡 Medium"],
+            ["Project HC-Med", "$150,000", "$64,200", "15", "🟡 Medium"],
+            ["Project Bridge", "$280,000", "$56,800", "12", "🟢 Low"],
+          ]
+        },
+        "margin trends": {
+          type: "chart",
+          content: "Portfolio margin trends over the last 6 months by vertical:",
+          chartTitle: "Portfolio Margin Trends by Vertical",
+          chartInfo: "This chart shows the monthly average margin percentage for each vertical. Civil leads at 22.4% while Healthcare is declining and needs attention. The dashed line represents the 8% minimum threshold.",
+          chartData: [
+            { name: "Jan", value: 17.2 },
+            { name: "Feb", value: 17.8 },
+            { name: "Mar", value: 18.4 },
+            { name: "Apr", value: 17.6 },
+            { name: "May", value: 18.0 },
+            { name: "Jun", value: 18.4 },
+          ]
+        },
+        "resource utilization across": {
+          type: "chart",
+          content: "Resource utilization comparison across verticals (target: 85%):",
+          chartTitle: "Resource Utilization by Vertical",
+          chartInfo: "This bar chart shows current utilization rates across verticals. The optimal range is 80-90%. Civil at 130% indicates critical overload with burnout risk. Healthcare at 62% represents untapped capacity.",
+          chartData: [
+            { name: "Civil", value: 130 },
+            { name: "Commercial", value: 88 },
+            { name: "Healthcare", value: 62 },
+            { name: "Residential", value: 91 },
+            { name: "Infrastructure", value: 84 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the AEC portfolio data. The dataset shows significant variance in project performance across verticals.\n\n**Key Findings:**\n• Civil projects lead in margin (22.4% avg) but face resource strain at 130% utilization\n• Healthcare shows growth opportunity with 38% capacity available\n• 3 projects trending below 8% margin threshold\n• $380K in unbilled T&M revenue needs immediate billing action\n\nWould you like me to dive deeper into any of these areas?"
+        },
       },
     },
     administration: {
@@ -622,12 +697,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello Sarah! I'm Datonix AI, your manufacturing intelligence assistant. I can help analyze OEE, machine health, scrap rates, and production optimization. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show OEE breakdown by machine",
-        "Predict Machine 4 failure timeline",
-        "Analyze scrap rate by shift and line",
-        "Compare energy cost across production periods",
-        "Optimize production schedule for Order 1134",
-        "Show inventory levels for critical SKUs",
+        { text: "Predict Machine 4 failure timeline", type: "text" },
+        { text: "What's causing the scrap spike on Line B?", type: "text" },
+        { text: "Show OEE breakdown by machine", type: "table" },
+        { text: "Show inventory levels for critical SKUs", type: "table" },
+        { text: "Show OEE trend over the last 12 months", type: "chart" },
+        { text: "Compare energy cost across production periods", type: "chart" },
       ],
       datasets: [
         { value: "telemetry", label: "machine_telemetry_jan.csv" },
@@ -640,9 +715,76 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Energy cost optimization", pinned: false },
       ],
       mockResponses: {
-        "oee": "OEE breakdown for current month:\n\n| Machine | Availability | Performance | Quality | OEE |\n|---------|-------------|-------------|---------|-----|\n| MCH-001 | 94% | 96% | 99.1% | 89.4% |\n| MCH-002 | 91% | 95% | 98.8% | 85.4% |\n| MCH-003 | 88% | 93% | 97.2% | 79.5% |\n| MCH-004 | 68% | 89% | 96.4% | 58.3% |\n| MCH-005 | 92% | 94% | 98.6% | 85.2% |\n\n⚠️ Machine 4 is the primary OEE drag. Bearing maintenance would restore availability to ~92%, improving plant OEE to 78%.",
-        "scrap": "Scrap analysis by shift on Line B:\n\n• Shift A: 1.2% defect rate (within target)\n• Shift B: 1.6% defect rate (within target)\n• Shift C: 4.8% defect rate (⚠️ 3x above target)\n\nRoot cause: Parameter drift during shift handover. 78% of defects occur in first 45 minutes after Shift C starts. Monthly impact: £24,800.",
-        "default": "Based on your query, I analyzed the manufacturing telemetry data. The plant is operating at 72% OEE, below the 80% target. Primary drivers: Machine 4 availability (68%) and Line B quality issues (Shift C). Two actionable improvements could recover 8+ OEE points.",
+        "machine 4 failure": {
+          type: "text",
+          content: "**Machine 4 Failure Prediction:**\n\nBased on IoT vibration sensor analysis using FFT pattern matching:\n\n• **Failure Probability:** 73% within 48 hours\n• **Vibration amplitude** increased 340% in the 2.5kHz band over 72 hours\n• **Temperature delta** between bearing housing and ambient exceeded 12°C\n• **Pattern match:** 91% similarity with 3 previous Machine 4 failures\n\n**Cost Comparison:**\n• Planned repair: £2,400 (4-hour downtime)\n• Unplanned failure: £18,000 + 3 days downtime\n\n**Recommendation:** Schedule planned maintenance within 48 hours. Pre-order replacement bearing assembly (4-hour lead time from local supplier). Shift Machine 4 workload to Machines 2 and 5."
+        },
+        "scrap spike": {
+          type: "text",
+          content: "**Line B Scrap Spike Root Cause Analysis:**\n\nThe scrap rate anomaly is **systemic, not isolated**, driven by the Shift C handover process:\n\n• **Shift A:** 1.2% defect rate (within target)\n• **Shift B:** 1.6% defect rate (within target)\n• **Shift C:** 4.8% defect rate (⚠️ 3x above target)\n\n**Root Cause:** Machine parameters drift by 5-8% during shift change without recalibration. 78% of Shift C defects occur in the first 45 minutes after handover.\n\n**Monthly Impact:** £24,800 in scrap costs from Shift C alone.\n\n**Actions:**\n1. Implement mandatory machine recalibration checklist at each shift handover\n2. Reassign experienced Operator A to supervise Shift C for 2-week training\n3. Increase shift overlap from 5 to 15 minutes"
+        },
+        "oee breakdown": {
+          type: "table",
+          content: "OEE breakdown by machine for the current month:",
+          tableHeaders: ["Machine", "Availability", "Performance", "Quality", "OEE", "Status"],
+          tableRows: [
+            ["MCH-001", "94%", "96%", "99.1%", "89.4%", "✅ Optimal"],
+            ["MCH-002", "91%", "95%", "98.8%", "85.4%", "✅ Optimal"],
+            ["MCH-003", "88%", "93%", "97.2%", "79.5%", "🟡 Below Target"],
+            ["MCH-004", "68%", "89%", "96.4%", "58.3%", "🔴 Critical"],
+            ["MCH-005", "92%", "94%", "98.6%", "85.2%", "✅ Optimal"],
+          ]
+        },
+        "inventory levels": {
+          type: "table",
+          content: "Critical SKU inventory status:",
+          tableHeaders: ["SKU", "Description", "Current Stock", "Safety Level", "Days to Stockout", "Status"],
+          tableRows: [
+            ["SKU-2241", "Bearing Assembly M4", "12", "50", "3", "🔴 Critical"],
+            ["SKU-4412", "Drive Belt B-Type", "84", "40", "14", "✅ OK"],
+            ["SKU-1108", "Sensor Module V2", "8", "20", "5", "🟡 Low"],
+            ["SKU-3305", "Coolant Filter Pack", "120", "30", "28", "✅ OK"],
+            ["SKU-5590", "Hydraulic Seal Kit", "6", "15", "4", "🔴 Critical"],
+          ]
+        },
+        "oee trend": {
+          type: "chart",
+          content: "OEE trend over the last 12 months vs the 80% target:",
+          chartTitle: "OEE Trend vs Target (80%)",
+          chartInfo: "This chart tracks monthly Overall Equipment Effectiveness. OEE has been declining since March, primarily driven by Machine 4 availability issues. The 80% target line represents the plant benchmark. Current OEE of 72% represents an 8-point gap.",
+          chartData: [
+            { name: "Jan", value: 78 },
+            { name: "Feb", value: 79 },
+            { name: "Mar", value: 81 },
+            { name: "Apr", value: 77 },
+            { name: "May", value: 75 },
+            { name: "Jun", value: 76 },
+            { name: "Jul", value: 80 },
+            { name: "Aug", value: 74 },
+            { name: "Sep", value: 73 },
+            { name: "Oct", value: 72 },
+            { name: "Nov", value: 71 },
+            { name: "Dec", value: 72 },
+          ]
+        },
+        "energy cost": {
+          type: "chart",
+          content: "Energy cost per unit across production periods:",
+          chartTitle: "Energy Cost per Unit (£)",
+          chartInfo: "This chart shows energy cost variations by production period. Peak tariff hours (8am-6pm) cost £0.28/kWh vs off-peak (10pm-6am) at £0.14/kWh. Shifting 30% of non-urgent production to off-peak could save £38,400 annually.",
+          chartData: [
+            { name: "6am-10am", value: 3.80 },
+            { name: "10am-2pm", value: 4.50 },
+            { name: "2pm-6pm", value: 4.60 },
+            { name: "6pm-10pm", value: 4.10 },
+            { name: "10pm-2am", value: 2.90 },
+            { name: "2am-6am", value: 2.70 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the manufacturing telemetry data.\n\n**Key Findings:**\n• Plant OEE at 72% — below the 80% target\n• Machine 4 availability at 68% is the primary drag\n• Line B Shift C scrap rate at 4.8% (3x above target)\n• Energy cost per unit trending 12% above budget\n\n**Two actionable improvements could recover 8+ OEE points:**\n1. Machine 4 bearing maintenance → +6 OEE points\n2. Shift C handover process fix → +2 OEE points\n\nWould you like me to drill into any of these areas?"
+        },
       },
     },
     administration: {
@@ -894,12 +1036,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello James! I'm Datonix AI, your retail operations intelligence assistant. I can help analyze store performance, shrink patterns, inventory health, and workforce optimization. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show shrink trends by store and department",
-        "Identify return abuse patterns across stores",
-        "Analyze dead stock aging by category",
-        "Compare staff-to-sales ratios across regions",
-        "Predict weekend shrink risk for Store 14",
-        "Generate Footwear clearance recommendation",
+        { text: "What's causing shrink at Store 14?", type: "text" },
+        { text: "Generate Footwear clearance recommendation", type: "text" },
+        { text: "Show shrink analysis by store", type: "table" },
+        { text: "List return abuse patterns by store", type: "table" },
+        { text: "Show shrink trends by store and department", type: "chart" },
+        { text: "Compare staff-to-sales ratios across regions", type: "chart" },
       ],
       datasets: [
         { value: "epos", label: "epos_transactions_q4.csv" },
@@ -912,9 +1054,73 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Footwear dead stock review", pinned: false },
       ],
       mockResponses: {
-        "shrink": "Shrink analysis by store (top 5 highest):\n\n| Store | Shrink Rate | vs Network | Primary Dept |\n|-------|------------|------------|-------------|\n| Store 14 | 3.3% | +18% | Accessories |\n| Store 21 | 3.0% | +7% | Electronics |\n| Store 8 | 2.9% | +4% | Accessories |\n| Store 12 | 2.8% | 0% | Footwear |\n| Store 5 | 2.7% | -4% | General |\n\n⚠️ Store 14 requires immediate LP intervention. Weekend pattern (Sat 2-5pm) with no LP coverage.",
-        "return": "Return abuse analysis — North Region:\n\n• 847 suspicious returns flagged\n• 3 SKUs targeted: Headphones (£299), Bags (£450), Watches (£349)\n• 14 customer IDs appear across all 3 stores\n• Estimated annual exposure: £92K\n\nRecommendation: Implement ID verification for returns > £100. Cap receipt-free returns at 2/month.",
-        "default": "Based on your query, I analyzed the retail operations data. The network is showing elevated shrink at 2.8% (target: 2.0%), with Store 14 as the primary outlier. Return abuse in North Region adds £92K annual exposure. Footwear dead stock at £84K needs clearance action this week.",
+        "shrink at store 14": {
+          type: "text",
+          content: "**Store 14 Shrink Root Cause Analysis:**\n\nStore 14 exhibits a **structured external theft pattern** — not random loss:\n\n• **Annual shrink:** £180K (18% above network average)\n• **When:** 82% of events on weekends between 2pm-5pm\n• **Where:** Accessories department (64% of total shrink vs 18% network avg)\n• **Why:** LP officer coverage drops to 0 between 2-5pm on Saturdays due to break scheduling\n\n**Recommended Actions:**\n1. Deploy area manager for immediate weekend LP coverage\n2. Implement EAS tagging for Accessories > £30\n3. Adjust LP break schedules to maintain coverage during peak theft windows\n4. Consider covert CCTV upgrade in Accessories department\n\n**Estimated annual savings if implemented:** £28K"
+        },
+        "footwear clearance": {
+          type: "text",
+          content: "**Footwear Dead Stock Clearance Recommendation:**\n\n**Current Situation:**\n• 312 SKUs aged > 90 days, total value: £84K at cost\n• Current sell-through rate at full price: 2.1%/week (vs category avg 8.4%)\n• Shelf space opportunity cost: £120K in lost Q1 revenue if not cleared\n\n**Recommended Strategy: 40% Markdown Campaign**\n• Historical performance: 40% discount clears 78% of dead stock within 2 weeks\n• Estimated recovery: £50K (60% cost recovery)\n• Freed shelf space value: £120K in Spring/Summer collection revenue\n\n**Implementation:**\n1. Launch clearance this week across all 28 affected stores\n2. Position displays at front-of-store during weekend traffic\n3. Bundle with email/SMS campaign to loyalty members\n4. Set automatic further markdown to 60% after 7 days for remaining items"
+        },
+        "shrink analysis by store": {
+          type: "table",
+          content: "Shrink analysis across the top stores by loss rate:",
+          tableHeaders: ["Store", "Shrink Rate", "vs Network", "Primary Dept", "Peak Time", "Action"],
+          tableRows: [
+            ["Store 14", "3.3%", "+18%", "Accessories", "Sat 2-5pm", "🔴 Urgent LP"],
+            ["Store 21", "3.0%", "+7%", "Electronics", "Fri evening", "🟡 Monitor"],
+            ["Store 8", "2.9%", "+4%", "Accessories", "Weekend", "🟡 Audit"],
+            ["Store 12", "2.8%", "0%", "Footwear", "Weekday", "🟢 Normal"],
+            ["Store 5", "2.7%", "-4%", "General", "Mixed", "🟢 Normal"],
+          ]
+        },
+        "return abuse": {
+          type: "table",
+          content: "Return abuse patterns detected in the North Region:",
+          tableHeaders: ["Store", "Flagged Returns", "Top SKU", "Avg Value", "Repeat Customers", "Risk Level"],
+          tableRows: [
+            ["Store 8", "312", "Headphones (£299)", "£299", "6", "🔴 High"],
+            ["Store 12", "284", "Designer Bags (£450)", "£428", "5", "🔴 High"],
+            ["Store 21", "251", "Smart Watches (£349)", "£349", "3", "🟡 Medium"],
+          ]
+        },
+        "shrink trends": {
+          type: "chart",
+          content: "Network shrink rate trend over the last 12 months vs benchmark:",
+          chartTitle: "Network Shrink Rate vs 2.0% Benchmark",
+          chartInfo: "This chart shows the monthly network-wide shrink rate trending upward from 2.1% to 2.8% over 12 months. The 2.0% benchmark line represents the industry target. Store 14 is the primary contributor to the upward trend. LP intervention is expected to reduce the rate by 0.3% if implemented.",
+          chartData: [
+            { name: "Jan", value: 2.1 },
+            { name: "Feb", value: 2.0 },
+            { name: "Mar", value: 2.2 },
+            { name: "Apr", value: 2.3 },
+            { name: "May", value: 2.4 },
+            { name: "Jun", value: 2.3 },
+            { name: "Jul", value: 2.5 },
+            { name: "Aug", value: 2.6 },
+            { name: "Sep", value: 2.7 },
+            { name: "Oct", value: 2.8 },
+            { name: "Nov", value: 2.9 },
+            { name: "Dec", value: 2.8 },
+          ]
+        },
+        "staff-to-sales": {
+          type: "chart",
+          content: "Staff-to-sales ratio comparison across regions:",
+          chartTitle: "Staff-to-Sales Ratio by Region (£ per staff hour)",
+          chartInfo: "This chart compares revenue generated per staff hour across regions. South leads at £142/hour while North lags at £98/hour, partly due to shrink losses. The network average is £118/hour. Optimizing North Region staffing could improve ratio by 15%.",
+          chartData: [
+            { name: "North", value: 98 },
+            { name: "South", value: 142 },
+            { name: "East", value: 112 },
+            { name: "West", value: 128 },
+            { name: "Central", value: 118 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the retail operations data.\n\n**Key Findings:**\n• Network shrink at 2.8% — significantly above the 2.0% target\n• Store 14 is the primary outlier with structured external theft patterns\n• Return abuse in North Region exposes £92K annually across 3 stores\n• Footwear dead stock at £84K needs clearance action this week\n\n**Priority Actions:**\n1. Deploy LP coverage at Store 14 weekends → saves £28K/year\n2. Implement return policy tightening in North → saves £92K/year\n3. Launch Footwear clearance → recovers £50K\n\nWould you like me to drill into any specific area?"
+        },
       },
     },
     administration: {
