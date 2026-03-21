@@ -697,12 +697,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello Sarah! I'm Datonix AI, your manufacturing intelligence assistant. I can help analyze OEE, machine health, scrap rates, and production optimization. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show OEE breakdown by machine",
-        "Predict Machine 4 failure timeline",
-        "Analyze scrap rate by shift and line",
-        "Compare energy cost across production periods",
-        "Optimize production schedule for Order 1134",
-        "Show inventory levels for critical SKUs",
+        { text: "Predict Machine 4 failure timeline", type: "text" },
+        { text: "What's causing the scrap spike on Line B?", type: "text" },
+        { text: "Show OEE breakdown by machine", type: "table" },
+        { text: "Show inventory levels for critical SKUs", type: "table" },
+        { text: "Show OEE trend over the last 12 months", type: "chart" },
+        { text: "Compare energy cost across production periods", type: "chart" },
       ],
       datasets: [
         { value: "telemetry", label: "machine_telemetry_jan.csv" },
@@ -715,9 +715,76 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Energy cost optimization", pinned: false },
       ],
       mockResponses: {
-        "oee": "OEE breakdown for current month:\n\n| Machine | Availability | Performance | Quality | OEE |\n|---------|-------------|-------------|---------|-----|\n| MCH-001 | 94% | 96% | 99.1% | 89.4% |\n| MCH-002 | 91% | 95% | 98.8% | 85.4% |\n| MCH-003 | 88% | 93% | 97.2% | 79.5% |\n| MCH-004 | 68% | 89% | 96.4% | 58.3% |\n| MCH-005 | 92% | 94% | 98.6% | 85.2% |\n\n⚠️ Machine 4 is the primary OEE drag. Bearing maintenance would restore availability to ~92%, improving plant OEE to 78%.",
-        "scrap": "Scrap analysis by shift on Line B:\n\n• Shift A: 1.2% defect rate (within target)\n• Shift B: 1.6% defect rate (within target)\n• Shift C: 4.8% defect rate (⚠️ 3x above target)\n\nRoot cause: Parameter drift during shift handover. 78% of defects occur in first 45 minutes after Shift C starts. Monthly impact: £24,800.",
-        "default": "Based on your query, I analyzed the manufacturing telemetry data. The plant is operating at 72% OEE, below the 80% target. Primary drivers: Machine 4 availability (68%) and Line B quality issues (Shift C). Two actionable improvements could recover 8+ OEE points.",
+        "machine 4 failure": {
+          type: "text",
+          content: "**Machine 4 Failure Prediction:**\n\nBased on IoT vibration sensor analysis using FFT pattern matching:\n\n• **Failure Probability:** 73% within 48 hours\n• **Vibration amplitude** increased 340% in the 2.5kHz band over 72 hours\n• **Temperature delta** between bearing housing and ambient exceeded 12°C\n• **Pattern match:** 91% similarity with 3 previous Machine 4 failures\n\n**Cost Comparison:**\n• Planned repair: £2,400 (4-hour downtime)\n• Unplanned failure: £18,000 + 3 days downtime\n\n**Recommendation:** Schedule planned maintenance within 48 hours. Pre-order replacement bearing assembly (4-hour lead time from local supplier). Shift Machine 4 workload to Machines 2 and 5."
+        },
+        "scrap spike": {
+          type: "text",
+          content: "**Line B Scrap Spike Root Cause Analysis:**\n\nThe scrap rate anomaly is **systemic, not isolated**, driven by the Shift C handover process:\n\n• **Shift A:** 1.2% defect rate (within target)\n• **Shift B:** 1.6% defect rate (within target)\n• **Shift C:** 4.8% defect rate (⚠️ 3x above target)\n\n**Root Cause:** Machine parameters drift by 5-8% during shift change without recalibration. 78% of Shift C defects occur in the first 45 minutes after handover.\n\n**Monthly Impact:** £24,800 in scrap costs from Shift C alone.\n\n**Actions:**\n1. Implement mandatory machine recalibration checklist at each shift handover\n2. Reassign experienced Operator A to supervise Shift C for 2-week training\n3. Increase shift overlap from 5 to 15 minutes"
+        },
+        "oee breakdown": {
+          type: "table",
+          content: "OEE breakdown by machine for the current month:",
+          tableHeaders: ["Machine", "Availability", "Performance", "Quality", "OEE", "Status"],
+          tableRows: [
+            ["MCH-001", "94%", "96%", "99.1%", "89.4%", "✅ Optimal"],
+            ["MCH-002", "91%", "95%", "98.8%", "85.4%", "✅ Optimal"],
+            ["MCH-003", "88%", "93%", "97.2%", "79.5%", "🟡 Below Target"],
+            ["MCH-004", "68%", "89%", "96.4%", "58.3%", "🔴 Critical"],
+            ["MCH-005", "92%", "94%", "98.6%", "85.2%", "✅ Optimal"],
+          ]
+        },
+        "inventory levels": {
+          type: "table",
+          content: "Critical SKU inventory status:",
+          tableHeaders: ["SKU", "Description", "Current Stock", "Safety Level", "Days to Stockout", "Status"],
+          tableRows: [
+            ["SKU-2241", "Bearing Assembly M4", "12", "50", "3", "🔴 Critical"],
+            ["SKU-4412", "Drive Belt B-Type", "84", "40", "14", "✅ OK"],
+            ["SKU-1108", "Sensor Module V2", "8", "20", "5", "🟡 Low"],
+            ["SKU-3305", "Coolant Filter Pack", "120", "30", "28", "✅ OK"],
+            ["SKU-5590", "Hydraulic Seal Kit", "6", "15", "4", "🔴 Critical"],
+          ]
+        },
+        "oee trend": {
+          type: "chart",
+          content: "OEE trend over the last 12 months vs the 80% target:",
+          chartTitle: "OEE Trend vs Target (80%)",
+          chartInfo: "This chart tracks monthly Overall Equipment Effectiveness. OEE has been declining since March, primarily driven by Machine 4 availability issues. The 80% target line represents the plant benchmark. Current OEE of 72% represents an 8-point gap.",
+          chartData: [
+            { name: "Jan", value: 78 },
+            { name: "Feb", value: 79 },
+            { name: "Mar", value: 81 },
+            { name: "Apr", value: 77 },
+            { name: "May", value: 75 },
+            { name: "Jun", value: 76 },
+            { name: "Jul", value: 80 },
+            { name: "Aug", value: 74 },
+            { name: "Sep", value: 73 },
+            { name: "Oct", value: 72 },
+            { name: "Nov", value: 71 },
+            { name: "Dec", value: 72 },
+          ]
+        },
+        "energy cost": {
+          type: "chart",
+          content: "Energy cost per unit across production periods:",
+          chartTitle: "Energy Cost per Unit (£)",
+          chartInfo: "This chart shows energy cost variations by production period. Peak tariff hours (8am-6pm) cost £0.28/kWh vs off-peak (10pm-6am) at £0.14/kWh. Shifting 30% of non-urgent production to off-peak could save £38,400 annually.",
+          chartData: [
+            { name: "6am-10am", value: 3.80 },
+            { name: "10am-2pm", value: 4.50 },
+            { name: "2pm-6pm", value: 4.60 },
+            { name: "6pm-10pm", value: 4.10 },
+            { name: "10pm-2am", value: 2.90 },
+            { name: "2am-6am", value: 2.70 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the manufacturing telemetry data.\n\n**Key Findings:**\n• Plant OEE at 72% — below the 80% target\n• Machine 4 availability at 68% is the primary drag\n• Line B Shift C scrap rate at 4.8% (3x above target)\n• Energy cost per unit trending 12% above budget\n\n**Two actionable improvements could recover 8+ OEE points:**\n1. Machine 4 bearing maintenance → +6 OEE points\n2. Shift C handover process fix → +2 OEE points\n\nWould you like me to drill into any of these areas?"
+        },
       },
     },
     administration: {
