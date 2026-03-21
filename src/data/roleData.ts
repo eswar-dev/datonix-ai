@@ -1036,12 +1036,12 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
     botConfig: {
       greeting: "Hello James! I'm Datonix AI, your retail operations intelligence assistant. I can help analyze store performance, shrink patterns, inventory health, and workforce optimization. Select a dataset and ask me anything.",
       suggestedPrompts: [
-        "Show shrink trends by store and department",
-        "Identify return abuse patterns across stores",
-        "Analyze dead stock aging by category",
-        "Compare staff-to-sales ratios across regions",
-        "Predict weekend shrink risk for Store 14",
-        "Generate Footwear clearance recommendation",
+        { text: "What's causing shrink at Store 14?", type: "text" },
+        { text: "Generate Footwear clearance recommendation", type: "text" },
+        { text: "Show shrink analysis by store", type: "table" },
+        { text: "List return abuse patterns by store", type: "table" },
+        { text: "Show shrink trends by store and department", type: "chart" },
+        { text: "Compare staff-to-sales ratios across regions", type: "chart" },
       ],
       datasets: [
         { value: "epos", label: "epos_transactions_q4.csv" },
@@ -1054,9 +1054,73 @@ export const roleData: Record<RoleKey, RoleDataShape> = {
         { id: "3", title: "Footwear dead stock review", pinned: false },
       ],
       mockResponses: {
-        "shrink": "Shrink analysis by store (top 5 highest):\n\n| Store | Shrink Rate | vs Network | Primary Dept |\n|-------|------------|------------|-------------|\n| Store 14 | 3.3% | +18% | Accessories |\n| Store 21 | 3.0% | +7% | Electronics |\n| Store 8 | 2.9% | +4% | Accessories |\n| Store 12 | 2.8% | 0% | Footwear |\n| Store 5 | 2.7% | -4% | General |\n\n⚠️ Store 14 requires immediate LP intervention. Weekend pattern (Sat 2-5pm) with no LP coverage.",
-        "return": "Return abuse analysis — North Region:\n\n• 847 suspicious returns flagged\n• 3 SKUs targeted: Headphones (£299), Bags (£450), Watches (£349)\n• 14 customer IDs appear across all 3 stores\n• Estimated annual exposure: £92K\n\nRecommendation: Implement ID verification for returns > £100. Cap receipt-free returns at 2/month.",
-        "default": "Based on your query, I analyzed the retail operations data. The network is showing elevated shrink at 2.8% (target: 2.0%), with Store 14 as the primary outlier. Return abuse in North Region adds £92K annual exposure. Footwear dead stock at £84K needs clearance action this week.",
+        "shrink at store 14": {
+          type: "text",
+          content: "**Store 14 Shrink Root Cause Analysis:**\n\nStore 14 exhibits a **structured external theft pattern** — not random loss:\n\n• **Annual shrink:** £180K (18% above network average)\n• **When:** 82% of events on weekends between 2pm-5pm\n• **Where:** Accessories department (64% of total shrink vs 18% network avg)\n• **Why:** LP officer coverage drops to 0 between 2-5pm on Saturdays due to break scheduling\n\n**Recommended Actions:**\n1. Deploy area manager for immediate weekend LP coverage\n2. Implement EAS tagging for Accessories > £30\n3. Adjust LP break schedules to maintain coverage during peak theft windows\n4. Consider covert CCTV upgrade in Accessories department\n\n**Estimated annual savings if implemented:** £28K"
+        },
+        "footwear clearance": {
+          type: "text",
+          content: "**Footwear Dead Stock Clearance Recommendation:**\n\n**Current Situation:**\n• 312 SKUs aged > 90 days, total value: £84K at cost\n• Current sell-through rate at full price: 2.1%/week (vs category avg 8.4%)\n• Shelf space opportunity cost: £120K in lost Q1 revenue if not cleared\n\n**Recommended Strategy: 40% Markdown Campaign**\n• Historical performance: 40% discount clears 78% of dead stock within 2 weeks\n• Estimated recovery: £50K (60% cost recovery)\n• Freed shelf space value: £120K in Spring/Summer collection revenue\n\n**Implementation:**\n1. Launch clearance this week across all 28 affected stores\n2. Position displays at front-of-store during weekend traffic\n3. Bundle with email/SMS campaign to loyalty members\n4. Set automatic further markdown to 60% after 7 days for remaining items"
+        },
+        "shrink analysis by store": {
+          type: "table",
+          content: "Shrink analysis across the top stores by loss rate:",
+          tableHeaders: ["Store", "Shrink Rate", "vs Network", "Primary Dept", "Peak Time", "Action"],
+          tableRows: [
+            ["Store 14", "3.3%", "+18%", "Accessories", "Sat 2-5pm", "🔴 Urgent LP"],
+            ["Store 21", "3.0%", "+7%", "Electronics", "Fri evening", "🟡 Monitor"],
+            ["Store 8", "2.9%", "+4%", "Accessories", "Weekend", "🟡 Audit"],
+            ["Store 12", "2.8%", "0%", "Footwear", "Weekday", "🟢 Normal"],
+            ["Store 5", "2.7%", "-4%", "General", "Mixed", "🟢 Normal"],
+          ]
+        },
+        "return abuse": {
+          type: "table",
+          content: "Return abuse patterns detected in the North Region:",
+          tableHeaders: ["Store", "Flagged Returns", "Top SKU", "Avg Value", "Repeat Customers", "Risk Level"],
+          tableRows: [
+            ["Store 8", "312", "Headphones (£299)", "£299", "6", "🔴 High"],
+            ["Store 12", "284", "Designer Bags (£450)", "£428", "5", "🔴 High"],
+            ["Store 21", "251", "Smart Watches (£349)", "£349", "3", "🟡 Medium"],
+          ]
+        },
+        "shrink trends": {
+          type: "chart",
+          content: "Network shrink rate trend over the last 12 months vs benchmark:",
+          chartTitle: "Network Shrink Rate vs 2.0% Benchmark",
+          chartInfo: "This chart shows the monthly network-wide shrink rate trending upward from 2.1% to 2.8% over 12 months. The 2.0% benchmark line represents the industry target. Store 14 is the primary contributor to the upward trend. LP intervention is expected to reduce the rate by 0.3% if implemented.",
+          chartData: [
+            { name: "Jan", value: 2.1 },
+            { name: "Feb", value: 2.0 },
+            { name: "Mar", value: 2.2 },
+            { name: "Apr", value: 2.3 },
+            { name: "May", value: 2.4 },
+            { name: "Jun", value: 2.3 },
+            { name: "Jul", value: 2.5 },
+            { name: "Aug", value: 2.6 },
+            { name: "Sep", value: 2.7 },
+            { name: "Oct", value: 2.8 },
+            { name: "Nov", value: 2.9 },
+            { name: "Dec", value: 2.8 },
+          ]
+        },
+        "staff-to-sales": {
+          type: "chart",
+          content: "Staff-to-sales ratio comparison across regions:",
+          chartTitle: "Staff-to-Sales Ratio by Region (£ per staff hour)",
+          chartInfo: "This chart compares revenue generated per staff hour across regions. South leads at £142/hour while North lags at £98/hour, partly due to shrink losses. The network average is £118/hour. Optimizing North Region staffing could improve ratio by 15%.",
+          chartData: [
+            { name: "North", value: 98 },
+            { name: "South", value: 142 },
+            { name: "East", value: 112 },
+            { name: "West", value: 128 },
+            { name: "Central", value: 118 },
+          ]
+        },
+        "default": {
+          type: "text",
+          content: "Based on your query, I analyzed the retail operations data.\n\n**Key Findings:**\n• Network shrink at 2.8% — significantly above the 2.0% target\n• Store 14 is the primary outlier with structured external theft patterns\n• Return abuse in North Region exposes £92K annually across 3 stores\n• Footwear dead stock at £84K needs clearance action this week\n\n**Priority Actions:**\n1. Deploy LP coverage at Store 14 weekends → saves £28K/year\n2. Implement return policy tightening in North → saves £92K/year\n3. Launch Footwear clearance → recovers £50K\n\nWould you like me to drill into any specific area?"
+        },
       },
     },
     administration: {
