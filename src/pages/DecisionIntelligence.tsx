@@ -12,12 +12,13 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Lock, Sparkles, ArrowRight, Save, X, CheckCircle2, Clock, AlertCircle,
-  Lightbulb, Play, TrendingUp, BarChart3, Bot, Zap,
+  Lightbulb, Play, TrendingUp, BarChart3, Bot, Zap, Info,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
 } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleData } from "@/data/roleData";
