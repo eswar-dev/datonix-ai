@@ -16,13 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 
 const mockUsers = [
-  { id: "1", name: "Jane Doe", email: "jane@datonix.com", role: "Admin", org: "Datonix Corp", lastActive: "2 hours ago", status: "Active" },
-  { id: "2", name: "John Smith", email: "john@acme.com", role: "Analyst", org: "Acme Inc", lastActive: "1 day ago", status: "Active" },
-  { id: "3", name: "Sarah Lee", email: "sarah@acme.com", role: "Viewer", org: "Acme Inc", lastActive: "5 days ago", status: "Inactive" },
-  { id: "4", name: "Mike Chen", email: "mike@partner.co", role: "Manager", org: "Partner Co", lastActive: "3 hours ago", status: "Active" },
+  { id: "1", name: "Jane Doe", email: "jane@datonix.com", role: "Admin", org: "Datonix Corp", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
+  { id: "2", name: "John Smith", email: "john@acme.com", role: "Analyst", org: "Acme Inc", lastActive: "1 day ago", status: "Active", linkedManager: "Rajesh Patel" },
+  { id: "3", name: "Sarah Lee", email: "sarah@acme.com", role: "Viewer", org: "Acme Inc", lastActive: "5 days ago", status: "Inactive", linkedManager: "—" },
+  { id: "4", name: "Mike Chen", email: "mike@partner.co", role: "Manager", org: "Partner Co", lastActive: "3 hours ago", status: "Active", linkedManager: "Linda Nakamura" },
 ];
 
 const roles = ["Admin", "Manager", "Analyst", "Viewer"];
+const managers = ["Victoria Hayes", "Rajesh Patel", "Linda Nakamura"];
 
 const roleColor: Record<string, string> = {
   Admin: "bg-accent/10 text-accent border-accent/20",
@@ -62,6 +63,7 @@ export default function Users() {
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Organization</TableHead>
+              <TableHead>Linked Manager</TableHead>
               <TableHead>Last Active</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-28">Actions</TableHead>
@@ -80,6 +82,11 @@ export default function Users() {
                 <TableCell>{u.email}</TableCell>
                 <TableCell><Badge variant="outline" className={roleColor[u.role]}>{u.role}</Badge></TableCell>
                 <TableCell>{u.org}</TableCell>
+                <TableCell className="text-xs">
+                  <Badge variant="outline" className={u.linkedManager !== "—" ? "bg-accent/10 text-accent border-accent/20" : "bg-muted text-muted-foreground"}>
+                    {u.linkedManager}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{u.lastActive}</TableCell>
                 <TableCell><Badge variant="outline" className={statusColor[u.status]}>{u.status}</Badge></TableCell>
                 <TableCell>
@@ -136,14 +143,26 @@ export default function Users() {
               <textarea className="w-full rounded-input border bg-background p-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" rows={4} placeholder={"user@example.com\nanother@example.com"} />
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Assign a role to the invited users.</p>
-              <Select>
-                <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => <SelectItem key={r} value={r.toLowerCase()}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Assign a role to the invited users.</p>
+                <Select>
+                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => <SelectItem key={r} value={r.toLowerCase()}>{r}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Link Manager (optional — enables team view for the manager).</p>
+                <Select>
+                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select manager" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Manager</SelectItem>
+                    {managers.map((m) => <SelectItem key={m} value={m.toLowerCase().replace(/\s/g, "-")}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           <DialogFooter className="gap-2">
