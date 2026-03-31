@@ -16,13 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 
 const mockUsers = [
-  { id: "1", name: "Jane Doe", email: "jane@datonix.com", role: "Admin", org: "Datonix Corp", lastActive: "2 hours ago", status: "Active" },
-  { id: "2", name: "John Smith", email: "john@acme.com", role: "Analyst", org: "Acme Inc", lastActive: "1 day ago", status: "Active" },
-  { id: "3", name: "Sarah Lee", email: "sarah@acme.com", role: "Viewer", org: "Acme Inc", lastActive: "5 days ago", status: "Inactive" },
-  { id: "4", name: "Mike Chen", email: "mike@partner.co", role: "Manager", org: "Partner Co", lastActive: "3 hours ago", status: "Active" },
+  { id: "1", name: "Jane Doe", email: "jane@datonix.com", role: "Admin", org: "Datonix Corp", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
+  { id: "2", name: "John Smith", email: "john@acme.com", role: "Analyst", org: "Acme Inc", lastActive: "1 day ago", status: "Active", linkedManager: "Rajesh Patel" },
+  { id: "3", name: "Sarah Lee", email: "sarah@acme.com", role: "Viewer", org: "Acme Inc", lastActive: "5 days ago", status: "Inactive", linkedManager: "—" },
+  { id: "4", name: "Mike Chen", email: "mike@partner.co", role: "Manager", org: "Partner Co", lastActive: "3 hours ago", status: "Active", linkedManager: "Linda Nakamura" },
 ];
 
 const roles = ["Admin", "Manager", "Analyst", "Viewer"];
+const managers = ["Victoria Hayes", "Rajesh Patel", "Linda Nakamura"];
 
 const roleColor: Record<string, string> = {
   Admin: "bg-accent/10 text-accent border-accent/20",
