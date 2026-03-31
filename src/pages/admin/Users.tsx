@@ -63,6 +63,7 @@ export default function Users() {
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Organization</TableHead>
+              <TableHead>Linked Manager</TableHead>
               <TableHead>Last Active</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-28">Actions</TableHead>
