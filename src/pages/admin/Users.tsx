@@ -16,10 +16,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 
 const mockUsers = [
-  { id: "1", name: "Jane Doe", email: "jane@datonix.com", role: "Admin", org: "Datonix Corp", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
-  { id: "2", name: "John Smith", email: "john@acme.com", role: "Analyst", org: "Acme Inc", lastActive: "1 day ago", status: "Active", linkedManager: "Rajesh Patel" },
-  { id: "3", name: "Sarah Lee", email: "sarah@acme.com", role: "Viewer", org: "Acme Inc", lastActive: "5 days ago", status: "Inactive", linkedManager: "—" },
-  { id: "4", name: "Mike Chen", email: "mike@partner.co", role: "Manager", org: "Partner Co", lastActive: "3 hours ago", status: "Active", linkedManager: "Linda Nakamura" },
+  // AEC
+  { id: "1", name: "Alex Chen", email: "alex@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
+  { id: "2", name: "Priya Sharma", email: "priya@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "1 day ago", status: "Active", linkedManager: "Victoria Hayes" },
+  { id: "3", name: "Victoria Hayes", email: "victoria@meridianarchitects.com", role: "Manager", org: "Meridian Architects", lastActive: "Now", status: "Active", linkedManager: "—" },
+  // Manufacturing
+  { id: "4", name: "Sarah Okafor", email: "sarah@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "3 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
+  { id: "5", name: "David Kim", email: "david@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "5 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
+  { id: "6", name: "Rajesh Patel", email: "rajesh@precisionmfg.com", role: "Manager", org: "Precision Manufacturing", lastActive: "30m ago", status: "Active", linkedManager: "—" },
+  // Retail
+  { id: "7", name: "James Whitfield", email: "james@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "1 hour ago", status: "Active", linkedManager: "Linda Nakamura" },
+  { id: "8", name: "Sophie Clark", email: "sophie@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "2 days ago", status: "Inactive", linkedManager: "Linda Nakamura" },
+  { id: "9", name: "Linda Nakamura", email: "linda@urbanretail.com", role: "Manager", org: "Urban Retail", lastActive: "1h ago", status: "Active", linkedManager: "—" },
 ];
 
 const roles = ["Admin", "Manager", "Analyst", "Viewer"];
