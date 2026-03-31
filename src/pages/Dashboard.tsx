@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, AlertTriangle, Lightbulb, X, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Lightbulb, X, Info, Users, Activity, FileText, Database } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -13,6 +13,8 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  BarChart,
+  Bar,
 } from "recharts";
 import {
   Dialog,
@@ -21,8 +23,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleData } from "@/data/roleData";
+import { useViewMode } from "@/contexts/ViewModeContext";
+import { roleData, managerAdminData } from "@/data/roleData";
 
 const sparkData = [
   [3, 5, 4, 7, 6, 8, 9],
@@ -82,8 +88,186 @@ function ChartInfoDialog({ title, description }: { title: string; description: s
   );
 }
 
+const statusColor: Record<string, string> = {
+  "On Track": "bg-success/10 text-success border-success/20",
+  "At Risk": "bg-warning/10 text-warning border-warning/20",
+  "Behind": "bg-destructive/10 text-destructive border-destructive/20",
+};
+
+function AdminDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth>["user"]> }) {
+  const adminData = managerAdminData[user.role];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Team Overview</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {user.industry} • Aggregated view across your team
+        </p>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Total Users", value: adminData.overview.totalUsers, icon: Users, color: "text-accent" },
+          { label: "Active Users", value: adminData.overview.activeUsers, icon: Activity, color: "text-success" },
+          { label: "Total Datasets", value: adminData.overview.totalDatasets, icon: Database, color: "text-purple" },
+          { label: "Total Reports", value: adminData.overview.totalReports, icon: FileText, color: "text-teal" },
+        ].map((item) => (
+          <Card key={item.label} className="rounded-card p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
+              <item.icon className={`h-4 w-4 ${item.color}`} />
+            </div>
+            <p className="mt-2 text-2xl font-semibold">{item.value}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Aggregated KPIs */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {adminData.aggregatedStats.map((kpi, idx) => {
+          const up = kpi.trend === "up";
+          return (
+            <Card key={kpi.label} className="rounded-card p-5">
+              <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+              <div className="mt-2 flex items-end justify-between">
+                <div>
+                  <p className="text-2xl font-semibold">{kpi.value}</p>
+                  <div className="mt-1 flex items-center gap-1 text-xs">
+                    {up ? <TrendingUp className="h-3 w-3 text-success" /> : <TrendingDown className="h-3 w-3 text-destructive" />}
+                    <span className={up ? "text-success" : "text-destructive"}>{kpi.change}</span>
+                  </div>
+                </div>
+                <Sparkline data={sparkData[idx % 4]} up={up} />
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Aggregated Chart */}
+        <Card className="rounded-card p-5 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold">{adminData.aggregatedChartTitle}</h2>
+            <ChartInfoDialog
+              title={adminData.aggregatedChartTitle}
+              description={`This chart shows aggregated ${adminData.aggregatedChartKeyLabels[0]} vs ${adminData.aggregatedChartKeyLabels[1]} across all team members.`}
+            />
+          </div>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={adminData.aggregatedChartData}>
+                <defs>
+                  <linearGradient id="colorTeam" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
+                <Area type="monotone" dataKey={adminData.aggregatedChartKeys[0]} stroke="hsl(var(--accent))" strokeWidth={2} fillOpacity={1} fill="url(#colorTeam)" name={adminData.aggregatedChartKeyLabels[0]} />
+                <Area type="monotone" dataKey={adminData.aggregatedChartKeys[1]} stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="4 4" fillOpacity={0} name={adminData.aggregatedChartKeyLabels[1]} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Performance Summary */}
+        <Card className="rounded-card p-5">
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2">
+            <Activity className="h-4 w-4 text-accent" />
+            Performance Summary
+          </h2>
+          <div className="space-y-3">
+            {adminData.performanceSummary.map((p) => (
+              <div key={p.metric} className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <p className="text-xs font-medium">{p.metric}</p>
+                  <p className="text-[10px] text-muted-foreground">Target: {p.target}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">{p.current}</span>
+                  <Badge variant="outline" className={`text-[10px] ${statusColor[p.status]}`}>{p.status}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Team Members */}
+        <Card className="rounded-card p-5">
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4 text-accent" />
+            Team Members
+          </h2>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead>Name</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead className="text-right">Tasks</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {adminData.teamMembers.map((m) => (
+                <TableRow key={m.name}>
+                  <TableCell className="font-medium flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold shrink-0">
+                      {m.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
+                    {m.name}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{m.role}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={m.status === "Active" ? "bg-success/10 text-success border-success/20" : "bg-muted text-muted-foreground"}>
+                      {m.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{m.lastActive}</TableCell>
+                  <TableCell className="text-right font-medium">{m.tasksCompleted}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="rounded-card p-5">
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-accent" />
+            Recent Team Activity
+          </h2>
+          <div className="space-y-3">
+            {adminData.recentActivity.map((a, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold shrink-0">
+                  {a.user.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium">{a.user}</p>
+                  <p className="text-[11px] text-muted-foreground">{a.action}</p>
+                </div>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{a.time}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
+  const { viewMode } = useViewMode();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<typeof periods[number]>("Month");
 
@@ -93,6 +277,12 @@ export default function Dashboard() {
   }, []);
 
   if (!user) return null;
+
+  // Show admin aggregated view for managers
+  if (user.isManager && viewMode === "admin") {
+    return <AdminDashboard user={user} />;
+  }
+
   const data = roleData[user.role].dashboard;
 
   return (
