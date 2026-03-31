@@ -82,6 +82,11 @@ export default function Users() {
                 <TableCell>{u.email}</TableCell>
                 <TableCell><Badge variant="outline" className={roleColor[u.role]}>{u.role}</Badge></TableCell>
                 <TableCell>{u.org}</TableCell>
+                <TableCell className="text-xs">
+                  <Badge variant="outline" className={u.linkedManager !== "—" ? "bg-accent/10 text-accent border-accent/20" : "bg-muted text-muted-foreground"}>
+                    {u.linkedManager}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{u.lastActive}</TableCell>
                 <TableCell><Badge variant="outline" className={statusColor[u.status]}>{u.status}</Badge></TableCell>
                 <TableCell>
