@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
+import { ViewModeProvider } from "@/contexts/ViewModeContext";
 
 function LayoutInner() {
   const { collapsed } = useSidebarState();
@@ -25,7 +26,9 @@ function LayoutInner() {
 export function AppLayout() {
   return (
     <SidebarStateProvider>
-      <LayoutInner />
+      <ViewModeProvider>
+        <LayoutInner />
+      </ViewModeProvider>
     </SidebarStateProvider>
   );
 }

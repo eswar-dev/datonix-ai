@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { Search, Bell, ChevronRight } from "lucide-react";
+import { Search, Bell, ChevronRight, Eye, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useViewMode } from "@/contexts/ViewModeContext";
 
 const routeNames: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -23,6 +24,7 @@ export function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { viewMode, setViewMode } = useViewMode();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -41,6 +43,8 @@ export function AppHeader() {
     navigate("/login");
   };
 
+  const isManager = user?.isManager === true;
+
   return (
     <>
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card px-6">
@@ -50,6 +54,35 @@ export function AppHeader() {
               {user.industry} • {user.title}
             </Badge>
           )}
+
+          {/* View Mode Toggle — only for managers */}
+          {isManager && (
+            <div className="flex rounded-lg border bg-muted/50 p-0.5">
+              <button
+                onClick={() => setViewMode("individual")}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                  viewMode === "individual"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Eye className="h-3.5 w-3.5" />
+                My View
+              </button>
+              <button
+                onClick={() => setViewMode("admin")}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                  viewMode === "admin"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Team View
+              </button>
+            </div>
+          )}
+
           <Button variant="outline" size="sm" className="hidden gap-2 text-muted-foreground sm:flex" onClick={() => setSearchOpen(true)}>
             <Search className="h-4 w-4" />
             <span className="text-xs">Search…</span>
@@ -98,6 +131,11 @@ export function AppHeader() {
             </span>
           </span>
         ))}
+        {isManager && viewMode === "admin" && (
+          <Badge variant="outline" className="ml-2 text-[10px] bg-accent/10 text-accent border-accent/20">
+            Team View
+          </Badge>
+        )}
       </div>
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
