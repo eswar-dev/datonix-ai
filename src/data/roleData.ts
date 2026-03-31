@@ -8,13 +8,184 @@ export interface UserAccount {
   title: string;
   industry: string;
   initials: string;
+  isManager?: boolean;
+  linkedRoles?: RoleKey[];
 }
 
 export const userAccounts: UserAccount[] = [
   { email: "alex@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Alex Chen", title: "Managing Principal", industry: "AEC", initials: "AC" },
   { email: "sarah@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Sarah Okafor", title: "Plant Manager", industry: "Manufacturing", initials: "SO" },
   { email: "james@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "James Whitfield", title: "Head of Retail Operations", industry: "Retail", initials: "JW" },
+  // Manager accounts — can toggle between individual & admin view
+  { email: "victoria@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Victoria Hayes", title: "Director of Operations", industry: "AEC", initials: "VH", isManager: true, linkedRoles: ["aec_principal"] },
+  { email: "rajesh@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Rajesh Patel", title: "VP Manufacturing", industry: "Manufacturing", initials: "RP", isManager: true, linkedRoles: ["mfg_plant_manager"] },
+  { email: "linda@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Linda Nakamura", title: "Regional Director", industry: "Retail", initials: "LN", isManager: true, linkedRoles: ["retail_ops_head"] },
 ];
+
+// ─── Manager Admin View Data ───
+export interface ManagerAdminData {
+  overview: {
+    totalUsers: number;
+    activeUsers: number;
+    totalDatasets: number;
+    totalReports: number;
+  };
+  teamMembers: { name: string; role: string; status: "Active" | "Inactive"; lastActive: string; tasksCompleted: number }[];
+  aggregatedStats: { label: string; value: string; change: string; trend: "up" | "down" }[];
+  aggregatedChartTitle: string;
+  aggregatedChartData: Record<string, string | number>[];
+  aggregatedChartKeys: [string, string];
+  aggregatedChartKeyLabels: [string, string];
+  recentActivity: { user: string; action: string; time: string }[];
+  performanceSummary: { metric: string; current: string; target: string; status: "On Track" | "At Risk" | "Behind" }[];
+}
+
+export const managerAdminData: Record<RoleKey, ManagerAdminData> = {
+  aec_principal: {
+    overview: { totalUsers: 24, activeUsers: 18, totalDatasets: 12, totalReports: 47 },
+    teamMembers: [
+      { name: "Alex Chen", role: "Managing Principal", status: "Active", lastActive: "Now", tasksCompleted: 34 },
+      { name: "Priya Sharma", role: "CFO", status: "Active", lastActive: "1h ago", tasksCompleted: 28 },
+      { name: "Marcus Lee", role: "Project Manager", status: "Active", lastActive: "3h ago", tasksCompleted: 41 },
+      { name: "Dana Wright", role: "Resource Manager", status: "Active", lastActive: "Yesterday", tasksCompleted: 19 },
+      { name: "Tom Haines", role: "BD Director", status: "Inactive", lastActive: "5 days ago", tasksCompleted: 12 },
+      { name: "Elena Rodriguez", role: "Senior Architect", status: "Active", lastActive: "2h ago", tasksCompleted: 22 },
+    ],
+    aggregatedStats: [
+      { label: "Total Portfolio Value", value: "$42.8M", change: "+12%", trend: "up" },
+      { label: "Avg Team Utilization", value: "87%", change: "+3%", trend: "up" },
+      { label: "Active Projects", value: "47", change: "+5", trend: "up" },
+      { label: "Avg Margin Across Team", value: "18.4%", change: "-0.8%", trend: "down" },
+    ],
+    aggregatedChartTitle: "Team Revenue Performance (All Members)",
+    aggregatedChartData: [
+      { month: "Jan", team: 12400, target: 11800 },
+      { month: "Feb", team: 13200, target: 12500 },
+      { month: "Mar", team: 14800, target: 13200 },
+      { month: "Apr", team: 13900, target: 14000 },
+      { month: "May", team: 15600, target: 14800 },
+      { month: "Jun", team: 16200, target: 15500 },
+      { month: "Jul", team: 17800, target: 16200 },
+      { month: "Aug", team: 18500, target: 17000 },
+      { month: "Sep", team: 17200, target: 17800 },
+      { month: "Oct", team: 19400, target: 18500 },
+      { month: "Nov", team: 20100, target: 19200 },
+      { month: "Dec", team: 22800, target: 20000 },
+    ],
+    aggregatedChartKeys: ["team", "target"],
+    aggregatedChartKeyLabels: ["Team Revenue", "Target Revenue"],
+    recentActivity: [
+      { user: "Alex Chen", action: "Generated Portfolio Margin Heatmap report", time: "2h ago" },
+      { user: "Priya Sharma", action: "Ran cash runway forecast", time: "3h ago" },
+      { user: "Marcus Lee", action: "Updated Project Atlas milestone", time: "5h ago" },
+      { user: "Elena Rodriguez", action: "Uploaded resource_utilization.xlsx", time: "Yesterday" },
+      { user: "Dana Wright", action: "Resolved WIP aging action item", time: "Yesterday" },
+    ],
+    performanceSummary: [
+      { metric: "Portfolio Margin", current: "18.4%", target: "20%", status: "At Risk" },
+      { metric: "Team Utilization", current: "87%", target: "85%", status: "On Track" },
+      { metric: "Backlog Health", current: "6.2 months", target: "6 months", status: "On Track" },
+      { metric: "Cash Runway", current: "94 days", target: "120 days", status: "Behind" },
+      { metric: "Client Satisfaction", current: "4.2/5", target: "4.5/5", status: "At Risk" },
+    ],
+  },
+  mfg_plant_manager: {
+    overview: { totalUsers: 31, activeUsers: 26, totalDatasets: 18, totalReports: 52 },
+    teamMembers: [
+      { name: "Sarah Okafor", role: "Plant Manager", status: "Active", lastActive: "Now", tasksCompleted: 45 },
+      { name: "David Kim", role: "Quality Lead", status: "Active", lastActive: "30m ago", tasksCompleted: 38 },
+      { name: "Maria Santos", role: "Production Supervisor", status: "Active", lastActive: "1h ago", tasksCompleted: 52 },
+      { name: "Chen Wei", role: "Maintenance Engineer", status: "Active", lastActive: "2h ago", tasksCompleted: 29 },
+      { name: "Aisha Patel", role: "Supply Chain Analyst", status: "Active", lastActive: "3h ago", tasksCompleted: 33 },
+      { name: "Tom Fischer", role: "Shift Lead", status: "Inactive", lastActive: "2 days ago", tasksCompleted: 18 },
+    ],
+    aggregatedStats: [
+      { label: "Plant-Wide OEE", value: "74%", change: "-3%", trend: "down" },
+      { label: "Total Output (units)", value: "142K", change: "+8%", trend: "up" },
+      { label: "Avg Scrap Rate", value: "2.9%", change: "-0.3%", trend: "up" },
+      { label: "Team Compliance", value: "96%", change: "+2%", trend: "up" },
+    ],
+    aggregatedChartTitle: "Plant-Wide Production Output (All Lines)",
+    aggregatedChartData: [
+      { month: "Jan", output: 11200, capacity: 14000 },
+      { month: "Feb", output: 11800, capacity: 14000 },
+      { month: "Mar", output: 12400, capacity: 14000 },
+      { month: "Apr", output: 11600, capacity: 14000 },
+      { month: "May", output: 12800, capacity: 14000 },
+      { month: "Jun", output: 13100, capacity: 14000 },
+      { month: "Jul", output: 12200, capacity: 14000 },
+      { month: "Aug", output: 11900, capacity: 14000 },
+      { month: "Sep", output: 12600, capacity: 14000 },
+      { month: "Oct", output: 13200, capacity: 14000 },
+      { month: "Nov", output: 12800, capacity: 14000 },
+      { month: "Dec", output: 13500, capacity: 14000 },
+    ],
+    aggregatedChartKeys: ["output", "capacity"],
+    aggregatedChartKeyLabels: ["Actual Output", "Max Capacity"],
+    recentActivity: [
+      { user: "Sarah Okafor", action: "Ran OEE diagnostic on Line B", time: "1h ago" },
+      { user: "David Kim", action: "Flagged scrap spike on Shift C", time: "2h ago" },
+      { user: "Maria Santos", action: "Completed PM schedule for Machine 4", time: "3h ago" },
+      { user: "Chen Wei", action: "Updated bearing anomaly prediction", time: "5h ago" },
+      { user: "Aisha Patel", action: "Generated supplier lead time report", time: "Yesterday" },
+    ],
+    performanceSummary: [
+      { metric: "OEE Score", current: "74%", target: "80%", status: "Behind" },
+      { metric: "Scrap Rate", current: "2.9%", target: "2.5%", status: "At Risk" },
+      { metric: "On-Time Delivery", current: "88%", target: "95%", status: "Behind" },
+      { metric: "Energy Cost/Unit", current: "£4.18", target: "£3.80", status: "At Risk" },
+      { metric: "Safety Incidents (MTD)", current: "1", target: "0", status: "At Risk" },
+    ],
+  },
+  retail_ops_head: {
+    overview: { totalUsers: 19, activeUsers: 15, totalDatasets: 9, totalReports: 38 },
+    teamMembers: [
+      { name: "James Whitfield", role: "Head of Retail Ops", status: "Active", lastActive: "Now", tasksCompleted: 37 },
+      { name: "Sophie Clark", role: "Store Manager - North", status: "Active", lastActive: "1h ago", tasksCompleted: 29 },
+      { name: "Carlos Rivera", role: "Inventory Analyst", status: "Active", lastActive: "2h ago", tasksCompleted: 42 },
+      { name: "Emily Zhang", role: "Marketing Manager", status: "Active", lastActive: "4h ago", tasksCompleted: 25 },
+      { name: "Derek Johnson", role: "Supply Chain Lead", status: "Inactive", lastActive: "3 days ago", tasksCompleted: 14 },
+      { name: "Fatima Al-Hassan", role: "Customer Experience Lead", status: "Active", lastActive: "30m ago", tasksCompleted: 31 },
+    ],
+    aggregatedStats: [
+      { label: "Total Revenue (All Stores)", value: "$8.4M", change: "+6%", trend: "up" },
+      { label: "Avg Conversion Rate", value: "3.8%", change: "+0.4%", trend: "up" },
+      { label: "Shrink Rate (Network)", value: "1.6%", change: "-0.2%", trend: "up" },
+      { label: "NPS Score (Avg)", value: "62", change: "+4", trend: "up" },
+    ],
+    aggregatedChartTitle: "Network-Wide Revenue Performance",
+    aggregatedChartData: [
+      { month: "Jan", revenue: 620, forecast: 600 },
+      { month: "Feb", revenue: 680, forecast: 650 },
+      { month: "Mar", revenue: 720, forecast: 700 },
+      { month: "Apr", revenue: 690, forecast: 720 },
+      { month: "May", revenue: 750, forecast: 740 },
+      { month: "Jun", revenue: 810, forecast: 780 },
+      { month: "Jul", revenue: 780, forecast: 800 },
+      { month: "Aug", revenue: 830, forecast: 820 },
+      { month: "Sep", revenue: 790, forecast: 840 },
+      { month: "Oct", revenue: 860, forecast: 860 },
+      { month: "Nov", revenue: 920, forecast: 880 },
+      { month: "Dec", revenue: 1050, forecast: 950 },
+    ],
+    aggregatedChartKeys: ["revenue", "forecast"],
+    aggregatedChartKeyLabels: ["Actual Revenue ($K)", "Forecast ($K)"],
+    recentActivity: [
+      { user: "James Whitfield", action: "Reviewed shrinkage report for Q1", time: "1h ago" },
+      { user: "Sophie Clark", action: "Updated planogram compliance for Store #4", time: "3h ago" },
+      { user: "Carlos Rivera", action: "Ran inventory turnover analysis", time: "4h ago" },
+      { user: "Emily Zhang", action: "Generated campaign ROI report", time: "Yesterday" },
+      { user: "Fatima Al-Hassan", action: "Completed NPS trend analysis", time: "Yesterday" },
+    ],
+    performanceSummary: [
+      { metric: "Revenue vs Target", current: "$8.4M", target: "$8.8M", status: "At Risk" },
+      { metric: "Conversion Rate", current: "3.8%", target: "4.0%", status: "At Risk" },
+      { metric: "Shrink Rate", current: "1.6%", target: "1.5%", status: "On Track" },
+      { metric: "NPS Score", current: "62", target: "65", status: "At Risk" },
+      { metric: "Inventory Turnover", current: "8.2x", target: "9.0x", status: "Behind" },
+    ],
+  },
+};
 
 // ─── Shared types ───
 interface Inference {
