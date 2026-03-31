@@ -143,14 +143,26 @@ export default function Users() {
               <textarea className="w-full rounded-input border bg-background p-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" rows={4} placeholder={"user@example.com\nanother@example.com"} />
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Assign a role to the invited users.</p>
-              <Select>
-                <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => <SelectItem key={r} value={r.toLowerCase()}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Assign a role to the invited users.</p>
+                <Select>
+                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => <SelectItem key={r} value={r.toLowerCase()}>{r}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Link Manager (optional — enables team view for the manager).</p>
+                <Select>
+                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select manager" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Manager</SelectItem>
+                    {managers.map((m) => <SelectItem key={m} value={m.toLowerCase().replace(/\s/g, "-")}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           <DialogFooter className="gap-2">
