@@ -13,10 +13,16 @@ export interface UserAccount {
 }
 
 export const userAccounts: UserAccount[] = [
+  // AEC — 2 normal users
   { email: "alex@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Alex Chen", title: "Managing Principal", industry: "AEC", initials: "AC" },
+  { email: "priya@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Priya Sharma", title: "Senior Architect", industry: "AEC", initials: "PS" },
+  // Manufacturing — 2 normal users
   { email: "sarah@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Sarah Okafor", title: "Plant Manager", industry: "Manufacturing", initials: "SO" },
+  { email: "david@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "David Kim", title: "Production Supervisor", industry: "Manufacturing", initials: "DK" },
+  // Retail — 2 normal users
   { email: "james@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "James Whitfield", title: "Head of Retail Operations", industry: "Retail", initials: "JW" },
-  // Manager accounts — can toggle between individual & admin view
+  { email: "sophie@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Sophie Clark", title: "Store Manager", industry: "Retail", initials: "SC" },
+  // Manager accounts — 1 per sector, can toggle between individual & admin view
   { email: "victoria@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Victoria Hayes", title: "Director of Operations", industry: "AEC", initials: "VH", isManager: true, linkedRoles: ["aec_principal"] },
   { email: "rajesh@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Rajesh Patel", title: "VP Manufacturing", industry: "Manufacturing", initials: "RP", isManager: true, linkedRoles: ["mfg_plant_manager"] },
   { email: "linda@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Linda Nakamura", title: "Regional Director", industry: "Retail", initials: "LN", isManager: true, linkedRoles: ["retail_ops_head"] },
