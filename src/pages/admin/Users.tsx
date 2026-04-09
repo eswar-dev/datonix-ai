@@ -1,4 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  adminGetUsers,
+  adminCreateUser,
+  adminUpdateUser,
+  adminDeleteUser,
+  adminOrganizations,
+  adminRoles,
+  extractKeyedArray,
+  pickStr,
+} from "@/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +24,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Search, Pencil, Trash2, Plus } from "lucide-react";
+import { Search, Pencil, Trash2, Plus, Loader2 } from "lucide-react";
+import { AdminTableLoadingRow } from "@/components/admin/AdminTableLoadingRow";
+import { AdminDataCard } from "@/components/admin/AdminDataCard";
 import { toast } from "sonner";
 
 interface User {
@@ -21,27 +34,19 @@ interface User {
   name: string;
   email: string;
   role: string;
+  rolePrimary: string;
   org: string;
+  orgId: string;
   lastActive: string;
   status: string;
   linkedManager: string;
 }
 
-const initialUsers: User[] = [
-  { id: "1", name: "Alex Chen", email: "alex@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
-  { id: "2", name: "Priya Sharma", email: "priya@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "1 day ago", status: "Active", linkedManager: "Victoria Hayes" },
-  { id: "3", name: "Victoria Hayes", email: "victoria@meridianarchitects.com", role: "Manager", org: "Meridian Architects", lastActive: "Now", status: "Active", linkedManager: "—" },
-  { id: "4", name: "Sarah Okafor", email: "sarah@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "3 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
-  { id: "5", name: "David Kim", email: "david@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "5 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
-  { id: "6", name: "Rajesh Patel", email: "rajesh@precisionmfg.com", role: "Manager", org: "Precision Manufacturing", lastActive: "30m ago", status: "Active", linkedManager: "—" },
-  { id: "7", name: "James Whitfield", email: "james@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "1 hour ago", status: "Active", linkedManager: "Linda Nakamura" },
-  { id: "8", name: "Sophie Clark", email: "sophie@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "2 days ago", status: "Inactive", linkedManager: "Linda Nakamura" },
-  { id: "9", name: "Linda Nakamura", email: "linda@urbanretail.com", role: "Manager", org: "Urban Retail", lastActive: "1h ago", status: "Active", linkedManager: "—" },
-];
-
-const roles = ["User", "Manager", "Admin", "Analyst", "Viewer"];
-const orgs = ["Meridian Architects", "Precision Manufacturing", "Urban Retail"];
 const statuses = ["Active", "Inactive"];
+
+function isManagerRole(roleLabel: string) {
+  return /manager/i.test(roleLabel);
+}
 
 const roleColor: Record<string, string> = {
   Admin: "bg-accent/10 text-accent border-accent/20",
@@ -56,10 +61,99 @@ const statusColor: Record<string, string> = {
   Inactive: "bg-muted text-muted-foreground",
 };
 
-const emptyForm = { name: "", email: "", role: "", org: "", status: "Active", linkedManager: "" };
+const emptyForm = {
+  name: "",
+  email: "",
+  password: "",
+  role: "",
+  orgId: "",
+  status: "Active",
+  linkedManager: "",
+};
+
+function mapUserRow(o: Record<string, unknown>, i: number): User {
+  const orgObj = o.organization;
+  let orgName = "—";
+  let orgId = "";
+  if (orgObj && typeof orgObj === "object") {
+    const ob = orgObj as Record<string, unknown>;
+    orgName = pickStr(ob, ["organization_name"], "—");
+    const oid = ob.organization_id ?? ob.id;
+    orgId = oid != null && String(oid) !== "" ? String(oid) : "";
+  }
+  const roleRaw = o.role;
+  let roleStr = "—";
+  let rolePrimary = "";
+  if (Array.isArray(roleRaw) && roleRaw.length > 0) {
+    rolePrimary = String(roleRaw[0]);
+    roleStr = roleRaw.map((x) => String(x)).join(", ");
+  } else if (roleRaw != null && String(roleRaw).trim() !== "") {
+    roleStr = String(roleRaw);
+    const parts = roleStr.split(",").map((s) => s.trim()).filter(Boolean);
+    rolePrimary = parts[0] || roleStr;
+  }
+  const last = o.last_login;
+  return {
+    id: pickStr(o, ["id", "user_id", "pk"], String(i)),
+    name: pickStr(o, ["username", "name", "full_name"], "—"),
+    email: pickStr(o, ["email"], ""),
+    role: roleStr,
+    rolePrimary,
+    org: orgName,
+    orgId,
+    lastActive: last != null ? String(last) : "—",
+    status: o.is_active === false ? "Inactive" : "Active",
+    linkedManager: "—",
+  };
+}
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const queryClient = useQueryClient();
+  const {
+    data: apiUsers,
+    isLoading: apiLoading,
+    isFetching,
+    isPending,
+    error: apiError,
+  } = useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: async () => {
+      const raw = await adminGetUsers({ page: "1", page_size: "500" });
+      const rows = extractKeyedArray<Record<string, unknown>>(raw, "users");
+      return rows.map((row, i) => mapUserRow(row, i));
+    },
+    retry: 1,
+  });
+  const tableRefetching = isFetching && !isPending;
+
+  const [users, setUsers] = useState<User[]>([]);
+
+  const invalidateUserGraph = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "organizations"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "user-sessions"] });
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminDeleteUser(id),
+    onSuccess: () => invalidateUserGraph(),
+  });
+
+  useEffect(() => {
+    if (apiUsers !== undefined) setUsers(apiUsers);
+  }, [apiUsers]);
+
+  const createMutation = useMutation({
+    mutationFn: (fd: FormData) => adminCreateUser(fd),
+    onSuccess: () => invalidateUserGraph(),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, fd }: { id: string; fd: FormData }) => adminUpdateUser(id, fd),
+    onSuccess: () => invalidateUserGraph(),
+  });
+
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
@@ -67,7 +161,27 @@ export default function Users() {
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const managersList = users.filter((u) => u.role === "Manager").map((u) => u.name);
+  const { data: orgRows = [], isLoading: orgsLoading, error: orgsError } = useQuery({
+    queryKey: ["admin", "organizations", "users-dialog"],
+    queryFn: async () => {
+      const raw = await adminOrganizations({ page: "1", page_size: "500" });
+      return extractKeyedArray<Record<string, unknown>>(raw, "organizations");
+    },
+    staleTime: 60_000,
+    enabled: dialogOpen,
+  });
+
+  const { data: roleRows = [], isLoading: rolesLoading, error: rolesError } = useQuery({
+    queryKey: ["admin", "roles", "users-dialog", form.orgId || "__none__"],
+    queryFn: async () => {
+      if (!form.orgId) return [];
+      const raw = await adminRoles({ page: "1", page_size: "500", o_id: form.orgId });
+      return extractKeyedArray<Record<string, unknown>>(raw, "roles");
+    },
+    enabled: dialogOpen && !!form.orgId,
+  });
+
+  const managersList = users.filter((u) => isManagerRole(u.role)).map((u) => u.name);
 
   const filtered = users.filter(
     (u) =>
@@ -88,8 +202,9 @@ export default function Users() {
     setForm({
       name: u.name,
       email: u.email,
-      role: u.role,
-      org: u.org,
+      password: "",
+      role: u.rolePrimary || u.role,
+      orgId: u.orgId,
       status: u.status,
       linkedManager: u.linkedManager === "—" ? "" : u.linkedManager,
     });
@@ -99,53 +214,80 @@ export default function Users() {
   };
 
   const handleSave = () => {
-    if (!form.name || !form.email || !form.role || !form.org) {
+    if (!form.name?.trim() || !form.email?.trim() || !form.role || !form.orgId) {
       toast.error("Please fill all required fields");
       return;
     }
     if (dialogMode === "add") {
-      const newUser: User = {
-        id: String(Date.now()),
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        org: form.org,
-        status: form.status,
-        lastActive: "Just now",
-        linkedManager: form.role === "Manager" ? "—" : (form.linkedManager || "—"),
-      };
-      setUsers((prev) => [...prev, newUser]);
-      toast.success(`User "${form.name}" added successfully`);
-    } else if (editId) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === editId
-            ? {
-                ...u,
-                name: form.name,
-                email: form.email,
-                role: form.role,
-                org: form.org,
-                status: form.status,
-                linkedManager: form.role === "Manager" ? "—" : (form.linkedManager || "—"),
-              }
-            : u
-        )
-      );
-      toast.success(`User "${form.name}" updated successfully`);
+      if (!form.password?.trim()) {
+        toast.error("Password is required for new users");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("username", form.name.trim());
+      fd.append("email", form.email.trim());
+      fd.append("password", form.password);
+      fd.append("organization", form.orgId);
+      fd.append("roles", form.role);
+      fd.append("status", form.status);
+      if (form.linkedManager && form.linkedManager !== "none" && !isManagerRole(form.role)) {
+        fd.append("linked_manager", form.linkedManager);
+      }
+      createMutation.mutate(fd, {
+        onSuccess: () => {
+          toast.success(`User "${form.name}" added successfully`);
+          setDialogOpen(false);
+        },
+        onError: (e: Error) => toast.error(e.message || "Create failed"),
+      });
+      return;
     }
-    setDialogOpen(false);
+    if (editId) {
+      const fd = new FormData();
+      fd.append("username", form.name.trim());
+      fd.append("email", form.email.trim());
+      if (form.password.trim()) fd.append("password", form.password);
+      fd.append("status", form.status === "Active" ? "True" : "False");
+      fd.append("organization", form.orgId);
+      fd.append("user_role", form.role);
+      updateMutation.mutate(
+        { id: editId, fd },
+        {
+          onSuccess: () => {
+            toast.success(`User "${form.name}" updated successfully`);
+            setDialogOpen(false);
+          },
+          onError: (e: Error) => toast.error(e.message || "Update failed"),
+        }
+      );
+    }
   };
 
+  const roleNamesFromApi = roleRows.map((row) =>
+    pickStr(row as Record<string, unknown>, ["role"], "")
+  ).filter(Boolean);
+  const showCurrentRoleFallback =
+    Boolean(form.role) &&
+    dialogMode === "edit" &&
+    !rolesLoading &&
+    !roleNamesFromApi.includes(form.role);
+
   const handleDelete = (id: string) => {
-    const user = users.find((u) => u.id === id);
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-    setDeleteConfirm(null);
-    toast.success(`User "${user?.name}" deleted`);
+    const u = users.find((x) => x.id === id);
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        setDeleteConfirm(null);
+        toast.success(`User "${u?.name}" deleted`);
+      },
+      onError: (e: Error) => toast.error(e.message),
+    });
   };
 
   return (
     <div className="space-y-5">
+      {apiError && (
+        <p className="text-sm text-destructive">{(apiError as Error).message}</p>
+      )}
       <div className="flex items-center justify-between">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -161,7 +303,8 @@ export default function Users() {
         </Button>
       </div>
 
-      <Card className="rounded-card overflow-hidden border">
+      <AdminDataCard className="rounded-card" isRefetching={tableRefetching}>
+        <Card className="rounded-card overflow-hidden border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -177,6 +320,9 @@ export default function Users() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {apiLoading && filtered.length === 0 && (
+              <AdminTableLoadingRow colSpan={9} label="Loading users…" />
+            )}
             {filtered.map((u, i) => (
               <TableRow key={u.id} className="hover:bg-muted/20">
                 <TableCell>{i + 1}</TableCell>
@@ -234,7 +380,7 @@ export default function Users() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {!apiLoading && filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No users found.
@@ -244,6 +390,7 @@ export default function Users() {
           </TableBody>
         </Table>
       </Card>
+      </AdminDataCard>
 
       {/* Add / Edit User Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -251,6 +398,11 @@ export default function Users() {
           <DialogHeader>
             <DialogTitle>{dialogMode === "add" ? "Add New User" : "Edit User"}</DialogTitle>
           </DialogHeader>
+          {(orgsError || rolesError) && (
+            <p className="text-sm text-destructive">
+              {[orgsError, rolesError].filter(Boolean).map((e) => (e as Error).message).join(" · ")}
+            </p>
+          )}
           <div className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -273,26 +425,90 @@ export default function Users() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label>
+                {dialogMode === "add" ? (
+                  <>
+                    Password <span className="text-destructive">*</span>
+                  </>
+                ) : (
+                  "New password"
+                )}
+              </Label>
+              <Input
+                type="password"
+                autoComplete={dialogMode === "add" ? "new-password" : "new-password"}
+                placeholder={dialogMode === "add" ? "Required" : "Leave blank to keep current"}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="rounded-input"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Role <span className="text-destructive">*</span></Label>
-                <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v, linkedManager: v === "Manager" ? "" : form.linkedManager })}>
-                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
+                <Label>Organization <span className="text-destructive">*</span></Label>
+                <Select
+                  value={form.orgId || undefined}
+                  onValueChange={(v) =>
+                    setForm((prev) => ({ ...prev, orgId: v, role: "" }))
+                  }
+                  disabled={orgsLoading}
+                >
+                  <SelectTrigger className="rounded-input">
+                    <SelectValue placeholder={orgsLoading ? "Loading organizations…" : "Select organization"} />
+                  </SelectTrigger>
                   <SelectContent>
-                    {roles.map((r) => (
-                      <SelectItem key={r} value={r}>{r}</SelectItem>
-                    ))}
+                    {orgRows.map((raw) => {
+                      const row = raw as Record<string, unknown>;
+                      const id = pickStr(row, ["id"], "");
+                      const name = pickStr(row, ["name"], id);
+                      return (
+                        <SelectItem key={id} value={id}>
+                          {name}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Organization <span className="text-destructive">*</span></Label>
-                <Select value={form.org} onValueChange={(v) => setForm({ ...form, org: v })}>
-                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select organization" /></SelectTrigger>
+                <Label>Role <span className="text-destructive">*</span></Label>
+                <Select
+                  value={form.role || undefined}
+                  onValueChange={(v) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      role: v,
+                      linkedManager: isManagerRole(v) ? "" : prev.linkedManager,
+                    }))
+                  }
+                  disabled={!form.orgId || rolesLoading}
+                >
+                  <SelectTrigger className="rounded-input">
+                    <SelectValue
+                      placeholder={
+                        !form.orgId
+                          ? "Select organization first"
+                          : rolesLoading
+                            ? "Loading roles…"
+                            : "Select role"
+                      }
+                    />
+                  </SelectTrigger>
                   <SelectContent>
-                    {orgs.map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    {showCurrentRoleFallback && (
+                      <SelectItem value={form.role}>{form.role} (current)</SelectItem>
+                    )}
+                    {roleNamesFromApi.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {r}
+                      </SelectItem>
                     ))}
+                    {!rolesLoading && form.orgId && roleNamesFromApi.length === 0 && !showCurrentRoleFallback && (
+                      <SelectItem value="__no_roles__" disabled>
+                        No roles defined for this organization
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -309,10 +525,13 @@ export default function Users() {
                   </SelectContent>
                 </Select>
               </div>
-              {form.role !== "Manager" && (
+              {!isManagerRole(form.role) && (
                 <div className="space-y-2">
                   <Label>Linked Manager</Label>
-                  <Select value={form.linkedManager} onValueChange={(v) => setForm({ ...form, linkedManager: v })}>
+                  <Select
+                    value={form.linkedManager || "none"}
+                    onValueChange={(v) => setForm({ ...form, linkedManager: v === "none" ? "" : v })}
+                  >
                     <SelectTrigger className="rounded-input"><SelectValue placeholder="Select manager" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Manager</SelectItem>
@@ -326,9 +545,27 @@ export default function Users() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="rounded-button" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button className="rounded-button" onClick={handleSave}>
-              {dialogMode === "add" ? "Add User" : "Save Changes"}
+            <Button
+              variant="outline"
+              className="rounded-button"
+              disabled={createMutation.isPending || updateMutation.isPending}
+              onClick={() => setDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-button inline-flex items-center"
+              onClick={handleSave}
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+              )}
+              {createMutation.isPending || updateMutation.isPending
+                ? "Saving…"
+                : dialogMode === "add"
+                  ? "Add User"
+                  : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -344,8 +581,16 @@ export default function Users() {
             Are you sure you want to delete <strong>{users.find((u) => u.id === deleteConfirm)?.name}</strong>? This action cannot be undone.
           </p>
           <DialogFooter>
-            <Button variant="outline" className="rounded-button" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
-            <Button variant="destructive" className="rounded-button" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Delete</Button>
+            <Button variant="outline" className="rounded-button" disabled={deleteMutation.isPending} onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              className="rounded-button inline-flex items-center"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+            >
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

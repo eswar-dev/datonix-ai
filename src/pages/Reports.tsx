@@ -23,8 +23,8 @@ export default function Reports() {
   const [search, setSearch] = useState("");
 
   if (!user) return null;
-  const data = roleData[user.role].reports;
-  const datasets = roleData[user.role].dataSources.datasets;
+  const data = roleData[user.roleKey].reports;
+  const datasets = roleData[user.roleKey].dataSources.datasets;
 
   const roleReports = data.available.map((r, i) => ({
     id: String(i + 1),

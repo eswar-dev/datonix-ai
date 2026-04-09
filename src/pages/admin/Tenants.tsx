@@ -1,4 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  adminTenants,
+  adminCreateTenants,
+  adminDeleteTenant,
+  adminUpdateTenant,
+  extractKeyedArray,
+  pickStr,
+  pickNum,
+} from "@/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,30 +21,89 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronUp, ChevronDown, Search, Loader2 } from "lucide-react";
+import { AdminTableLoadingRow } from "@/components/admin/AdminTableLoadingRow";
+import { AdminDataCard } from "@/components/admin/AdminDataCard";
 import { toast } from "sonner";
 
 interface Tenant {
   id: number;
   name: string;
   type: string;
+  timeout?: string;
 }
-
-const initialTenants: Tenant[] = [
-  { id: 1, name: "Admin_ai-priori", type: "ai-priori" },
-  { id: 2, name: "ai-priori", type: "ai-priori" },
-  { id: 3, name: "Kalmar", type: "customer" },
-  { id: 4, name: "TechCorp", type: "customer" },
-  { id: 5, name: "DataFlow", type: "ai-priori" },
-];
 
 const types = ["ai-priori", "customer"];
 type SortKey = "id" | "name" | "type";
 
-const emptyForm = { name: "", type: "" };
+const emptyForm = { name: "", type: "", timeout: "3600" };
+
+function mapTenantRow(o: Record<string, unknown>, i: number): Tenant {
+  return {
+    id: pickNum(o, ["id", "tenant_id", "pk"], i + 1),
+    name: pickStr(o, ["name", "tenant_name", "title"], "—"),
+    type: pickStr(o, ["type", "tenant_type"], "—"),
+    timeout: pickStr(o, ["timeout"], ""),
+  };
+}
 
 export default function Tenants() {
-  const [tenants, setTenants] = useState<Tenant[]>(initialTenants);
+  const queryClient = useQueryClient();
+  const {
+    data: apiTenants,
+    isLoading: apiLoading,
+    isFetching,
+    isPending,
+    error: apiError,
+  } = useQuery({
+    queryKey: ["admin", "tenants"],
+    queryFn: async () => {
+      const raw = await adminTenants({ page: "1", page_size: "500" });
+      const rows = extractKeyedArray<Record<string, unknown>>(raw, "tenants");
+      return rows.map((row, i) => mapTenantRow(row, i));
+    },
+    retry: 1,
+  });
+  const tableRefetching = isFetching && !isPending;
+
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+
+  useEffect(() => {
+    if (apiTenants !== undefined) setTenants(apiTenants);
+  }, [apiTenants]);
+
+  const invalidateTenantGraph = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "organizations"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "user-sessions"] });
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (payload: { name: string; type: string; timeout: string }) =>
+      adminCreateTenants({
+        tenant_name: payload.name,
+        tenant_type: payload.type,
+        timeout: payload.timeout,
+      }),
+    onSuccess: () => invalidateTenantGraph(),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminDeleteTenant(String(id)),
+    onSuccess: () => invalidateTenantGraph(),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: { id: number; name: string; type: string; timeout: string }) =>
+      adminUpdateTenant(String(payload.id), {
+        tenant_name: payload.name,
+        tenant_type: payload.type,
+        tenant_timeout: payload.timeout,
+      }),
+    onSuccess: () => invalidateTenantGraph(),
+  });
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
@@ -73,7 +142,7 @@ export default function Tenants() {
   );
 
   const openAdd = () => {
-    setForm(emptyForm);
+    setForm({ ...emptyForm });
     setEditId(null);
     setDialogMode("add");
     setDialogOpen(true);
@@ -81,7 +150,7 @@ export default function Tenants() {
 
   const openEdit = (t: Tenant, e: React.MouseEvent) => {
     e.stopPropagation();
-    setForm({ name: t.name, type: t.type });
+    setForm({ name: t.name, type: t.type, timeout: t.timeout || "3600" });
     setEditId(t.id);
     setDialogMode("edit");
     setDialogOpen(true);
@@ -93,24 +162,48 @@ export default function Tenants() {
       return;
     }
     if (dialogMode === "add") {
-      setTenants((prev) => [...prev, { id: Date.now(), name: form.name, type: form.type }]);
-      toast.success(`Tenant "${form.name}" added successfully`);
+      createMutation.mutate(
+        { name: form.name, type: form.type, timeout: form.timeout || "3600" },
+        {
+          onSuccess: () => {
+            toast.success(`Tenant "${form.name}" added successfully`);
+            setDialogOpen(false);
+          },
+          onError: (e: Error) => toast.error(e.message || "Create failed"),
+        }
+      );
     } else if (editId !== null) {
-      setTenants((prev) => prev.map((t) => t.id === editId ? { ...t, name: form.name, type: form.type } : t));
-      toast.success(`Tenant "${form.name}" updated successfully`);
+      updateMutation.mutate(
+        { id: editId, name: form.name, type: form.type, timeout: form.timeout || "3600" },
+        {
+          onSuccess: () => {
+            toast.success(`Tenant "${form.name}" updated successfully`);
+            setDialogOpen(false);
+          },
+          onError: (e: Error) => toast.error(e.message),
+        }
+      );
     }
-    setDialogOpen(false);
   };
 
   const handleDelete = (id: number) => {
     const tenant = tenants.find((t) => t.id === id);
-    setTenants((prev) => prev.filter((t) => t.id !== id));
-    setDeleteConfirm(null);
-    toast.success(`Tenant "${tenant?.name}" deleted`);
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        setDeleteConfirm(null);
+        toast.success(`Tenant "${tenant?.name}" deleted`);
+      },
+      onError: (e: Error) => toast.error(e.message),
+    });
   };
 
   return (
     <div className="space-y-5">
+      {apiError && (
+        <p className="text-sm text-destructive">
+          {(apiError as Error).message}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +214,8 @@ export default function Tenants() {
         </Button>
       </div>
 
-      <Card className="rounded-card overflow-hidden border">
+      <AdminDataCard className="rounded-card" isRefetching={tableRefetching}>
+        <Card className="rounded-card overflow-hidden border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -132,6 +226,9 @@ export default function Tenants() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {apiLoading && paginated.length === 0 && (
+              <AdminTableLoadingRow colSpan={4} label="Loading tenants…" />
+            )}
             {paginated.map((t, i) => (
               <TableRow key={t.id} className="hover:bg-muted/20">
                 <TableCell>{(page - 1) * perPage + i + 1}</TableCell>
@@ -145,7 +242,7 @@ export default function Tenants() {
                 </TableCell>
               </TableRow>
             ))}
-            {paginated.length === 0 && (
+            {!apiLoading && paginated.length === 0 && (
               <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No tenants found.</TableCell></TableRow>
             )}
           </TableBody>
@@ -160,6 +257,7 @@ export default function Tenants() {
           <span>{perPage} / page</span>
         </div>
       </Card>
+      </AdminDataCard>
 
       {/* Add / Edit Tenant Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -179,10 +277,39 @@ export default function Tenants() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label>Timeout (seconds)</Label>
+              <Input
+                placeholder="3600"
+                value={form.timeout}
+                onChange={(e) => setForm({ ...form, timeout: e.target.value })}
+                className="rounded-input"
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="rounded-button" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button className="rounded-button" onClick={handleSave}>{dialogMode === "add" ? "Add Tenant" : "Save Changes"}</Button>
+            <Button
+              variant="outline"
+              className="rounded-button"
+              disabled={createMutation.isPending || updateMutation.isPending}
+              onClick={() => setDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-button inline-flex items-center"
+              disabled={createMutation.isPending || updateMutation.isPending}
+              onClick={handleSave}
+            >
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+              )}
+              {createMutation.isPending || updateMutation.isPending
+                ? "Saving…"
+                : dialogMode === "add"
+                  ? "Add Tenant"
+                  : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -193,8 +320,16 @@ export default function Tenants() {
           <DialogHeader><DialogTitle>Delete Tenant</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground">Are you sure you want to delete <strong>{tenants.find((t) => t.id === deleteConfirm)?.name}</strong>? This action cannot be undone.</p>
           <DialogFooter>
-            <Button variant="outline" className="rounded-button" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
-            <Button variant="destructive" className="rounded-button" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Delete</Button>
+            <Button variant="outline" className="rounded-button" disabled={deleteMutation.isPending} onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              className="rounded-button inline-flex items-center"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+            >
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

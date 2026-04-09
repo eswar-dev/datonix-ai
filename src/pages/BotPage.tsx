@@ -32,7 +32,7 @@ export default function BotPage() {
   const [showChartInfo, setShowChartInfo] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const botConfig = user ? roleData[user.role].botConfig : null;
+  const botConfig = user ? roleData[user.roleKey].botConfig : null;
 
   useEffect(() => {
     if (botConfig) {

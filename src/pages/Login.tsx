@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LOGIN_QUICK_ACCOUNTS } from "@/const.js";
 import factoryImg from "@/assets/factory-worker.jpg";
 
 function LoginLogo() {
@@ -29,23 +30,68 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyBg = body.style.background;
+    const prevHtmlMinH = html.style.minHeight;
+    const prevBodyMinH = body.style.minHeight;
+    html.style.background = "#152030";
+    body.style.background = "#152030";
+    html.style.minHeight = "100%";
+    body.style.minHeight = "100%";
+    return () => {
+      html.style.background = prevHtmlBg;
+      body.style.background = prevBodyBg;
+      html.style.minHeight = prevHtmlMinH;
+      body.style.minHeight = prevBodyMinH;
+    };
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const err = login(email, password);
-    if (err) {
-      setError(err);
-    } else {
-      navigate("/dashboard");
+    setSubmitting(true);
+    try {
+      const err = await login(email, password);
+      if (err) {
+        setError(err);
+      } else {
+        navigate("/dashboard");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleQuickLogin = async (quickEmail: string, quickPassword: string) => {
+    setEmail(quickEmail);
+    setPassword(quickPassword);
+    setError("");
+    setSubmitting(true);
+    try {
+      const err = await login(quickEmail, quickPassword);
+      if (err) {
+        setError(err);
+      } else {
+        navigate("/dashboard");
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen" style={{ minHeight: 600, background: "#152030" }}>
+    <div
+      className="flex min-h-[100dvh] min-h-screen w-full flex-1"
+      style={{ background: "#152030" }}
+    >
       {/* LEFT SIDE — Dark navy theme */}
       <div
-        className="flex flex-1 flex-col justify-center"
+        className="flex min-h-[100dvh] min-h-screen flex-1 flex-col justify-center"
         style={{ background: "#1a2a3a", padding: "60px 70px" }}
       >
         <div className="mb-8">
@@ -125,13 +171,33 @@ export default function Login() {
           {/* Login Button */}
           <button
             type="submit"
-            className="h-11 w-full rounded-full text-sm font-bold text-white uppercase transition-colors"
+            disabled={submitting}
+            className="h-11 w-full rounded-full text-sm font-bold text-white uppercase transition-colors disabled:opacity-60"
             style={{ backgroundColor: "#2563EB", letterSpacing: "1.5px" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1d4ed8")}
+            onMouseEnter={(e) => !submitting && (e.currentTarget.style.backgroundColor = "#1d4ed8")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
           >
-            LOGIN
+            {submitting ? "Signing in…" : "LOGIN"}
           </button>
+
+          {LOGIN_QUICK_ACCOUNTS.length > 0 && (
+            <div className="flex flex-col gap-2 pt-1">
+              <span className="text-xs text-white/45">Quick sign-in</span>
+              <div className="flex flex-wrap gap-2">
+                {LOGIN_QUICK_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.key}
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => handleQuickLogin(acc.email, acc.password)}
+                    className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-medium text-white/85 transition-colors hover:bg-white/10 disabled:opacity-60"
+                  >
+                    {acc.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
 
         <p className="mt-10 text-xs text-center max-w-[420px]" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -141,7 +207,7 @@ export default function Login() {
 
       {/* RIGHT SIDE — Matching dark theme */}
       <div
-        className="hidden md:flex w-1/2 flex-col items-center justify-center"
+        className="hidden min-h-[100dvh] min-h-screen md:flex w-1/2 flex-col items-center justify-center"
         style={{ background: "#152030", padding: "36px 40px" }}
       >
         <h2

@@ -10,22 +10,24 @@ export interface UserAccount {
   initials: string;
   isManager?: boolean;
   linkedRoles?: RoleKey[];
+  /** Sent as X-User-id for API calls (defaults to "1") */
+  apiUserId?: string;
 }
 
 export const userAccounts: UserAccount[] = [
   // AEC — 2 normal users
-  { email: "alex@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Alex Chen", title: "Managing Principal", industry: "AEC", initials: "AC" },
-  { email: "priya@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Priya Sharma", title: "Senior Architect", industry: "AEC", initials: "PS" },
+  { email: "alex@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Alex Chen", title: "Managing Principal", industry: "AEC", initials: "AC", apiUserId: "1" },
+  { email: "priya@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Priya Sharma", title: "Senior Architect", industry: "AEC", initials: "PS", apiUserId: "1" },
   // Manufacturing — 2 normal users
-  { email: "sarah@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Sarah Okafor", title: "Plant Manager", industry: "Manufacturing", initials: "SO" },
-  { email: "david@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "David Kim", title: "Production Supervisor", industry: "Manufacturing", initials: "DK" },
+  { email: "sarah@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Sarah Okafor", title: "Plant Manager", industry: "Manufacturing", initials: "SO", apiUserId: "1" },
+  { email: "david@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "David Kim", title: "Production Supervisor", industry: "Manufacturing", initials: "DK", apiUserId: "1" },
   // Retail — 2 normal users
-  { email: "james@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "James Whitfield", title: "Head of Retail Operations", industry: "Retail", initials: "JW" },
-  { email: "sophie@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Sophie Clark", title: "Store Manager", industry: "Retail", initials: "SC" },
+  { email: "james@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "James Whitfield", title: "Head of Retail Operations", industry: "Retail", initials: "JW", apiUserId: "1" },
+  { email: "sophie@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Sophie Clark", title: "Store Manager", industry: "Retail", initials: "SC", apiUserId: "1" },
   // Manager accounts — 1 per sector, can toggle between individual & admin view
-  { email: "victoria@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Victoria Hayes", title: "Director of Operations", industry: "AEC", initials: "VH", isManager: true, linkedRoles: ["aec_principal"] },
-  { email: "rajesh@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Rajesh Patel", title: "VP Manufacturing", industry: "Manufacturing", initials: "RP", isManager: true, linkedRoles: ["mfg_plant_manager"] },
-  { email: "linda@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Linda Nakamura", title: "Regional Director", industry: "Retail", initials: "LN", isManager: true, linkedRoles: ["retail_ops_head"] },
+  { email: "victoria@meridianarchitects.com", password: "datonix2026", role: "aec_principal", name: "Victoria Hayes", title: "Director of Operations", industry: "AEC", initials: "VH", isManager: true, linkedRoles: ["aec_principal"], apiUserId: "1" },
+  { email: "rajesh@precisionmfg.com", password: "datonix2026", role: "mfg_plant_manager", name: "Rajesh Patel", title: "VP Manufacturing", industry: "Manufacturing", initials: "RP", isManager: true, linkedRoles: ["mfg_plant_manager"], apiUserId: "1" },
+  { email: "linda@urbanretail.com", password: "datonix2026", role: "retail_ops_head", name: "Linda Nakamura", title: "Regional Director", industry: "Retail", initials: "LN", isManager: true, linkedRoles: ["retail_ops_head"], apiUserId: "1" },
 ];
 
 // ─── Manager Admin View Data ───
