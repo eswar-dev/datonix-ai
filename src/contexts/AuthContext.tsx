@@ -3,15 +3,17 @@ import { userAccounts, type UserAccount } from "@/data/roleData";
 
 interface AuthContextType {
   user: UserAccount | null;
-  login: (email: string, password: string) => string | null; // returns error or null
+  login: (email: string, password: string) => string | null;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const STORAGE_KEY = "datapx1_user";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserAccount | null>(() => {
-    const saved = sessionStorage.getItem("datonix_user");
+    const saved = sessionStorage.getItem(STORAGE_KEY);
     if (saved) {
       try { return JSON.parse(saved); } catch { return null; }
     }
@@ -24,13 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     if (!found) return "Invalid email or password";
     setUser(found);
-    sessionStorage.setItem("datonix_user", JSON.stringify(found));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(found));
     return null;
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
-    sessionStorage.removeItem("datonix_user");
+    sessionStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (

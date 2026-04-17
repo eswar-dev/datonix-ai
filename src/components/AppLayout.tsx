@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
-import { ViewModeProvider } from "@/contexts/ViewModeContext";
 import { MachineScopeProvider } from "@/contexts/MachineScopeContext";
 
 function LayoutInner() {
@@ -27,12 +26,9 @@ function LayoutInner() {
 export function AppLayout() {
   return (
     <SidebarStateProvider>
-      <ViewModeProvider>
-        <MachineScopeProvider>
-          <LayoutInner />
-        </MachineScopeProvider>
-      </ViewModeProvider>
+      <MachineScopeProvider>
+        <LayoutInner />
+      </MachineScopeProvider>
     </SidebarStateProvider>
   );
 }
-
