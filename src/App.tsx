@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
-import DataSources from "@/pages/DataSources";
 import DataIngestion from "@/pages/DataIngestion";
 import DataProcessing from "@/pages/DataProcessing";
 import MachineView from "@/pages/MachineView";
@@ -22,7 +21,6 @@ import UserRoles from "@/pages/admin/UserRoles";
 import Users from "@/pages/admin/Users";
 import UserSessions from "@/pages/admin/UserSessions";
 import NotFound from "@/pages/NotFound";
-import DatonixDemo from "@/pages/DatonixDemo";
 import Login from "@/pages/Login";
 
 const queryClient = new QueryClient();
@@ -36,7 +34,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/demo" element={<DatonixDemo />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -44,7 +41,6 @@ const App = () => (
                 <Route path="/data-ingestion" element={<DataIngestion />} />
                 <Route path="/data-processing" element={<DataProcessing />} />
                 <Route path="/machine-view" element={<MachineView />} />
-                <Route path="/data-sources" element={<DataSources />} />
                 <Route path="/bot" element={<BotPage />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
