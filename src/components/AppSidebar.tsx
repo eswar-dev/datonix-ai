@@ -77,7 +77,7 @@ export function AppSidebar() {
           <div className="min-w-0">
             <p className="text-[13px] font-bold text-white truncate">{user?.name || "Guest"}</p>
             <p className="text-[11px] truncate" style={{ color: "#7a9ab5" }}>
-              {user?.industry} • {user?.title}
+              {user?.title}
             </p>
           </div>
         )}
