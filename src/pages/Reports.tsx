@@ -13,7 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, Download, Share2, Maximize2, ZoomIn, ZoomOut, Plus, Search, Bell, Lightbulb } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleData } from "@/data/roleData";
+import { roleData } from "@/data/machineData";
 
 export default function Reports() {
   const { user } = useAuth();

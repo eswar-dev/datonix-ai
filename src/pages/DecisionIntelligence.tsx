@@ -21,7 +21,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
 } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleData } from "@/data/roleData";
+import { roleData } from "@/data/machineData";
 
 const statusColor: Record<string, string> = {
   "New": "bg-accent/10 text-accent border-accent/20",
@@ -46,7 +46,7 @@ function confidenceColor(c: number) {
 
 export default function DecisionIntelligence() {
   const { user } = useAuth();
-  const role = user?.role ?? "aec_principal";
+  const role = user?.role ?? "datapx_user";
   const data = roleData[role].decisionIntelligence;
 
   const [tier] = useState<"lite" | "enterprise">("lite");
