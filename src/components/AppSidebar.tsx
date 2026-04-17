@@ -1,18 +1,21 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Database, LayoutDashboard, Bot, FileText, Brain, Shield,
+  Database, LayoutDashboard, Bot, FileText, Brain, Shield, Cpu, Sigma,
   ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { useAuth } from "@/contexts/AuthContext";
+import { DatapxLogo } from "@/components/DatapxLogo";
 
 const mainNavItems = [
-  { title: "Data Sources", path: "/data-sources", icon: Database },
+  { title: "Data Ingestion", path: "/data-ingestion", icon: Database },
+  { title: "Data Processing", path: "/data-processing", icon: Sigma },
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { title: "Datonix AI", path: "/bot", icon: Bot },
+  { title: "Machine View", path: "/machine-view", icon: Cpu },
   { title: "Reports", path: "/reports", icon: FileText },
   { title: "Decision Intelligence", path: "/decision-intelligence", icon: Brain },
+  { title: "Datapx1 AI", path: "/bot", icon: Bot },
   { title: "Administration", path: "/admin", icon: Shield },
 ];
 
@@ -24,46 +27,7 @@ const adminNavItems = [
   { title: "User Sessions", path: "/admin/user-sessions", icon: Clock },
 ];
 
-function HexagonLogo({ collapsed }: { collapsed: boolean }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="relative shrink-0">
-        <svg
-          width={collapsed ? 32 : 36}
-          height={collapsed ? 28 : 32}
-          viewBox="0 0 52 44"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M13 2L39 2L52 22L39 42L13 42L0 22Z" stroke="#89D8F8" strokeWidth="2" fill="none" />
-          <circle cx="26" cy="22" r="4.5" fill="#0099FF" />
-          <circle cx="36" cy="23" r="3.8" fill="#0099FF" />
-          <circle cx="26" cy="12" r="3.5" fill="#0099FF" />
-          <circle cx="16" cy="22" r="3.2" fill="#0099FF" />
-          <circle cx="26" cy="33" r="3.2" fill="#0099FF" />
-          <circle cx="36" cy="33" r="1.8" fill="#0099FF" />
-          <circle cx="16" cy="12" r="1.4" fill="#0099FF" />
-          <line x1="26" y1="22" x2="36" y2="23" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="26" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="16" y2="22" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="26" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="36" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
-          <line x1="26" y1="22" x2="16" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
-        </svg>
-      </div>
-      {!collapsed && (
-        <div className="min-w-0">
-          <h1 className="text-[18px] font-black tracking-tight leading-tight" style={{ fontFamily: "'Arial Black', 'Arial', sans-serif", color: "#0099FF" }}>
-            Datonix
-          </h1>
-          <p className="text-[4px] font-bold uppercase tracking-[2.2px]" style={{ color: "#aaccdd" }}>
-            AI THAT MAKES DECISIONS ACTIONABLE
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
+
 
 export function AppSidebar() {
   const { collapsed, toggle } = useSidebarState();
@@ -95,7 +59,7 @@ export function AppSidebar() {
         )}
         style={{ background: "#152030", borderRadius: "10px 10px 0 0" }}
       >
-        <HexagonLogo collapsed={collapsed} />
+        <DatapxLogo collapsed={collapsed} />
       </div>
 
       {/* User Profile */}

@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 import { ViewModeProvider } from "@/contexts/ViewModeContext";
+import { MachineScopeProvider } from "@/contexts/MachineScopeContext";
 
 function LayoutInner() {
   const { collapsed } = useSidebarState();
@@ -27,8 +28,11 @@ export function AppLayout() {
   return (
     <SidebarStateProvider>
       <ViewModeProvider>
-        <LayoutInner />
+        <MachineScopeProvider>
+          <LayoutInner />
+        </MachineScopeProvider>
       </ViewModeProvider>
     </SidebarStateProvider>
   );
 }
+

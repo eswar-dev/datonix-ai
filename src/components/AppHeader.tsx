@@ -13,8 +13,11 @@ import { useViewMode } from "@/contexts/ViewModeContext";
 
 const routeNames: Record<string, string> = {
   "/dashboard": "Dashboard",
+  "/data-ingestion": "Data Ingestion",
+  "/data-processing": "Data Processing",
   "/data-sources": "Data Sources",
-  "/bot": "Datonix Bot",
+  "/machine-view": "Machine View",
+  "/bot": "Datapx1 AI",
   "/reports": "Reports",
   "/decision-intelligence": "Decision Intelligence",
   "/admin": "Administration",
@@ -140,8 +143,8 @@ export function AppHeader() {
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader><DialogTitle>Search Datonix</DialogTitle></DialogHeader>
-          <Input placeholder="Type to search datasets, reports, actions…" autoFocus />
+          <DialogHeader><DialogTitle>Search Datapx1</DialogTitle></DialogHeader>
+          <Input placeholder="Type to search machines, datasets, reports…" autoFocus />
           <div className="py-8 text-center text-sm text-muted-foreground">Start typing to search across the platform</div>
         </DialogContent>
       </Dialog>

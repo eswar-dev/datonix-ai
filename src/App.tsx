@@ -8,6 +8,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import DataSources from "@/pages/DataSources";
+import DataIngestion from "@/pages/DataIngestion";
+import DataProcessing from "@/pages/DataProcessing";
+import MachineView from "@/pages/MachineView";
 import BotPage from "@/pages/BotPage";
 import Reports from "@/pages/Reports";
 import DecisionIntelligence from "@/pages/DecisionIntelligence";
@@ -38,6 +41,9 @@ const App = () => (
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/data-ingestion" element={<DataIngestion />} />
+                <Route path="/data-processing" element={<DataProcessing />} />
+                <Route path="/machine-view" element={<MachineView />} />
                 <Route path="/data-sources" element={<DataSources />} />
                 <Route path="/bot" element={<BotPage />} />
                 <Route path="/reports" element={<Reports />} />

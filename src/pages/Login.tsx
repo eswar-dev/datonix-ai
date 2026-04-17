@@ -6,20 +6,23 @@ import factoryImg from "@/assets/factory-worker.jpg";
 
 function LoginLogo() {
   return (
-    <svg viewBox="0 0 220 50" width="220" height="50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="22,25 34,7 58,7 70,25 58,43 34,43" stroke="#89D8F8" strokeWidth="3" fill="none" />
-      <circle cx="46" cy="25" r="7" fill="#0099FF" />
-      <circle cx="60" cy="21" r="5.2" fill="#0099FF" />
-      <circle cx="46" cy="13" r="4.8" fill="#0099FF" />
-      <circle cx="33" cy="21" r="4.3" fill="#0099FF" />
-      <circle cx="46" cy="36" r="4.3" fill="#0099FF" />
-      <circle cx="59" cy="34" r="2.6" fill="#0099FF" />
-      <circle cx="34" cy="14" r="2" fill="#0099FF" />
-      <text x="78" y="32" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="28" fill="#0099FF">Datonix</text>
-      <text x="78" y="44" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="5.5" fill="#6a9ab8" letterSpacing="0.7">AI THAT MAKES DECISIONS ACTIONABLE</text>
+    <svg viewBox="0 0 260 60" width="260" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 12 H38 a14 14 0 0 1 14 14 v8 a14 14 0 0 1 -14 14 H10 Z" fill="none" stroke="#1AABEC" strokeWidth="3" />
+      <circle cx="22" cy="30" r="3" fill="#1AABEC" />
+      <circle cx="34" cy="20" r="3" fill="#1AABEC" />
+      <circle cx="34" cy="40" r="3" fill="#1AABEC" />
+      <circle cx="44" cy="30" r="3" fill="#1AABEC" />
+      <line x1="22" y1="30" x2="34" y2="20" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
+      <line x1="22" y1="30" x2="34" y2="40" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
+      <line x1="34" y1="20" x2="44" y2="30" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
+      <line x1="34" y1="40" x2="44" y2="30" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
+      <text x="68" y="38" fontFamily="'Sora', 'Arial Black', sans-serif" fontWeight="900" fontSize="30" fill="#1AABEC" letterSpacing="-1">Datapx</text>
+      <text x="196" y="38" fontFamily="'Sora', 'Arial Black', sans-serif" fontWeight="900" fontSize="30" fill="#FF8A3D" letterSpacing="-1">1</text>
+      <text x="68" y="52" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="6" fill="#6a9ab8" letterSpacing="1.4">INDUSTRIAL DECISION INTELLIGENCE</text>
     </svg>
   );
 }
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -135,7 +138,7 @@ export default function Login() {
         </form>
 
         <p className="mt-10 text-xs text-center max-w-[420px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-          © All Rights Reserved, AI-PRIORI 2026
+          © All Rights Reserved, Datapx1 2026
         </p>
       </div>
 
@@ -148,10 +151,10 @@ export default function Login() {
           className="mb-6 text-center text-[22px] font-bold uppercase"
           style={{ color: "#2563EB", letterSpacing: "1px" }}
         >
-          WELCOME TO DATONIX
+          WELCOME TO DATAPX1
         </h2>
         <p className="mb-6 text-center text-sm max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Decision Intelligence Platform — Role-first analytics for AEC, Manufacturing & Retail
+          Industrial Decision Intelligence — unify ERP, machine telemetry & operations into actionable insight
         </p>
         <img
           src={factoryImg}
