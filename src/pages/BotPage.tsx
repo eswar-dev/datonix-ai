@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Send, ThumbsUp, ThumbsDown, Pin, Trash2, Search, Info, MessageSquareText, TableIcon, BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleData, type BotResponse } from "@/data/roleData";
+import { roleData, type BotResponse } from "@/data/machineData";
 
 interface Message {
   id: string;

@@ -21,7 +21,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
 } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleData } from "@/data/roleData";
+import { roleData } from "@/data/machineData";
 
 const statusColor: Record<string, string> = {
   "New": "bg-accent/10 text-accent border-accent/20",
