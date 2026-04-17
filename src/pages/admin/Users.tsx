@@ -13,50 +13,44 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Search, Pencil, Trash2, Plus } from "lucide-react";
+import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
-  org: string;
+  title: string;
   lastActive: string;
-  status: string;
-  linkedManager: string;
+  status: "Active" | "Inactive";
 }
 
 const initialUsers: User[] = [
-  { id: "1", name: "Alex Chen", email: "alex@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "2 hours ago", status: "Active", linkedManager: "Victoria Hayes" },
-  { id: "2", name: "Priya Sharma", email: "priya@meridianarchitects.com", role: "User", org: "Meridian Architects", lastActive: "1 day ago", status: "Active", linkedManager: "Victoria Hayes" },
-  { id: "3", name: "Victoria Hayes", email: "victoria@meridianarchitects.com", role: "Manager", org: "Meridian Architects", lastActive: "Now", status: "Active", linkedManager: "—" },
-  { id: "4", name: "Sarah Okafor", email: "sarah@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "3 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
-  { id: "5", name: "David Kim", email: "david@precisionmfg.com", role: "User", org: "Precision Manufacturing", lastActive: "5 hours ago", status: "Active", linkedManager: "Rajesh Patel" },
-  { id: "6", name: "Rajesh Patel", email: "rajesh@precisionmfg.com", role: "Manager", org: "Precision Manufacturing", lastActive: "30m ago", status: "Active", linkedManager: "—" },
-  { id: "7", name: "James Whitfield", email: "james@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "1 hour ago", status: "Active", linkedManager: "Linda Nakamura" },
-  { id: "8", name: "Sophie Clark", email: "sophie@urbanretail.com", role: "User", org: "Urban Retail", lastActive: "2 days ago", status: "Inactive", linkedManager: "Linda Nakamura" },
-  { id: "9", name: "Linda Nakamura", email: "linda@urbanretail.com", role: "Manager", org: "Urban Retail", lastActive: "1h ago", status: "Active", linkedManager: "—" },
+  { id: "1", name: "Alex Chen",       email: "alex@datapx1.com",    title: "Operations Lead",      lastActive: "Now",       status: "Active" },
+  { id: "2", name: "Priya Sharma",    email: "priya@datapx1.com",   title: "Maintenance Engineer", lastActive: "12m ago",   status: "Active" },
+  { id: "3", name: "Sarah Okafor",    email: "sarah@datapx1.com",   title: "Plant Supervisor",     lastActive: "1h ago",    status: "Active" },
+  { id: "4", name: "David Kim",       email: "david@datapx1.com",   title: "Reliability Engineer", lastActive: "3h ago",    status: "Active" },
+  { id: "5", name: "James Whitfield", email: "james@datapx1.com",   title: "Production Analyst",   lastActive: "Yesterday", status: "Active" },
+  { id: "6", name: "Sophie Clark",    email: "sophie@datapx1.com",  title: "Quality Inspector",    lastActive: "2 days ago", status: "Inactive" },
 ];
 
-const roles = ["User", "Manager", "Admin", "Analyst", "Viewer"];
-const orgs = ["Meridian Architects", "Precision Manufacturing", "Urban Retail"];
-const statuses = ["Active", "Inactive"];
+const titles = [
+  "Operations Lead",
+  "Maintenance Engineer",
+  "Plant Supervisor",
+  "Reliability Engineer",
+  "Production Analyst",
+  "Quality Inspector",
+  "Process Engineer",
+];
+const statuses: User["status"][] = ["Active", "Inactive"];
 
-const roleColor: Record<string, string> = {
-  Admin: "bg-accent/10 text-accent border-accent/20",
-  Manager: "bg-purple/10 text-purple border-purple/20",
-  User: "bg-primary/10 text-primary border-primary/20",
-  Analyst: "bg-teal/10 text-teal border-teal/20",
-  Viewer: "bg-muted text-muted-foreground",
-};
-
-const statusColor: Record<string, string> = {
+const statusColor: Record<User["status"], string> = {
   Active: "bg-success/10 text-success border-success/20",
   Inactive: "bg-muted text-muted-foreground",
 };
 
-const emptyForm = { name: "", email: "", role: "", org: "", status: "Active", linkedManager: "" };
+const emptyForm = { name: "", email: "", title: "", status: "Active" as User["status"] };
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -67,13 +61,11 @@ export default function Users() {
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const managersList = users.filter((u) => u.role === "Manager").map((u) => u.name);
-
   const filtered = users.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.org.toLowerCase().includes(search.toLowerCase())
+      u.title.toLowerCase().includes(search.toLowerCase())
   );
 
   const openAdd = () => {
@@ -85,21 +77,14 @@ export default function Users() {
 
   const openEdit = (u: User, e: React.MouseEvent) => {
     e.stopPropagation();
-    setForm({
-      name: u.name,
-      email: u.email,
-      role: u.role,
-      org: u.org,
-      status: u.status,
-      linkedManager: u.linkedManager === "—" ? "" : u.linkedManager,
-    });
+    setForm({ name: u.name, email: u.email, title: u.title, status: u.status });
     setEditId(u.id);
     setDialogMode("edit");
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!form.name || !form.email || !form.role || !form.org) {
+    if (!form.name || !form.email || !form.title) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -108,31 +93,21 @@ export default function Users() {
         id: String(Date.now()),
         name: form.name,
         email: form.email,
-        role: form.role,
-        org: form.org,
+        title: form.title,
         status: form.status,
         lastActive: "Just now",
-        linkedManager: form.role === "Manager" ? "—" : (form.linkedManager || "—"),
       };
       setUsers((prev) => [...prev, newUser]);
-      toast.success(`User "${form.name}" added successfully`);
+      toast.success(`User "${form.name}" added`);
     } else if (editId) {
       setUsers((prev) =>
         prev.map((u) =>
           u.id === editId
-            ? {
-                ...u,
-                name: form.name,
-                email: form.email,
-                role: form.role,
-                org: form.org,
-                status: form.status,
-                linkedManager: form.role === "Manager" ? "—" : (form.linkedManager || "—"),
-              }
+            ? { ...u, name: form.name, email: form.email, title: form.title, status: form.status }
             : u
         )
       );
-      toast.success(`User "${form.name}" updated successfully`);
+      toast.success(`User "${form.name}" updated`);
     }
     setDialogOpen(false);
   };
@@ -168,9 +143,7 @@ export default function Users() {
               <TableHead className="w-16">S.No</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Linked Manager</TableHead>
+              <TableHead>Title</TableHead>
               <TableHead>Last Active</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-28">Actions</TableHead>
@@ -189,44 +162,21 @@ export default function Users() {
                   </div>
                 </TableCell>
                 <TableCell>{u.email}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={roleColor[u.role] || "bg-muted text-muted-foreground"}>
-                    {u.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>{u.org}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={u.linkedManager !== "—" ? "bg-accent/10 text-accent border-accent/20" : "bg-muted text-muted-foreground"}
-                  >
-                    {u.linkedManager}
-                  </Badge>
-                </TableCell>
+                <TableCell className="text-muted-foreground">{u.title}</TableCell>
                 <TableCell className="text-muted-foreground">{u.lastActive}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={statusColor[u.status]}>
-                    {u.status}
-                  </Badge>
+                  <Badge variant="outline" className={statusColor[u.status]}>{u.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-accent"
-                      onClick={(e) => openEdit(u, e)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-accent" onClick={(e) => openEdit(u, e)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteConfirm(u.id);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); setDeleteConfirm(u.id); }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -236,7 +186,7 @@ export default function Users() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -245,7 +195,6 @@ export default function Users() {
         </Table>
       </Card>
 
-      {/* Add / Edit User Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -266,7 +215,7 @@ export default function Users() {
                 <Label>Email <span className="text-destructive">*</span></Label>
                 <Input
                   type="email"
-                  placeholder="john@company.com"
+                  placeholder="john@datapx1.com"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="rounded-input"
@@ -275,32 +224,19 @@ export default function Users() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Role <span className="text-destructive">*</span></Label>
-                <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v, linkedManager: v === "Manager" ? "" : form.linkedManager })}>
-                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select role" /></SelectTrigger>
+                <Label>Title <span className="text-destructive">*</span></Label>
+                <Select value={form.title} onValueChange={(v) => setForm({ ...form, title: v })}>
+                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select title" /></SelectTrigger>
                   <SelectContent>
-                    {roles.map((r) => (
-                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    {titles.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Organization <span className="text-destructive">*</span></Label>
-                <Select value={form.org} onValueChange={(v) => setForm({ ...form, org: v })}>
-                  <SelectTrigger className="rounded-input"><SelectValue placeholder="Select organization" /></SelectTrigger>
-                  <SelectContent>
-                    {orgs.map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as User["status"] })}>
                   <SelectTrigger className="rounded-input"><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>
                     {statuses.map((s) => (
@@ -309,20 +245,6 @@ export default function Users() {
                   </SelectContent>
                 </Select>
               </div>
-              {form.role !== "Manager" && (
-                <div className="space-y-2">
-                  <Label>Linked Manager</Label>
-                  <Select value={form.linkedManager} onValueChange={(v) => setForm({ ...form, linkedManager: v })}>
-                    <SelectTrigger className="rounded-input"><SelectValue placeholder="Select manager" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Manager</SelectItem>
-                      {managersList.map((m) => (
-                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
           </div>
           <DialogFooter>
@@ -334,7 +256,6 @@ export default function Users() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
