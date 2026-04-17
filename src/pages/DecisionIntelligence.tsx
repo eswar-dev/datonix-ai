@@ -46,7 +46,7 @@ function confidenceColor(c: number) {
 
 export default function DecisionIntelligence() {
   const { user } = useAuth();
-  const role = user?.role ?? "aec_principal";
+  const role = user?.role ?? "datapx_user";
   const data = roleData[role].decisionIntelligence;
 
   const [tier] = useState<"lite" | "enterprise">("lite");
