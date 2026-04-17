@@ -59,7 +59,7 @@ export function AppSidebar() {
         )}
         style={{ background: "#152030", borderRadius: "10px 10px 0 0" }}
       >
-        <HexagonLogo collapsed={collapsed} />
+        <DatapxLogo collapsed={collapsed} />
       </div>
 
       {/* User Profile */}
