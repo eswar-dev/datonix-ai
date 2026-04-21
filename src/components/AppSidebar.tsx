@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Database, LayoutDashboard, Bot, FileText, Brain, Shield, Cpu, Sigma,
+  Database, LayoutDashboard, Bot, Brain, Shield, Cpu, Sigma,
   ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
