@@ -330,7 +330,7 @@ function SingleMachineView({ machineId }: { machineId: string }) {
   );
 }
 
-export default function MachineView() {
+export default function Dashboard() {
   const { scope, setScope, selectedMachineId, setSelectedMachineId } = useMachineScope();
 
   return (

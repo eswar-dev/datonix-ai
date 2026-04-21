@@ -6,10 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
-import Dashboard from "@/pages/Dashboard";
 import DataIngestion from "@/pages/DataIngestion";
 import DataProcessing from "@/pages/DataProcessing";
-import MachineView from "@/pages/MachineView";
+import Dashboard from "@/pages/Dashboard";
 import BotPage from "@/pages/BotPage";
 import DataQuality from "@/pages/DataQuality";
 import DecisionIntelligence from "@/pages/DecisionIntelligence";
@@ -40,7 +39,6 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/data-ingestion" element={<DataIngestion />} />
                 <Route path="/data-processing" element={<DataProcessing />} />
-                <Route path="/machine-view" element={<MachineView />} />
                 <Route path="/bot" element={<BotPage />} />
                 <Route path="/data-quality" element={<DataQuality />} />
                 <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
