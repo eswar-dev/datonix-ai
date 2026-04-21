@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Database, LayoutDashboard, Bot, Brain, Shield, Sigma,
+  Database, LayoutDashboard, Bot, Boxes, Shield, Sigma,
   ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const mainNavItems = [
   { title: "Data Processing", path: "/data-processing", icon: Sigma },
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Data Quality", path: "/data-quality", icon: ShieldCheck },
-  { title: "Decision Intelligence", path: "/decision-intelligence", icon: Brain },
+  { title: "Data Modelling", path: "/data-modelling", icon: Boxes },
   { title: "Datapx1 AI", path: "/bot", icon: Bot },
   { title: "Administration", path: "/admin", icon: Shield },
 ];

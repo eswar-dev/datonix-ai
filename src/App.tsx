@@ -11,7 +11,7 @@ import DataProcessing from "@/pages/DataProcessing";
 import Dashboard from "@/pages/Dashboard";
 import BotPage from "@/pages/BotPage";
 import DataQuality from "@/pages/DataQuality";
-import DecisionIntelligence from "@/pages/DecisionIntelligence";
+import DataModelling from "@/pages/DataModelling";
 import Admin from "@/pages/Admin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import Tenants from "@/pages/admin/Tenants";
@@ -41,7 +41,7 @@ const App = () => (
                 <Route path="/data-processing" element={<DataProcessing />} />
                 <Route path="/bot" element={<BotPage />} />
                 <Route path="/data-quality" element={<DataQuality />} />
-                <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
+                <Route path="/data-modelling" element={<DataModelling />} />
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Admin />} />
                   <Route path="tenants" element={<Tenants />} />
