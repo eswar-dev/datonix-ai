@@ -9,7 +9,7 @@ import { AppLayout } from "@/components/AppLayout";
 import DataIngestion from "@/pages/DataIngestion";
 import DataProcessing from "@/pages/DataProcessing";
 import Dashboard from "@/pages/Dashboard";
-import BotPage from "@/pages/BotPage";
+import VectorAI from "@/pages/VectorAI";
 import DataQuality from "@/pages/DataQuality";
 import DataModelling from "@/pages/DataModelling";
 import Admin from "@/pages/Admin";
@@ -39,7 +39,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/data-ingestion" element={<DataIngestion />} />
                 <Route path="/data-processing" element={<DataProcessing />} />
-                <Route path="/bot" element={<BotPage />} />
+                <Route path="/bot" element={<VectorAI />} />
                 <Route path="/data-quality" element={<DataQuality />} />
                 <Route path="/data-modelling" element={<DataModelling />} />
                 <Route path="/admin" element={<AdminLayout />}>

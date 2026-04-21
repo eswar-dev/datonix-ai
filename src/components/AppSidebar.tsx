@@ -14,7 +14,7 @@ const mainNavItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Data Quality", path: "/data-quality", icon: ShieldCheck },
   { title: "Data Modelling", path: "/data-modelling", icon: Boxes },
-  { title: "Datapx1 AI", path: "/bot", icon: Bot },
+  { title: "Vector AI", path: "/bot", icon: Bot },
   { title: "Administration", path: "/admin", icon: Shield },
 ];
 
