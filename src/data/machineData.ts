@@ -119,6 +119,115 @@ export const temperatureDistribution = [
   { bucket: "150+", count: 6 },
 ];
 
+// ─── Data Quality Assessment ───────────────────────────────────────────────
+// Raw vs synthetic (cleaned + enriched) dataset for the Data Quality page.
+
+export const dataQualityColumns = [
+  "timestamp", "machine_id", "temperature_c", "vibration_mms", "pressure_bar",
+  "output_units", "scrap_count", "shift", "operator_id",
+];
+
+// Raw dataset — contains nulls, outliers, blanks (to be visually highlighted)
+export const rawQualityRows: (string | number | null)[][] = [
+  ["2026-04-17 08:00", "M-101", 62.4, 2.1, 5.4, 48, 1, "A", "OP-12"],
+  ["2026-04-17 09:00", "M-102", null, 3.4, 6.8, 44, 2, "A", "OP-07"],
+  ["2026-04-17 10:00", "M-104", 84.2, 2.7, null, 51, 0, "A", null],
+  ["2026-04-17 11:00", "M-105", 41.0, 1.2, 2.1, null, 1, "A", "OP-19"],
+  ["2026-04-17 12:00", "M-106", 246.5, 6.8, 7.9, 12, 6, "B", "OP-03"], // outlier temp
+  ["2026-04-17 13:00", "M-107", 195.0, 1.8, 12.4, 58, 0, "B", "OP-22"],
+  ["2026-04-17 14:00", "M-108", 68.1, null, 5.0, 47, 1, "B", "OP-11"],
+  ["2026-04-17 15:00", "M-101", 63.2, 2.0, 5.5, 49, 0, "B", "OP-12"],
+  ["2026-04-17 16:00", "M-102", 71.0, 3.2, 6.7, null, null, "C", "OP-07"],
+  ["2026-04-17 17:00", "M-104", 83.6, 2.8, 4.4, 50, 1, "C", "OP-31"],
+  ["2026-04-17 18:00", "M-105", null, 1.3, 2.0, 38, 0, "C", "OP-19"],
+  ["2026-04-17 19:00", "M-107", 196.2, 1.9, 12.5, 60, 0, "C", "OP-22"],
+];
+
+// Synthetic dataset — cleaned (imputed) + enriched with derived columns
+export const syntheticQualityColumns = [
+  ...dataQualityColumns,
+  "machine_age_yrs", "energy_kwh", "health_score",
+];
+
+export const syntheticQualityRows: (string | number)[][] = [
+  ["2026-04-17 08:00", "M-101", 62.4, 2.1, 5.4, 48, 1, "A", "OP-12", 4.2, 18.3, 92],
+  ["2026-04-17 09:00", "M-102", 70.8, 3.4, 6.8, 44, 2, "A", "OP-07", 6.1, 22.7, 78],
+  ["2026-04-17 10:00", "M-104", 84.2, 2.7, 5.5, 51, 0, "A", "OP-15", 3.8, 19.4, 88],
+  ["2026-04-17 11:00", "M-105", 41.0, 1.2, 2.1, 41, 1, "A", "OP-19", 7.4, 12.1, 62],
+  ["2026-04-17 12:00", "M-106", 96.0, 6.8, 7.9, 12, 6, "B", "OP-03", 9.2, 31.5, 28],
+  ["2026-04-17 13:00", "M-107", 195.0, 1.8, 12.4, 58, 0, "B", "OP-22", 2.1, 28.9, 96],
+  ["2026-04-17 14:00", "M-108", 68.1, 2.9, 5.0, 47, 1, "B", "OP-11", 5.0, 17.6, 84],
+  ["2026-04-17 15:00", "M-101", 63.2, 2.0, 5.5, 49, 0, "B", "OP-12", 4.2, 18.5, 93],
+  ["2026-04-17 16:00", "M-102", 71.0, 3.2, 6.7, 46, 1, "C", "OP-07", 6.1, 22.4, 79],
+  ["2026-04-17 17:00", "M-104", 83.6, 2.8, 4.4, 50, 1, "C", "OP-31", 3.8, 19.2, 87],
+  ["2026-04-17 18:00", "M-105", 42.1, 1.3, 2.0, 38, 0, "C", "OP-19", 7.4, 11.8, 60],
+  ["2026-04-17 19:00", "M-107", 196.2, 1.9, 12.5, 60, 0, "C", "OP-22", 2.1, 29.2, 97],
+];
+
+// KPI summaries for both views
+export const rawQualityKpis = {
+  totalRows: 18420,
+  completeRows: 16280,
+  missingCells: 2148,
+  missingPct: 2.7,
+  outliers: 142,
+  duplicates: 38,
+  accuracy: 86.4,
+  consistency: 81.2,
+  validity: 88.7,
+  qualityScore: 72,
+};
+
+export const syntheticQualityKpis = {
+  totalRows: 18420,
+  completeRows: 18420,
+  missingCells: 0,
+  missingPct: 0,
+  outliers: 6,
+  duplicates: 0,
+  accuracy: 99.1,
+  consistency: 98.4,
+  validity: 99.6,
+  qualityScore: 96,
+  enrichedColumns: 3,
+};
+
+// Side-by-side comparison rows (metric, raw, synthetic, delta indicator)
+export const qualityComparison = [
+  { metric: "Quality Score",      raw: "72 / 100", synthetic: "96 / 100", deltaPct: 33.3,  better: true },
+  { metric: "Data Accuracy",      raw: "86.4%",    synthetic: "99.1%",    deltaPct: 14.7,  better: true },
+  { metric: "Completeness",       raw: "88.4%",    synthetic: "100%",     deltaPct: 13.1,  better: true },
+  { metric: "Consistency",        raw: "81.2%",    synthetic: "98.4%",    deltaPct: 21.2,  better: true },
+  { metric: "Validity",           raw: "88.7%",    synthetic: "99.6%",    deltaPct: 12.3,  better: true },
+  { metric: "Missing Cells",      raw: "2,148",    synthetic: "0",        deltaPct: -100,  better: true },
+  { metric: "Outliers",           raw: "142",      synthetic: "6",        deltaPct: -95.8, better: true },
+  { metric: "Duplicate Records",  raw: "38",       synthetic: "0",        deltaPct: -100,  better: true },
+  { metric: "Feature Columns",    raw: "9",        synthetic: "12",       deltaPct: 33.3,  better: true },
+];
+
+// Per-column missing % comparison for chart
+export const qualityColumnComparison = [
+  { column: "temperature_c", raw: 4.2, synthetic: 0 },
+  { column: "vibration_mms", raw: 1.8, synthetic: 0 },
+  { column: "pressure_bar",  raw: 3.1, synthetic: 0 },
+  { column: "output_units",  raw: 2.4, synthetic: 0 },
+  { column: "scrap_count",   raw: 1.2, synthetic: 0 },
+  { column: "operator_id",   raw: 5.6, synthetic: 0 },
+];
+
+// Cleaning operations applied (for synthetic view + comparison)
+export const cleaningOperations = [
+  { op: "Mean imputation",     target: "temperature_c", count: 774,  description: "Replaced NaN with rolling 1-hr mean per machine" },
+  { op: "Median imputation",   target: "vibration_mms", count: 332,  description: "Replaced NaN with 24-hr median per machine" },
+  { op: "Forward-fill",        target: "pressure_bar",  count: 571,  description: "Forward-filled gaps ≤ 5 minutes" },
+  { op: "Mode imputation",     target: "operator_id",   count: 1031, description: "Filled by most-frequent operator per shift+machine" },
+  { op: "Outlier capping",     target: "temperature_c", count: 136,  description: "Capped values above P99.5 (e.g. 246°C → 96°C)" },
+  { op: "Dedup (timestamp+id)", target: "all rows",     count: 38,   description: "Removed exact duplicate telemetry records" },
+  { op: "Enrich: machine_age_yrs", target: "+1 column", count: 18420, description: "Joined from asset registry" },
+  { op: "Enrich: energy_kwh",  target: "+1 column",     count: 18420, description: "Computed from current × voltage × runtime" },
+  { op: "Enrich: health_score", target: "+1 column",    count: 18420, description: "Composite of vibration, temp, age & risk" },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Datapx1 — User accounts & all per-page mock content
 //  Single industrial role. No industries / managers / hierarchy.
