@@ -16,7 +16,7 @@ const routeNames: Record<string, string> = {
   "/data-processing": "Data Processing",
   "/bot": "Datapx1 AI",
   "/data-quality": "Data Quality",
-  "/decision-intelligence": "Decision Intelligence",
+  "/data-modelling": "Data Modelling",
   "/admin": "Administration",
 };
 
