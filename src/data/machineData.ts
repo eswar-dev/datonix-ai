@@ -228,6 +228,130 @@ export const cleaningOperations = [
   { op: "Enrich: health_score", target: "+1 column",    count: 18420, description: "Composite of vibration, temp, age & risk" },
 ];
 
+// ─── Data Modelling — KPI catalog ──────────────────────────────────────────
+export interface KpiCard {
+  id: string;
+  title: string;
+  column: string;
+  logic: string;
+  value: string;
+  trend: "up" | "down" | "flat";
+  delta: string;
+  description: string;
+  unit: string;
+  series: { label: string; value: number }[];
+}
+
+export const kpiCatalog: KpiCard[] = [
+  {
+    id: "avg_speed",
+    title: "Average Speed",
+    column: "speed_kmph",
+    logic: "Calculate the mean of the 'speed_kmph' column.",
+    value: "62.4",
+    unit: "km/h",
+    trend: "up",
+    delta: "+3.2%",
+    description: "Mean operating speed across all running machines over the last 24 hours. Useful for benchmarking line throughput.",
+    series: [
+      { label: "Mon", value: 58 }, { label: "Tue", value: 60 }, { label: "Wed", value: 61 },
+      { label: "Thu", value: 63 }, { label: "Fri", value: 65 }, { label: "Sat", value: 62 }, { label: "Sun", value: 64 },
+    ],
+  },
+  {
+    id: "energy_total",
+    title: "Total Energy Consumption",
+    column: "energy_consumption_kwh",
+    logic: "Calculate the sum of the 'energy_consumption_kwh' column.",
+    value: "284,120",
+    unit: "kWh",
+    trend: "up",
+    delta: "+4.1%",
+    description: "Aggregate energy usage across the fleet. Spikes correlate with high-load injection molding cycles.",
+    series: [
+      { label: "W1", value: 64200 }, { label: "W2", value: 68100 }, { label: "W3", value: 71800 }, { label: "W4", value: 80020 },
+    ],
+  },
+  {
+    id: "anomaly_count",
+    title: "Anomaly Score Count",
+    column: "anomaly_score",
+    logic: "Count records with 'anomaly_score' > 0.15 (threshold).",
+    value: "1,229",
+    unit: "records",
+    trend: "down",
+    delta: "-12.4%",
+    description: "Number of telemetry records flagged as anomalous via IQR. Lower is better; trending down indicates improving asset health.",
+    series: [
+      { label: "Mon", value: 220 }, { label: "Tue", value: 198 }, { label: "Wed", value: 184 },
+      { label: "Thu", value: 175 }, { label: "Fri", value: 162 }, { label: "Sat", value: 148 }, { label: "Sun", value: 142 },
+    ],
+  },
+  {
+    id: "maint_ratio",
+    title: "Maintenance Flag Ratio",
+    column: "maintenance_flag",
+    logic: "Ratio of entries with 'maintenance_flag' = 1 to total entries.",
+    value: "8.2%",
+    unit: "ratio",
+    trend: "flat",
+    delta: "+0.1%",
+    description: "Share of telemetry rows where machines were flagged for maintenance. Stable indicates predictable PM cadence.",
+    series: [
+      { label: "Jan", value: 7.8 }, { label: "Feb", value: 8.0 }, { label: "Mar", value: 8.1 }, { label: "Apr", value: 8.2 },
+    ],
+  },
+  {
+    id: "oee_avg",
+    title: "Average Fleet OEE",
+    column: "oee_pct",
+    logic: "Mean of 'oee_pct' across all active machines.",
+    value: "76.1%",
+    unit: "%",
+    trend: "up",
+    delta: "+2.1%",
+    description: "Overall Equipment Effectiveness — composite of availability, performance, and quality.",
+    series: [
+      { label: "Jan", value: 72 }, { label: "Feb", value: 73 }, { label: "Mar", value: 74 }, { label: "Apr", value: 76 },
+    ],
+  },
+  {
+    id: "vibration_max",
+    title: "Peak Vibration",
+    column: "vibration_g",
+    logic: "Maximum value of 'vibration_g' in last 24h per machine.",
+    value: "6.8",
+    unit: "mm/s",
+    trend: "up",
+    delta: "+18.2%",
+    description: "Highest vibration reading observed. Spike on M-106 indicates bearing degradation.",
+    series: [
+      { label: "00h", value: 2.1 }, { label: "04h", value: 2.4 }, { label: "08h", value: 3.2 },
+      { label: "12h", value: 4.8 }, { label: "16h", value: 5.9 }, { label: "20h", value: 6.8 },
+    ],
+  },
+];
+
+// ─── Outlier Detection (Modelling tab) ─────────────────────────────────────
+export const outlierConfig = {
+  targetColumns: ["energy_consumption_kwh", "vibration_g", "system_temp_c", "speed_kmph"],
+  defaultTarget: "energy_consumption_kwh",
+  method: "Interquartile Range (IQR)",
+  lowerBound: 0.14,
+  upperBound: 24.13,
+  totalOutliers: 1229,
+  insight:
+    "This analysis identifies unusual patterns or anomalies in your energy_consumption_kwh data. Outliers can indicate data quality issues, fraud, exceptional performance, or opportunities for investigation.",
+  rows: [
+    { timestamp: "2026-03-01 00:06:00", mode: "idle",         speed: 0.0,    traction: 0.0,    energy: 0.0,   temp: 39.589, vibration: 0.357, wear: 16.581, health: 0.834 },
+    { timestamp: "2026-03-01 00:12:00", mode: "acceleration", speed: 94.308, traction: 1463.4, energy: 24.39, temp: 68.675, vibration: 0.376, wear: 8.993,  health: 0.910 },
+    { timestamp: "2026-03-01 00:18:00", mode: "cruise",       speed: 88.120, traction: 1240.1, energy: 25.62, temp: 71.200, vibration: 0.402, wear: 12.470, health: 0.886 },
+    { timestamp: "2026-03-01 00:24:00", mode: "brake",        speed: 12.300, traction: 230.4,  energy: 0.05,  temp: 65.110, vibration: 0.288, wear: 14.220, health: 0.901 },
+    { timestamp: "2026-03-01 00:30:00", mode: "acceleration", speed: 102.10, traction: 1580.2, energy: 26.18, temp: 73.420, vibration: 0.418, wear: 9.870,  health: 0.872 },
+    { timestamp: "2026-03-01 00:36:00", mode: "idle",         speed: 0.0,    traction: 0.0,    energy: 0.0,   temp: 41.220, vibration: 0.341, wear: 17.110, health: 0.821 },
+  ],
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Datapx1 — User accounts & all per-page mock content
 //  Single industrial role. No industries / managers / hierarchy.
