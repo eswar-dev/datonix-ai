@@ -11,7 +11,7 @@ import DataIngestion from "@/pages/DataIngestion";
 import DataProcessing from "@/pages/DataProcessing";
 import MachineView from "@/pages/MachineView";
 import BotPage from "@/pages/BotPage";
-import Reports from "@/pages/Reports";
+import DataQuality from "@/pages/DataQuality";
 import DecisionIntelligence from "@/pages/DecisionIntelligence";
 import Admin from "@/pages/Admin";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -42,7 +42,7 @@ const App = () => (
                 <Route path="/data-processing" element={<DataProcessing />} />
                 <Route path="/machine-view" element={<MachineView />} />
                 <Route path="/bot" element={<BotPage />} />
-                <Route path="/reports" element={<Reports />} />
+                <Route path="/data-quality" element={<DataQuality />} />
                 <Route path="/decision-intelligence" element={<DecisionIntelligence />} />
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Admin />} />
