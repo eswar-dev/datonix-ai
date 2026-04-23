@@ -9,7 +9,7 @@ import { AppLayout } from "@/components/AppLayout";
 import DataIngestion from "@/pages/DataIngestion";
 import DataProcessing from "@/pages/DataProcessing";
 import Dashboard from "@/pages/Dashboard";
-import VectorAI from "@/pages/VectorAI";
+import VectorAI from "./pages/VectorAI";
 import DataQuality from "@/pages/DataQuality";
 import DataModelling from "@/pages/DataModelling";
 import Admin from "@/pages/Admin";
