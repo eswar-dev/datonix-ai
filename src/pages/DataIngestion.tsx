@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ interface UploadedFile {
   size: string;
   type: string;
   uploadedAt: string;
+  source?: string;
+  rows?: number;
 }
 
 function formatBytes(bytes: number) {
@@ -42,6 +44,35 @@ export default function DataIngestion() {
     { name: "machine_telemetry_apr2026.csv", size: "12.4 MB", type: "CSV", uploadedAt: "2h ago" },
     { name: "production_orders_q1.xlsx", size: "3.8 MB", type: "XLSX", uploadedAt: "Yesterday" },
   ]);
+
+  // Pick up datasets pushed from Admin → Data Preparation
+  useEffect(() => {
+    const load = () => {
+      try {
+        const prepared = JSON.parse(localStorage.getItem("datapx1.preparedDatasets") || "[]");
+        if (Array.isArray(prepared) && prepared.length > 0) {
+          setFiles((prev) => {
+            const existingNames = new Set(prev.map((f) => f.name));
+            const newOnes: UploadedFile[] = prepared
+              .filter((p: any) => !existingNames.has(p.name))
+              .map((p: any) => ({
+                name: p.name,
+                size: p.size,
+                type: p.type,
+                uploadedAt: p.uploadedAt || "Just now",
+                source: p.source,
+                rows: p.rows,
+              }));
+            return newOnes.length ? [...newOnes, ...prev] : prev;
+          });
+        }
+      } catch { /* ignore */ }
+    };
+    load();
+    window.addEventListener("storage", load);
+    return () => window.removeEventListener("storage", load);
+  }, []);
+
   const [dragOver, setDragOver] = useState(false);
   const [configDialogConnector, setConfigDialogConnector] = useState<Connector | null>(null);
   const [endpoint, setEndpoint] = useState("");
