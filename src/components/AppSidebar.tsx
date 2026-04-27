@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Database, LayoutDashboard, Bot, Boxes, Shield, Sigma,
-  ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut,
+  ChevronLeft, ChevronRight, ArrowLeft, Building2, Users, ShieldCheck, Clock, LogOut, FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
@@ -12,7 +12,7 @@ const mainNavItems = [
   { title: "Data Ingestion", path: "/data-ingestion", icon: Database },
   { title: "Data Processing", path: "/data-processing", icon: Sigma },
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { title: "Data Quality", path: "/data-quality", icon: ShieldCheck },
+  { title: "Data Quality Assessment", path: "/data-quality", icon: ShieldCheck },
   { title: "Data Modelling", path: "/data-modelling", icon: Boxes },
   { title: "Vector AI", path: "/bot", icon: Bot },
   { title: "Administration", path: "/admin", icon: Shield },
@@ -24,6 +24,7 @@ const adminNavItems = [
   { title: "User Roles", path: "/admin/user-roles", icon: ShieldCheck },
   { title: "Users", path: "/admin/users", icon: Users },
   { title: "User Sessions", path: "/admin/user-sessions", icon: Clock },
+  { title: "Data Preparation", path: "/admin/data-preparation", icon: FlaskConical },
 ];
 
 
