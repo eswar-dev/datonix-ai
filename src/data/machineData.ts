@@ -68,6 +68,9 @@ export const connectorCatalog: Connector[] = [
   { id: "postgres", name: "PostgreSQL", category: "Database", description: "Relational data warehouse / OLTP.", status: "Connected", lastSync: "10m ago", records: "820K", icon: "PG" },
   { id: "snowflake", name: "Snowflake", category: "Database", description: "Cloud data warehouse.", status: "Available", icon: "SN" },
   { id: "s3", name: "Amazon S3", category: "Cloud Storage", description: "Bulk file & log storage.", status: "Available", icon: "S3" },
+  { id: "azure_blob", name: "Azure Blob Storage", category: "Cloud Storage", description: "Microsoft Azure object storage for bulk telemetry and log archives.", status: "Available", icon: "AZ" },
+  { id: "gcs", name: "Google Cloud Storage", category: "Cloud Storage", description: "GCS buckets for cold/warm data lake storage.", status: "Available", icon: "GC" },
+  { id: "navis_n4", name: "Navis N4 TOS", category: "MES", description: "Terminal Operating System for container handling — moves, yard ops, equipment events. (Pending validation — shared by Elad)", status: "Available", icon: "NV" },
   { id: "minitab", name: "Minitab QC", category: "Quality", description: "Statistical quality control data.", status: "Available", icon: "MT" },
 ];
 
