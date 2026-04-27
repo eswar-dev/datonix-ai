@@ -3,26 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import factoryImg from "@/assets/factory-worker.jpg";
+import logoSrc from "@/assets/datapx1-logo.png";
 
 function LoginLogo() {
   return (
-    <svg viewBox="0 0 260 60" width="260" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 12 H38 a14 14 0 0 1 14 14 v8 a14 14 0 0 1 -14 14 H10 Z" fill="none" stroke="#1AABEC" strokeWidth="3" />
-      <circle cx="22" cy="30" r="3" fill="#1AABEC" />
-      <circle cx="34" cy="20" r="3" fill="#1AABEC" />
-      <circle cx="34" cy="40" r="3" fill="#1AABEC" />
-      <circle cx="44" cy="30" r="3" fill="#1AABEC" />
-      <line x1="22" y1="30" x2="34" y2="20" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
-      <line x1="22" y1="30" x2="34" y2="40" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
-      <line x1="34" y1="20" x2="44" y2="30" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
-      <line x1="34" y1="40" x2="44" y2="30" stroke="#1AABEC" strokeWidth="1.5" opacity="0.6" />
-      <text x="68" y="38" fontFamily="'Sora', 'Arial Black', sans-serif" fontWeight="900" fontSize="30" fill="#1AABEC" letterSpacing="-1">Datapx</text>
-      <text x="196" y="38" fontFamily="'Sora', 'Arial Black', sans-serif" fontWeight="900" fontSize="30" fill="#FF8A3D" letterSpacing="-1">1</text>
-      <text x="68" y="52" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="6" fill="#6a9ab8" letterSpacing="1.4">INDUSTRIAL DECISION INTELLIGENCE</text>
-    </svg>
+    <div className="flex items-center gap-3">
+      <img src={logoSrc} alt="Datapx1" width={64} height={64} className="object-contain" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }} />
+      <p className="text-[10px] font-bold uppercase tracking-[2px]" style={{ color: "#aaccdd", lineHeight: 1.4 }}>
+        Asset Optimization &<br />Decision Intelligence
+      </p>
+    </div>
   );
 }
-
 
 export default function Login() {
   const navigate = useNavigate();
@@ -45,7 +37,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ minHeight: 600, background: "#152030" }}>
+    <div className="flex min-h-screen h-screen w-full" style={{ background: "#152030" }}>
       {/* LEFT SIDE — Dark navy theme */}
       <div
         className="flex flex-1 flex-col justify-center"
