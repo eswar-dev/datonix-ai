@@ -7,8 +7,11 @@ import logoSrc from "@/assets/datapx1-logo.png";
 
 function LoginLogo() {
   return (
-    <div className="flex items-center">
-      <img src={logoSrc} alt="Datapx1" width={72} height={72} className="object-contain" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }} />
+    <div className="flex items-center gap-3">
+      <img src={logoSrc} alt="Datapx1" width={64} height={64} className="object-contain" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }} />
+      <p className="text-[10px] font-bold uppercase tracking-[2px]" style={{ color: "#aaccdd", lineHeight: 1.4 }}>
+        Asset Optimization &<br />Decision Intelligence
+      </p>
     </div>
   );
 }
