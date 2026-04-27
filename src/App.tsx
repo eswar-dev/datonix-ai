@@ -19,6 +19,7 @@ import Organizations from "@/pages/admin/Organizations";
 import UserRoles from "@/pages/admin/UserRoles";
 import Users from "@/pages/admin/Users";
 import UserSessions from "@/pages/admin/UserSessions";
+import DataPreparation from "@/pages/admin/DataPreparation";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 
@@ -49,6 +50,7 @@ const App = () => (
                   <Route path="user-roles" element={<UserRoles />} />
                   <Route path="users" element={<Users />} />
                   <Route path="user-sessions" element={<UserSessions />} />
+                  <Route path="data-preparation" element={<DataPreparation />} />
                 </Route>
               </Route>
             </Route>
