@@ -294,7 +294,12 @@ export default function DataIngestion() {
                     <TableRow key={i}>
                       <TableCell className="font-medium flex items-center gap-2">
                         {f.type === "JSON" ? <FileJson className="h-4 w-4 text-warning" /> : <FileSpreadsheet className="h-4 w-4 text-success" />}
-                        {f.name}
+                        <span>{f.name}</span>
+                        {f.source && (
+                          <Badge variant="outline" className="text-[9px] bg-accent/10 text-accent border-accent/20">
+                            {f.source}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{f.type}</Badge></TableCell>
                       <TableCell className="text-muted-foreground text-xs">{f.size}</TableCell>
