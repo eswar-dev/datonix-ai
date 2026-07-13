@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Datonix">
+  <rect width="64" height="64" rx="12" fill="#152030"/>
+  <g transform="translate(6 10)">
+    <path d="M13 2L39 2L52 22L39 42L13 42L0 22Z" stroke="#89D8F8" stroke-width="2" fill="none"/>
+    <circle cx="26" cy="22" r="4.5" fill="#0099FF"/>
+    <circle cx="36" cy="23" r="3.8" fill="#0099FF"/>
+    <circle cx="26" cy="12" r="3.5" fill="#0099FF"/>
+    <circle cx="16" cy="22" r="3.2" fill="#0099FF"/>
+    <circle cx="26" cy="33" r="3.2" fill="#0099FF"/>
+    <circle cx="36" cy="33" r="1.8" fill="#0099FF"/>
+    <circle cx="16" cy="12" r="1.4" fill="#0099FF"/>
+    <line x1="26" y1="22" x2="36" y2="23" stroke="#0099FF" stroke-width="0.8" opacity="0.4"/>
+    <line x1="26" y1="22" x2="26" y2="12" stroke="#0099FF" stroke-width="0.8" opacity="0.4"/>
+    <line x1="26" y1="22" x2="16" y2="22" stroke="#0099FF" stroke-width="0.8" opacity="0.4"/>
+    <line x1="26" y1="22" x2="26" y2="33" stroke="#0099FF" stroke-width="0.8" opacity="0.4"/>
+    <line x1="26" y1="22" x2="36" y2="33" stroke="#0099FF" stroke-width="0.8" opacity="0.3"/>
+    <line x1="26" y1="22" x2="16" y2="12" stroke="#0099FF" stroke-width="0.8" opacity="0.3"/>
+  </g>
+</svg>
