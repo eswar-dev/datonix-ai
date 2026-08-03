@@ -7,10 +7,11 @@ import { StatusBadge } from "./StatusBadge";
 
 interface AgentGovernanceCardProps {
   agent: GovernanceAgent;
-  onAction: (id: string, action: AgentAction) => void;
+  onAction?: (id: string, action: AgentAction) => void;
+  readOnly?: boolean;
 }
 
-export function AgentGovernanceCard({ agent, onAction }: AgentGovernanceCardProps) {
+export function AgentGovernanceCard({ agent, onAction, readOnly }: AgentGovernanceCardProps) {
   const isPending = agent.status === "Pending";
 
   return (
@@ -19,6 +20,7 @@ export function AgentGovernanceCard({ agent, onAction }: AgentGovernanceCardProp
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base">{agent.name}</CardTitle>
           {!isPending && <StatusBadge status={agent.status} />}
+          {readOnly && isPending && <StatusBadge status="Pending" />}
         </div>
         {agent.entity && (
           <Badge variant="outline" className="w-fit text-[10px]">
@@ -35,12 +37,14 @@ export function AgentGovernanceCard({ agent, onAction }: AgentGovernanceCardProp
           <p className="text-xs font-medium text-muted-foreground">Recommendation</p>
           <p className="text-sm">{agent.recommendation}</p>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            Confidence: <span className="font-semibold text-foreground">{agent.confidence}%</span>
-          </span>
-        </div>
-        {isPending && (
+        {agent.confidence > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              Confidence: <span className="font-semibold text-foreground">{agent.confidence}%</span>
+            </span>
+          </div>
+        )}
+        {!readOnly && isPending && onAction && (
           <div className="flex gap-2 pt-1">
             <Button size="sm" className="flex-1" onClick={() => onAction(agent.id, "Approve")}>
               <Check className="mr-1 h-3 w-3" />

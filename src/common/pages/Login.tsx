@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/common/contexts/AuthContext";
 import { useDomain } from "@/common/contexts/DomainContext";
-import { LOGIN_QUICK_ACCOUNTS } from "@/common/const.js";
 import { LoginHeroPanel } from "@/common/components/LoginHeroPanel";
 
 function LoginLogo({ tagline, accent, accentMuted }: { tagline: string; accent: string; accentMuted: string }) {
@@ -70,7 +69,7 @@ export default function Login() {
       if (err) {
         setError(err);
       } else {
-        navigate("/dashboard");
+        navigate(domain.defaultRoute || "/dashboard");
       }
     } finally {
       setSubmitting(false);
@@ -81,11 +80,6 @@ export default function Login() {
     e.preventDefault();
     await submitCredentials(email, password);
   };
-
-  const quickAccounts = [
-    ...loginConfig.demoAccounts,
-    ...(import.meta.env.DEV ? LOGIN_QUICK_ACCOUNTS : []),
-  ];
 
   const inputClass =
     "h-12 w-full rounded-xl border px-4 text-[15px] outline-none transition-all duration-150 placeholder:opacity-40 focus:ring-2 focus:ring-[#0099FF]/25";
@@ -224,34 +218,6 @@ export default function Login() {
             >
               {submitting ? "Signing in…" : "Sign in"}
             </button>
-
-            {quickAccounts.length > 0 && import.meta.env.DEV && (
-              <div
-                className="mt-5 rounded-xl border p-5"
-                style={{ borderColor: theme.border, background: "rgba(255,255,255,0.02)" }}
-              >
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: theme.textMuted }}>
-                  Demo access · {domainLabel}
-                </p>
-                <div className="flex flex-wrap gap-2.5">
-                  {quickAccounts.map((acc) => (
-                    <button
-                      key={`${acc.email}-${acc.label}`}
-                      type="button"
-                      disabled={submitting}
-                      onClick={() => submitCredentials(acc.email, acc.password)}
-                      className="rounded-lg border px-3.5 py-2 text-[13px] font-medium transition-colors hover:bg-white/[0.06] disabled:opacity-60"
-                      style={{
-                        color: theme.textSecondary,
-                        borderColor: theme.border,
-                      }}
-                    >
-                      {acc.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </form>
 
           <p className="mt-12 text-center text-xs" style={{ color: theme.textMuted }}>

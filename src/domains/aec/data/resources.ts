@@ -4,9 +4,12 @@ export type UtilizationStatus = "Over" | "Good" | "Bench" | "At Risk";
 
 export interface ResourceRecord {
   id: string;
+  /** Backend UUID when available */
+  resourceId?: string;
   name: string;
   type: ResourceType;
   entity: string;
+  entityId?: string;
   designation: string;
   department: string;
   costRate: string;

@@ -5,13 +5,16 @@ export type InquiryStage =
   | "Negotiation"
   | "Won"
   | "Lost";
-export type InquiryEntity = "MA" | "ME" | "MC";
+/** Organization code from twin API (e.g. MG, MA). */
+export type InquiryEntity = string;
 
 export interface Inquiry {
   id: string;
   client: string;
   projectName: string;
   entity: InquiryEntity;
+  /** Organization UUID from backend (needed for create/convert) */
+  entityId?: string;
   projectType: string;
   stage: InquiryStage;
   /** Human-readable stage from artifact (e.g. "Proposal Due") */

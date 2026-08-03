@@ -7,7 +7,6 @@ import {
   adminUpdateTenant,
   extractKeyedArray,
   pickStr,
-  pickNum,
 } from "@/common/api";
 import { Card } from "@/common/components/ui/card";
 import { Button } from "@/common/components/ui/button";
@@ -27,20 +26,20 @@ import { AdminDataCard } from "@/common/components/admin/AdminDataCard";
 import { toast } from "sonner";
 
 interface Tenant {
-  id: number;
+  id: string;
   name: string;
   type: string;
   timeout?: string;
 }
 
-const types = ["ai-priori", "customer"];
+const types = ["ai-priori", "oem", "customer"];
 type SortKey = "id" | "name" | "type";
 
-const emptyForm = { name: "", type: "", timeout: "3600" };
+const emptyForm = { name: "", type: "", timeout: "30" };
 
 function mapTenantRow(o: Record<string, unknown>, i: number): Tenant {
   return {
-    id: pickNum(o, ["id", "tenant_id", "pk"], i + 1),
+    id: pickStr(o, ["id", "tenant_id", "pk"], `tenant-${i}`),
     name: pickStr(o, ["name", "tenant_name", "title"], "—"),
     type: pickStr(o, ["type", "tenant_type"], "—"),
     timeout: pickStr(o, ["timeout"], ""),
@@ -83,24 +82,24 @@ export default function Tenants() {
   const createMutation = useMutation({
     mutationFn: (payload: { name: string; type: string; timeout: string }) =>
       adminCreateTenants({
-        tenant_name: payload.name,
-        tenant_type: payload.type,
+        name: payload.name,
+        type: payload.type,
         timeout: payload.timeout,
       }),
     onSuccess: () => invalidateTenantGraph(),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteTenant(String(id)),
+    mutationFn: (id: string) => adminDeleteTenant(id),
     onSuccess: () => invalidateTenantGraph(),
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: { id: number; name: string; type: string; timeout: string }) =>
-      adminUpdateTenant(String(payload.id), {
-        tenant_name: payload.name,
-        tenant_type: payload.type,
-        tenant_timeout: payload.timeout,
+    mutationFn: (payload: { id: string; name: string; type: string; timeout: string }) =>
+      adminUpdateTenant(payload.id, {
+        name: payload.name,
+        type: payload.type,
+        timeout: payload.timeout,
       }),
     onSuccess: () => invalidateTenantGraph(),
   });
@@ -108,8 +107,8 @@ export default function Tenants() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [form, setForm] = useState(emptyForm);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortAsc, setSortAsc] = useState(true);
@@ -150,7 +149,7 @@ export default function Tenants() {
 
   const openEdit = (t: Tenant, e: React.MouseEvent) => {
     e.stopPropagation();
-    setForm({ name: t.name, type: t.type, timeout: t.timeout || "3600" });
+    setForm({ name: t.name, type: t.type, timeout: t.timeout || "30" });
     setEditId(t.id);
     setDialogMode("edit");
     setDialogOpen(true);
@@ -163,7 +162,7 @@ export default function Tenants() {
     }
     if (dialogMode === "add") {
       createMutation.mutate(
-        { name: form.name, type: form.type, timeout: form.timeout || "3600" },
+        { name: form.name, type: form.type, timeout: form.timeout || "30" },
         {
           onSuccess: () => {
             toast.success(`Tenant "${form.name}" added successfully`);
@@ -174,7 +173,7 @@ export default function Tenants() {
       );
     } else if (editId !== null) {
       updateMutation.mutate(
-        { id: editId, name: form.name, type: form.type, timeout: form.timeout || "3600" },
+        { id: editId, name: form.name, type: form.type, timeout: form.timeout || "30" },
         {
           onSuccess: () => {
             toast.success(`Tenant "${form.name}" updated successfully`);
@@ -186,7 +185,7 @@ export default function Tenants() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     const tenant = tenants.find((t) => t.id === id);
     deleteMutation.mutate(id, {
       onSuccess: () => {

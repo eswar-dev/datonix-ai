@@ -95,9 +95,7 @@ function mapRoleRow(o: Record<string, unknown>, i: number): Role {
     : typeof permsRaw === "string"
       ? [permsRaw]
       : [];
-  const orgField = o.organization;
-  const organizationId =
-    orgField != null && String(orgField) !== "" ? String(orgField) : "";
+  const organizationId = pickStr(o, ["organization_id", "organization"], "");
   return {
     id: pickStr(o, ["id", "role_id", "pk"], `row-${i}`),
     name: pickStr(o, ["role", "name", "role_name"], "—"),

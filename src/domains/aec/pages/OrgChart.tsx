@@ -1,39 +1,38 @@
-import { useState } from "react";
-import { Network } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
-import { OrgHierarchyTree } from "@/domains/aec/components/OrgHierarchyTree";
-import { MemberProfilePanel } from "@/domains/aec/components/MemberProfilePanel";
-import { orgChartRoot, orgMemberCount, type OrgMember } from "@/domains/aec/data/orgChart";
+import { PipelineEmptyState } from "@/domains/aec/components/PipelineUi";
 
 export default function OrgChart() {
-  const [selected, setSelected] = useState<OrgMember | null>(orgChartRoot.children?.[0]?.children?.[1] ?? null);
-
   return (
     <div className="space-y-6">
       <AecPageHeader
         title="Organization Chart"
-        subtitle={`Meridian Group hierarchy — ${orgMemberCount} resources across MA, ME, and MC.`}
+        subtitle="Hierarchy of resources by reporting manager."
         breadcrumb={[
           { label: "Resources", href: "/resources/planning" },
           { label: "Organization Chart" },
         ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Network className="h-4 w-4 text-accent" />
-              Hierarchy
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <OrgHierarchyTree root={orgChartRoot} selectedId={selected?.id ?? null} onSelect={setSelected} />
-          </CardContent>
-        </Card>
-        <MemberProfilePanel member={selected} />
-      </div>
+      <Card className="rounded-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Pending backend</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Resource model already has <code className="text-foreground">reporting_manager</code>, but
+            there is no org-chart / hierarchy API yet.
+          </p>
+          <p>
+            Needed: <code className="text-foreground">GET /api/v1/aec/twins/&#123;twin_id&#125;/resources/org-chart</code>{" "}
+            (or include <code className="text-foreground">reportingManagerId</code> on resource list).
+          </p>
+        </CardContent>
+      </Card>
+
+      <PipelineEmptyState>
+        Organization Chart will light up once the hierarchy endpoint is available.
+      </PipelineEmptyState>
     </div>
   );
 }

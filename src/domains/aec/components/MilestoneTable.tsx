@@ -22,13 +22,23 @@ function formatVariance(days: number) {
   return "0d";
 }
 
-export function MilestoneTable({ milestones }: { milestones: Milestone[] }) {
+export function MilestoneTable({
+  milestones,
+  bordered = true,
+}: {
+  milestones: Milestone[];
+  bordered?: boolean;
+}) {
+  if (!milestones.length) {
+    return <p className="py-6 text-sm text-muted-foreground">No milestones.</p>;
+  }
+
   return (
-    <div className="overflow-x-auto rounded-card border">
+    <div className={cn("overflow-x-auto", bordered && "rounded-card border")}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Milestone</TableHead>
+            <TableHead className="min-w-[140px]">Milestone</TableHead>
             <TableHead>Phase</TableHead>
             <TableHead>Planned</TableHead>
             <TableHead>Actual</TableHead>
@@ -41,9 +51,9 @@ export function MilestoneTable({ milestones }: { milestones: Milestone[] }) {
             <TableRow key={ms.id}>
               <TableCell className="font-medium">{ms.name}</TableCell>
               <TableCell className="text-muted-foreground">{ms.phase}</TableCell>
-              <TableCell>{ms.plannedDate}</TableCell>
-              <TableCell>{ms.actualDate ?? "—"}</TableCell>
-              <TableCell className={cn("text-right", varianceClass(ms.varianceDays))}>
+              <TableCell className="tabular-nums">{ms.plannedDate}</TableCell>
+              <TableCell className="tabular-nums">{ms.actualDate ?? "—"}</TableCell>
+              <TableCell className={cn("text-right tabular-nums", varianceClass(ms.varianceDays))}>
                 {formatVariance(ms.varianceDays)}
               </TableCell>
               <TableCell>

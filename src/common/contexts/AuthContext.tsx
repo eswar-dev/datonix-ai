@@ -6,13 +6,37 @@ import {
   setStoredAccessToken,
 } from "@/common/api/client";
 import { LOGIN_QUICK_ACCOUNTS } from "@/common/const.js";
-import { authLogin, type LoginResponse } from "@/common/api";
+import { authLogin, authLogout, type LoginResponse } from "@/common/api";
 import type { AuthUser } from "@/common/types/auth";
 import { userAccounts, type RoleKey, type UserAccount } from "@/common/data/roleData";
 import { getDomainFromHost } from "@/config/domain";
 import type { DomainId } from "@/domains/types";
 
 const STORAGE_USER = "datonix_user";
+
+function readUserStorage(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_USER) ?? sessionStorage.getItem(STORAGE_USER);
+    if (!raw) return null;
+    if (sessionStorage.getItem(STORAGE_USER) && !localStorage.getItem(STORAGE_USER)) {
+      localStorage.setItem(STORAGE_USER, raw);
+      sessionStorage.removeItem(STORAGE_USER);
+    }
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+function writeUserStorage(user: AuthUser) {
+  localStorage.setItem(STORAGE_USER, JSON.stringify(user));
+  sessionStorage.removeItem(STORAGE_USER);
+}
+
+function clearUserStorage() {
+  localStorage.removeItem(STORAGE_USER);
+  sessionStorage.removeItem(STORAGE_USER);
+}
 
 const DOMAIN_INDUSTRY: Record<DomainId, string> = {
   manufacturing: "Manufacturing",
@@ -90,8 +114,16 @@ function authUserFromDemoAccount(account: UserAccount): AuthUser {
 export function authUserFromLogin(payload: LoginResponse, fallbackRoleKey?: RoleKey): AuthUser {
   const u = payload.user;
   const roleLabel = roleToLabel(u.role);
-  const org = u.organization as { organization_name?: string } | undefined;
-  const ten = u.tenant as { tenant_name?: string } | undefined;
+  const org = (u.organization ?? null) as Record<string, unknown> | null;
+  const ten = (u.tenant ?? null) as Record<string, unknown> | null;
+  const orgName =
+    (org?.organization_name != null && String(org.organization_name)) ||
+    (org?.name != null && String(org.name)) ||
+    "";
+  const tenantName =
+    (ten?.tenant_name != null && String(ten.tenant_name)) ||
+    (ten?.name != null && String(ten.name)) ||
+    "";
   const display = u.username || u.email.split("@")[0];
   const initials = display
     .split(/\s+/)
@@ -99,44 +131,53 @@ export function authUserFromLogin(payload: LoginResponse, fallbackRoleKey?: Role
     .join("")
     .slice(0, 2)
     .toUpperCase() || "U";
+  const isManager = /admin|manager|super/i.test(roleLabel) || u.role == null;
   return {
     id: u.id,
     email: u.email,
     username: u.username,
     name: display,
     initials,
-    title: roleLabel,
-    industry: ten?.tenant_name ?? org?.organization_name ?? "—",
-    roleLabel,
+    title: u.role == null ? "Administrator" : roleLabel,
+    industry: orgName || tenantName || "—",
+    roleLabel: u.role == null ? "Administrator" : roleLabel,
     apiUserId: String(u.id),
     roleKey: fallbackRoleKey ?? "mfg_plant_manager",
-    isManager: false,
-    tenant: (u.tenant as Record<string, unknown>) ?? null,
-    organization: (u.organization as Record<string, unknown>) ?? null,
+    isManager,
+    tenant: ten,
+    organization: org,
   };
 }
 
-function persistSession(user: AuthUser, accessToken: string) {
-  setStoredAccessToken(accessToken);
+function persistSession(user: AuthUser, accessToken: string, expiresIn?: number) {
+  setStoredAccessToken(accessToken, expiresIn);
   setUserSession(user);
 }
 
 function setUserSession(user: AuthUser) {
   setStoredUserId(user.apiUserId);
-  sessionStorage.setItem(STORAGE_USER, JSON.stringify(user));
+  writeUserStorage(user);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
-    const saved = sessionStorage.getItem(STORAGE_USER);
-    if (saved) {
+    const saved = readUserStorage();
+    if (!saved) return null;
+    const rawToken = (() => {
       try {
-        return JSON.parse(saved) as AuthUser;
+        return localStorage.getItem("datonix_access_token") ?? sessionStorage.getItem("datonix_access_token");
       } catch {
         return null;
       }
+    })();
+    // Drop orphaned user blobs with no stored token (real JWT or Vite demo).
+    if (!rawToken) {
+      clearUserStorage();
+      clearStoredUserId();
+      clearStoredAccessToken();
+      return null;
     }
-    return null;
+    return saved;
   });
 
   useEffect(() => {
@@ -149,8 +190,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const domainId = getDomainFromHost();
 
     try {
+      // Prefer real API login. Local bypass is only for offline Vite demos.
       const quick = matchLocalQuickAccount(email, password);
       if (import.meta.env.DEV && quick) {
+        try {
+          const res = await authLogin(email.trim(), password);
+          if (res.status === "success" && res.user && res.accessToken) {
+            const next = authUserFromLogin(res);
+            setUser(next);
+            persistSession(next, res.accessToken, res.expiresIn);
+            return null;
+          }
+        } catch {
+          /* fall through to local bypass */
+        }
         const m = quick.mockUser ?? { id: 0, username: "local", role: "User" };
         const synthetic: LoginResponse = {
           status: "success",
@@ -170,8 +223,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
+      // Domain demo accounts: try real API first so Meridian/API users work live.
       const demoAccount = matchDomainDemoAccount(email, password, domainId);
       if (import.meta.env.DEV && demoAccount) {
+        try {
+          const res = await authLogin(email.trim(), password);
+          if (res.status === "success" && res.user && res.accessToken) {
+            const next = authUserFromLogin(res, demoAccount.role);
+            setUser(next);
+            persistSession(next, res.accessToken, res.expiresIn);
+            return null;
+          }
+        } catch {
+          /* fall through to local demo session */
+        }
         const next = authUserFromDemoAccount(demoAccount);
         setUser(next);
         persistSession(next, "__vite_demo_session__");
@@ -184,7 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const next = authUserFromLogin(res);
       setUser(next);
-      persistSession(next, res.accessToken);
+      persistSession(next, res.accessToken, res.expiresIn);
       return null;
     } catch {
       if (import.meta.env.DEV) {
@@ -201,10 +266,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    setUser(null);
-    sessionStorage.removeItem(STORAGE_USER);
-    clearStoredUserId();
-    clearStoredAccessToken();
+    void authLogout().finally(() => {
+      setUser(null);
+      clearUserStorage();
+      clearStoredUserId();
+      clearStoredAccessToken();
+    });
   }, []);
 
   return (

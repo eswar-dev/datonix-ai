@@ -1,11 +1,14 @@
 export type ProjectHealth = "Good" | "At Risk" | "Critical";
 export type BillingType = "Lump Sum" | "Milestone" | "T&M";
-export type ProjectEntity = "MA" | "ME" | "MC" | "MC+MA";
+/** Organization code from twin API (e.g. MG, MA). */
+export type ProjectEntity = string;
 
 export interface ProjectDraft {
   name: string;
   client: string;
   entity: ProjectEntity;
+  /** Organization UUID when known from API */
+  entityId?: string;
   type: string;
   billingType: BillingType;
   currency: string;
@@ -13,6 +16,7 @@ export interface ProjectDraft {
   startDate: string;
   endDate: string;
   projectManager?: string;
+  projectManagerId?: string;
 }
 
 export interface StaffRecommendation {
@@ -27,6 +31,8 @@ export interface Project {
   name: string;
   client: string;
   entity: ProjectEntity;
+  /** Organization UUID from backend */
+  entityId?: string;
   type: string;
   billingType: BillingType;
   currency: string;
@@ -49,13 +55,13 @@ export interface Project {
 export const defaultProjectDraft: ProjectDraft = {
   name: "",
   client: "",
-  entity: "MA",
+  entity: "",
   type: "Commercial",
   billingType: "Milestone",
   currency: "GBP",
   budget: 0,
-  startDate: "2026-04-01",
-  endDate: "2027-10-31",
+  startDate: "",
+  endDate: "",
 };
 
 export const pmRecommendations: StaffRecommendation[] = [

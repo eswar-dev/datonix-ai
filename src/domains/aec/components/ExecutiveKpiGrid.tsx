@@ -14,9 +14,15 @@ interface ExecutiveKpiGridProps {
   };
 }
 
+function formatRevenue(n: number): string {
+  if (n >= 1_000_000) return `£${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `£${(n / 1_000).toFixed(1)}K`;
+  return `£${Math.round(n).toLocaleString()}`;
+}
+
 export function ExecutiveKpiGrid({ kpis }: ExecutiveKpiGridProps) {
   const items = [
-    { label: "Group Revenue", value: `£${(kpis.groupRevenueGbp / 1_000_000).toFixed(2)}M`, highlight: true },
+    { label: "Group Revenue", value: formatRevenue(kpis.groupRevenueGbp), highlight: true },
     { label: "Group Margin", value: `${kpis.groupMarginPct}%`, highlight: true },
     { label: "Projects at Risk", value: String(kpis.projectsAtRisk), alert: kpis.projectsAtRisk > 0 },
     { label: "Active Projects", value: String(kpis.activeProjects) },

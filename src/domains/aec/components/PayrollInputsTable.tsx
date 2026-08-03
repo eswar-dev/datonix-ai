@@ -40,7 +40,9 @@ export function PayrollInputsTable({ rows }: PayrollInputsTableProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">{r.period}</TableCell>
-              <TableCell className="text-right font-medium">£{r.amountGbp.toLocaleString()}</TableCell>
+              <TableCell className="text-right font-medium">
+                {r.amountDisplay ?? `£${r.amountGbp.toLocaleString()}`}
+              </TableCell>
               <TableCell className="text-xs text-muted-foreground">{r.note ?? "—"}</TableCell>
             </TableRow>
           ))}

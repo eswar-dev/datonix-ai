@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GitBranchPlus, Plus } from "lucide-react";
+import { GitBranchPlus, Loader2, Plus } from "lucide-react";
 import { Button } from "@/common/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import {
@@ -12,19 +12,19 @@ import {
 import { Textarea } from "@/common/components/ui/textarea";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { StatusBadge } from "@/domains/aec/components/StatusBadge";
-import { useAecTwin } from "@/domains/aec/context/AecTwinContext";
-import { twins } from "@/domains/aec/data/meridian";
-import { toast } from "sonner";
+import { DEFAULT_TWIN_PROMPT, useAecTwin } from "@/domains/aec/context/AecTwinContext";
 
 export default function MultiTwinManager() {
-  const { activeTwinId, switchTwin } = useAecTwin();
+  const { activeTwinId, twins, twinsLoading, switchTwin, generateTwin, isGenerating } = useAecTwin();
   const [createOpen, setCreateOpen] = useState(false);
   const [newPrompt, setNewPrompt] = useState("");
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    const prompt = newPrompt.trim();
+    if (!prompt) return;
     setCreateOpen(false);
+    await generateTwin(prompt);
     setNewPrompt("");
-    toast.success("Enterprise Twin creation queued — check back shortly");
   };
 
   return (
@@ -37,12 +37,19 @@ export default function MultiTwinManager() {
           { label: "Multi-Twin Manager" },
         ]}
         actions={
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <Button size="sm" onClick={() => setCreateOpen(true)} disabled={isGenerating}>
             <Plus className="mr-2 h-4 w-4" />
             Create New Enterprise Twin
           </Button>
         }
       />
+
+      {twinsLoading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading twins from API…
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {twins.map((twin) => {
@@ -92,6 +99,11 @@ export default function MultiTwinManager() {
             </Card>
           );
         })}
+        {!twinsLoading && twins.length === 0 && (
+          <p className="text-sm text-muted-foreground md:col-span-2">
+            No twins yet. Create one to get started.
+          </p>
+        )}
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -108,12 +120,21 @@ export default function MultiTwinManager() {
             placeholder="e.g. A multi-office engineering firm with 3 regional entities…"
             rows={5}
           />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="justify-start px-0 text-accent"
+            onClick={() => setNewPrompt(DEFAULT_TWIN_PROMPT)}
+          >
+            Use example prompt
+          </Button>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreate} disabled={!newPrompt.trim()}>
-              Create Twin
+            <Button onClick={() => void handleCreate()} disabled={!newPrompt.trim() || isGenerating}>
+              {isGenerating ? "Creating…" : "Create Twin"}
             </Button>
           </DialogFooter>
         </DialogContent>

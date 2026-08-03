@@ -1,105 +1,123 @@
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/common/components/ui/chart";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { ExecutiveKpiGrid } from "@/domains/aec/components/ExecutiveKpiGrid";
-import { AiAlertPanel } from "@/domains/aec/components/AiAlertPanel";
-import { CostCompositionChart } from "@/domains/aec/components/CostCompositionChart";
 import {
-  costComposition,
-  executiveAlerts,
-  executiveKpis,
-  revenueByEntity,
-  utilizationTrend,
-} from "@/domains/aec/data/dashboards";
+  PipelineEmptyState,
+  PipelineErrorBanner,
+  PipelineLoadingBanner,
+} from "@/domains/aec/components/PipelineUi";
+import { useAecApp } from "@/domains/aec/context/AecAppContext";
+import { MetricStrip } from "@/domains/aec/components/MetricStrip";
 
 export default function ExecutiveDashboard() {
-  const costData = {
-    employee: costComposition.find((c) => c.category === "Employee")!.amountGbp,
-    contractor: costComposition.find((c) => c.category === "Contractor")!.amountGbp,
-    freelancer: costComposition.find((c) => c.category === "Freelancer")!.amountGbp,
-    other: costComposition.find((c) => c.category === "Other")!.amountGbp,
-  };
+  const {
+    accountingSummary,
+    resourceSummary,
+    twinDetail,
+    activeTwin,
+    activeTwinId,
+    refreshAccounting,
+    refreshResources,
+    loadTwinDetail,
+    projects,
+  } = useAecApp();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const revenueChartConfig = {
-    revenueGbp: { label: "Revenue", color: "hsl(var(--accent))" },
-  };
+  useEffect(() => {
+    if (!activeTwinId) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void Promise.all([
+      refreshAccounting(),
+      refreshResources(),
+      loadTwinDetail(activeTwinId),
+    ])
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load dashboard");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally only re-fetch when twin changes — refresh* identities change after load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTwinId]);
 
-  const utilChartConfig = {
-    value: { label: "Utilization %", color: "hsl(var(--teal))" },
-  };
+  const kpis = useMemo(
+    () => ({
+      groupRevenueGbp: accountingSummary?.revenueYtd ?? 0,
+      groupMarginPct: accountingSummary?.grossMarginPct ?? 0,
+      projectsAtRisk: projects.filter((p) => p.health === "At Risk" || p.health === "Critical").length,
+      activeProjects: projects.length || twinDetail?.metadata.activeProjects || 0,
+      staffCount: activeTwin.staffCount || (resourceSummary
+        ? resourceSummary.inHouse + resourceSummary.contractors + resourceSummary.freelancers
+        : 0),
+      avgUtilization: resourceSummary?.avgUtilization ?? 0,
+      arDaysOutstanding: accountingSummary?.ar60Plus
+        ? Math.round(accountingSummary.ar60Plus > 0 ? 60 : 0)
+        : 0,
+      cashRunwayDays: 0,
+    }),
+    [accountingSummary, resourceSummary, twinDetail, activeTwin.staffCount, projects]
+  );
 
   return (
     <div className="space-y-6">
       <AecPageHeader
         title="Executive Dashboard"
-        subtitle="Group KPIs, cost composition, revenue by entity, and AI-driven alerts."
+        subtitle="Live KPIs from accounting, resources, and twin summary."
         breadcrumb={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Executive" },
         ]}
       />
 
-      <ExecutiveKpiGrid kpis={executiveKpis} />
+      {loading && <PipelineLoadingBanner label="Loading executive metrics…" />}
+      <PipelineErrorBanner message={error ?? ""} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-card">
-          <CardHeader>
-            <CardTitle className="text-base">Cost Composition</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CostCompositionChart costs={costData} />
-          </CardContent>
-        </Card>
+      {!loading && !accountingSummary && !resourceSummary ? (
+        <PipelineEmptyState>No dashboard metrics yet for this twin.</PipelineEmptyState>
+      ) : (
+        <>
+          <ExecutiveKpiGrid kpis={kpis} />
 
-        <Card className="rounded-card">
-          <CardHeader>
-            <CardTitle className="text-base">Revenue by Entity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={revenueChartConfig} className="aspect-[2/1] max-h-[280px] w-full">
-              <BarChart data={revenueByEntity} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="entity" tickLine={false} axisLine={false} />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `£${(v / 1_000_000).toFixed(1)}M`}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => `£${Number(value).toLocaleString()}`}
-                    />
-                  }
-                />
-                <Bar dataKey="revenueGbp" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+          <MetricStrip
+            metrics={[
+              {
+                label: "AR Outstanding",
+                value: accountingSummary?.arOutstandingDisplay ?? "£0",
+              },
+              {
+                label: "AR 60d+",
+                value: accountingSummary?.ar60PlusDisplay ?? "£0",
+              },
+              {
+                label: "Capacity risk",
+                value: String(resourceSummary?.capacityRisk ?? 0),
+              },
+              {
+                label: "Bench",
+                value: String(resourceSummary?.benchCount ?? 0),
+              },
+            ]}
+          />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-card">
-          <CardHeader>
-            <CardTitle className="text-base">Utilization Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={utilChartConfig} className="aspect-[2/1] max-h-[240px] w-full">
-              <LineChart data={utilizationTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} domain={[65, 85]} tickFormatter={(v) => `${v}%`} />
-                <ChartTooltip content={<ChartTooltipContent formatter={(v) => `${v}%`} />} />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--teal))" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <AiAlertPanel alerts={executiveAlerts} />
-      </div>
+          <Card className="rounded-card">
+            <CardHeader>
+              <CardTitle className="text-base">Notes</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Charts that need dedicated report APIs (revenue-by-entity trend, cost composition history)
+              are omitted. Use Accounting, Resources, and Pipeline screens for detail.
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

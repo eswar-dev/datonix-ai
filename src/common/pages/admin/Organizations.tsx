@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   adminOrganizations,
@@ -38,18 +38,27 @@ const statuses = ["Active", "Inactive"];
 
 const emptyForm = { name: "", tenantId: "", status: "Active" };
 
-function mapOrgRow(o: Record<string, unknown>, i: number): Org {
+function mapOrgRow(
+  o: Record<string, unknown>,
+  i: number,
+  tenantNameById: Map<string, string>
+): Org {
   const t = o.tenant as Record<string, unknown> | undefined;
+  const tenantId = t
+    ? pickStr(t, ["Tenant Id", "tenant_id", "id"], "")
+    : pickStr(o, ["tenant_id", "tenant"], "");
   const tenantLabel = t
     ? pickStr(t, ["Tenant Name", "tenant_name", "name"], "—")
-    : "—";
-  const tenantId = t ? pickStr(t, ["Tenant Id", "tenant_id", "id"], "") : "";
+    : tenantNameById.get(tenantId) || "—";
   return {
     id: pickStr(o, ["id"], String(i)),
     name: pickStr(o, ["name", "organization_name"], "—"),
     tenant: tenantLabel,
     tenantId,
-    status: pickStr(o, ["status"], "Active"),
+    status: (() => {
+      const s = pickStr(o, ["status"], "active");
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    })(),
   };
 }
 
@@ -65,6 +74,16 @@ export default function Organizations() {
     staleTime: 60_000,
   });
 
+  const tenantNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const row of tenantOptions ?? []) {
+      const id = pickStr(row, ["id", "tenant_id"], "");
+      const name = pickStr(row, ["name", "tenant_name"], "");
+      if (id) map.set(id, name || id);
+    }
+    return map;
+  }, [tenantOptions]);
+
   const {
     data: apiOrgs,
     isLoading: apiLoading,
@@ -72,11 +91,11 @@ export default function Organizations() {
     isPending,
     error: apiError,
   } = useQuery({
-    queryKey: ["admin", "organizations"],
+    queryKey: ["admin", "organizations", tenantNameById.size],
     queryFn: async () => {
       const raw = await adminOrganizations({ page: "1", page_size: "500" });
       const rows = extractKeyedArray<Record<string, unknown>>(raw, "organizations");
-      return rows.map((row, i) => mapOrgRow(row, i));
+      return rows.map((row, i) => mapOrgRow(row, i, tenantNameById));
     },
     retry: 1,
   });
@@ -97,22 +116,21 @@ export default function Organizations() {
   };
 
   const createMutation = useMutation({
-    mutationFn: (payload: { name: string; tenantId: string }) => {
-      const fd = new FormData();
-      fd.append("tenant_id", payload.tenantId);
-      fd.append("organization_name", payload.name);
-      return adminCreateOrganizations(fd);
-    },
+    mutationFn: (payload: { name: string; tenantId: string }) =>
+      adminCreateOrganizations({
+        tenant_id: payload.tenantId,
+        name: payload.name,
+        status: "active",
+      }),
     onSuccess: () => invalidateOrgGraph(),
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: { id: string; name: string; tenantId: string }) => {
-      const fd = new FormData();
-      fd.append("name", payload.name);
-      fd.append("tenant", payload.tenantId);
-      return adminUpdateOrganization(payload.id, fd);
-    },
+    mutationFn: (payload: { id: string; name: string; tenantId: string; status: string }) =>
+      adminUpdateOrganization(payload.id, {
+        name: payload.name,
+        status: payload.status,
+      }),
     onSuccess: () => invalidateOrgGraph(),
   });
 
@@ -164,7 +182,7 @@ export default function Organizations() {
       );
     } else if (editId !== null) {
       updateMutation.mutate(
-        { id: editId, name: form.name, tenantId: form.tenantId },
+        { id: editId, name: form.name, tenantId: form.tenantId, status: form.status },
         {
           onSuccess: () => {
             toast.success(`Organization "${form.name}" updated successfully`);

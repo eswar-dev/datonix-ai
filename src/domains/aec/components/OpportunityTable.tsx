@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/common/components/ui/table";
 import { StatusBadge } from "./StatusBadge";
+import { PipelineEmptyState } from "./PipelineUi";
 import type { Inquiry } from "@/domains/aec/data/inquiries";
 import { cn } from "@/common/lib/utils";
 
@@ -26,80 +27,104 @@ function scoreColor(score: number) {
   return "text-muted-foreground";
 }
 
-export function OpportunityTable({ inquiries, onGenerateProposal, onGenerateQuotation, onConvert }: OpportunityTableProps) {
+function stageBadge(stageLabel: string, stage: string) {
+  if (stage === "Won") return "Active";
+  if (stage === "Lost") return "Inactive";
+  if (stageLabel.includes("Proposal") || stage === "Proposal") return "Active";
+  if (stageLabel.includes("RFP") || stage === "Negotiation") return "At Risk";
+  return "Pending";
+}
+
+export function OpportunityTable({
+  inquiries,
+  onGenerateProposal,
+  onGenerateQuotation,
+  onConvert,
+}: OpportunityTableProps) {
   if (inquiries.length === 0) {
-    return (
-      <div className="rounded-card border py-12 text-center text-sm text-muted-foreground">
-        No inquiries match the current filters.
-      </div>
-    );
+    return <PipelineEmptyState>No inquiries match the current filters.</PipelineEmptyState>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-card border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Client</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Entity</TableHead>
-            <TableHead>Stage</TableHead>
-            <TableHead className="text-right">AI Score</TableHead>
-            <TableHead className="text-right">Value</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {inquiries.map((inq) => (
-            <TableRow key={inq.id}>
-              <TableCell>
-                <p className="font-medium">{inq.client}</p>
-                <p className="text-xs text-muted-foreground">{inq.projectName}</p>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{inq.projectType}</TableCell>
-              <TableCell>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-bold">{inq.entity}</span>
-              </TableCell>
-              <TableCell>
-                <StatusBadge
-                  status={
-                    inq.stageLabel.includes("Proposal")
-                      ? "Active"
-                      : inq.stageLabel.includes("RFP")
-                        ? "At Risk"
-                        : "Pending"
-                  }
-                />
-                <span className="ml-1.5 text-xs text-muted-foreground">{inq.stageLabel}</span>
-              </TableCell>
-              <TableCell className={cn("text-right", scoreColor(inq.score))}>{inq.score}</TableCell>
-              <TableCell className="text-right font-medium">{inq.valueDisplay}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  {inq.suggestedAction === "Generate Proposal" && (
-                    <>
-                      <Button variant="ghost" size="sm" onClick={() => onGenerateProposal(inq)}>
-                        <FileText className="mr-1 h-3.5 w-3.5" />
-                        Proposal
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => onGenerateQuotation(inq)}>
-                        <FileSpreadsheet className="mr-1 h-3.5 w-3.5" />
-                        Quote
-                      </Button>
-                    </>
-                  )}
-                  {(inq.suggestedAction === "Convert" || inq.score >= 85) && (
-                    <Button variant="outline" size="sm" onClick={() => onConvert(inq)}>
-                      Convert
-                      <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
+    <div className="overflow-hidden rounded-card border">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[180px]">Client</TableHead>
+              <TableHead className="min-w-[110px]">Type</TableHead>
+              <TableHead className="w-[72px]">Entity</TableHead>
+              <TableHead className="min-w-[140px]">Stage</TableHead>
+              <TableHead className="w-[88px] text-right">AI Score</TableHead>
+              <TableHead className="w-[100px] text-right">Value</TableHead>
+              <TableHead className="min-w-[240px] text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {inquiries.map((inq) => {
+              const showProposal =
+                inq.suggestedAction === "Generate Proposal" ||
+                inq.stage === "Inquiry" ||
+                inq.stage === "Qualification" ||
+                inq.stage === "Proposal";
+              const showConvert =
+                inq.suggestedAction === "Convert" ||
+                inq.stage === "Won" ||
+                inq.stage === "Negotiation" ||
+                inq.score >= 85;
+
+              return (
+                <TableRow key={inq.id}>
+                  <TableCell className="align-middle">
+                    <p className="font-medium leading-snug">{inq.client}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{inq.projectName}</p>
+                  </TableCell>
+                  <TableCell className="align-middle text-muted-foreground">{inq.projectType}</TableCell>
+                  <TableCell className="align-middle">
+                    <span className="inline-flex rounded bg-muted px-1.5 py-0.5 text-xs font-bold tracking-wide">
+                      {inq.entity}
+                    </span>
+                  </TableCell>
+                  <TableCell className="align-middle">
+                    <div className="flex flex-col gap-1">
+                      <StatusBadge status={stageBadge(inq.stageLabel, inq.stage)} />
+                      <span className="text-xs text-muted-foreground">{inq.stageLabel}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className={cn("align-middle text-right tabular-nums", scoreColor(inq.score))}>
+                    {inq.score}
+                  </TableCell>
+                  <TableCell className="align-middle text-right font-medium tabular-nums">
+                    {inq.valueDisplay}
+                  </TableCell>
+                  <TableCell className="align-middle text-right">
+                    <div className="flex flex-wrap items-center justify-end gap-1">
+                      {showProposal && (
+                        <>
+                          <Button variant="ghost" size="sm" className="h-8" onClick={() => onGenerateProposal(inq)}>
+                            <FileText className="mr-1 h-3.5 w-3.5" />
+                            Proposal
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8" onClick={() => onGenerateQuotation(inq)}>
+                            <FileSpreadsheet className="mr-1 h-3.5 w-3.5" />
+                            Quote
+                          </Button>
+                        </>
+                      )}
+                      {showConvert && (
+                        <Button variant="outline" size="sm" className="h-8" onClick={() => onConvert(inq)}>
+                          Convert
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

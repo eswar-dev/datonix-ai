@@ -11,11 +11,132 @@ import { toast } from "sonner";
 import { useAuth } from "@/common/contexts/AuthContext";
 import { useViewMode } from "@/common/contexts/ViewModeContext";
 import {
-  DEFAULT_TWIN_PROMPT,
-  meridianTwin,
-  type EnterpriseTwinSummary,
-} from "@/domains/aec/data/meridian";
-import { twinSeeds, getTwinSeed, type TwinSeedBundle } from "@/domains/aec/data/twinSeeds";
+  adminTenants,
+  twinGenerate,
+  twinGet,
+  twinLayers,
+  twinList,
+  twinSummary,
+  extractKeyedArray,
+} from "@/common/api";
+import {
+  aecApproveWbs,
+  aecConvertInquiry,
+  aecCreateProject,
+  aecGenerateProposal,
+  aecGenerateQuotation,
+  aecGenerateWbs,
+  aecGetWbs,
+  aecInquiryMetrics,
+  aecListInquiries,
+  aecListProjects,
+  aecProjectProfitability,
+  aecUpdateInquiryStage,
+} from "@/common/api/aecPipeline";
+import {
+  aecCreateResource,
+  aecListResources,
+  aecRateCards,
+  aecResourceAllocations,
+  aecResourceSummary,
+  aecResourceUtilization,
+  aecSkillsMatrix,
+} from "@/common/api/aecResources";
+import {
+  aecApproveTimesheets,
+  aecCreateExpense,
+  aecExpenseCategories,
+  aecListExpenses,
+  aecListTimesheets,
+  aecMyTimesheet,
+  aecSaveTimesheet,
+  aecSubmitTimesheet,
+  aecTimesheetSummary,
+} from "@/common/api/aecTimesheets";
+import {
+  aecAccountingSummary,
+  aecChaseInvoice,
+  aecCreateInvoice,
+  aecCurrencyIntelligence,
+  aecEscalateInvoice,
+  aecListAp,
+  aecListGlJournals,
+  aecListInvoices,
+  aecMarkInvoicePaid,
+  aecPayroll,
+  aecPreviewInvoice,
+  aecProcessPayroll,
+  aecRefreshCurrencyRates,
+  aecTaxRules,
+} from "@/common/api/aecAccounting";
+import {
+  EMPTY_TWIN,
+  mapTwinDetailView,
+  mapTwinListItem,
+  resolveTenantIdFromUser,
+  type TwinDetailView,
+} from "@/domains/aec/api/twinMappers";
+import {
+  cacheProfitability,
+  cacheProposal,
+  cacheQuotation,
+  cacheWbs,
+  isApiTwinId,
+  loadPipelineCache,
+  savePipelineCache,
+} from "@/domains/aec/api/pipelineCache";
+import {
+  draftToCreatePayload,
+  mapInquiry,
+  mapInquiryMetrics,
+  mapProfitability,
+  mapProject,
+  mapWbs,
+  type ProfitabilityView,
+} from "@/domains/aec/api/pipelineMappers";
+import {
+  draftToCreateResourcePayload,
+  mapAllocations,
+  mapRateCards,
+  mapResource,
+  mapResourceSummary,
+  mapSkillsMatrix,
+  mapUtilization,
+  type RateCardView,
+  type ResourceSummaryView,
+  type SkillsMatrixView,
+  type UtilizationHeatmapView,
+} from "@/domains/aec/api/resourcesMappers";
+import {
+  gridRowsToSavePayload,
+  mapExpense,
+  mapExpenseCategories,
+  mapTimesheetDetail,
+  mapTimesheetSubmission,
+  mapTimesheetSummary,
+  mondayOf,
+  type ExpenseCategoryOption,
+  type TimesheetDetailView,
+  type TimesheetSummaryView,
+} from "@/domains/aec/api/timesheetsMappers";
+import {
+  currentPayrollPeriod,
+  mapAccountingSummary,
+  mapApEntry,
+  mapCurrencyIntelligence,
+  mapGlList,
+  mapInvoice,
+  mapInvoicePreview,
+  mapPayrollRows,
+  mapTaxRules,
+  type AccountingSummaryView,
+  type CurrencyIntelligenceView,
+  type InvoicePreviewView,
+  type TaxRuleOption,
+} from "@/domains/aec/api/accountingMappers";
+import type { CrossEntityAllocation } from "@/domains/aec/data/resources";
+import type { ResourceType } from "@/domains/aec/data/orgChart";
+import { DEFAULT_TWIN_PROMPT, type EnterpriseTwinSummary } from "@/domains/aec/data/meridian";
 import {
   defaultProjectDraft,
   type Project,
@@ -23,22 +144,45 @@ import {
 } from "@/domains/aec/data/projects";
 import type { Inquiry } from "@/domains/aec/data/inquiries";
 import type { WbsProject } from "@/domains/aec/data/wbs";
-import type { TimesheetSubmission } from "@/domains/aec/data/timesheets";
+import type { TimesheetRow, TimesheetSubmission } from "@/domains/aec/data/timesheets";
 import type { PendingExpense } from "@/domains/aec/data/expenses";
-import type { Invoice } from "@/domains/aec/data/accounting";
+import type {
+  ApEntry,
+  GlJournalEntry,
+  Invoice,
+  PayrollInput,
+} from "@/domains/aec/data/accounting";
 import type { ResourceRecord } from "@/domains/aec/data/resources";
 import type { GovernanceAgent, AuditLogEntry, AgentAction } from "@/domains/aec/data/agentGovernance";
 import type { LeaveRequest } from "@/domains/aec/data/leave";
 import {
-  resolveProjectIdFromInquiry,
   billingTypeForInquiry,
   currencyForEntity,
-  slugToProjectId,
 } from "@/domains/aec/data/projectRegistry";
-import { inquiryMetrics } from "@/domains/aec/data/inquiries";
-import type { ResourceType } from "@/domains/aec/data/orgChart";
+import { inquiryMetrics as computeInquiryMetrics } from "@/domains/aec/data/inquiries";
 
 const STORAGE_KEY = "datonix-aec-workspaces-v1";
+const ACTIVE_TWIN_KEY = "datonix-aec-active-twin-id";
+
+function loadStoredActiveTwinId(): string {
+  try {
+    return localStorage.getItem(ACTIVE_TWIN_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function pickDefaultTwinId(
+  listed: EnterpriseTwinSummary[],
+  currentId: string
+): string {
+  if (!listed.length) return "";
+  if (currentId && listed.some((t) => t.id === currentId)) return currentId;
+  const stored = loadStoredActiveTwinId();
+  if (stored && listed.some((t) => t.id === stored)) return stored;
+  const live = listed.find((t) => t.status === "Live");
+  return live?.id ?? listed[0].id;
+}
 
 export interface NavBadges {
   inquiries: number;
@@ -63,43 +207,47 @@ interface TwinWorkspace {
   activeProjectId: string | null;
 }
 
-function seedToWorkspace(seed: TwinSeedBundle): TwinWorkspace {
+/** Empty operational workspace for API-backed twins (no Meridian seed remap). */
+function emptyWorkspace(): TwinWorkspace {
   return {
-    inquiries: seed.inquiries.map((i) => ({ ...i })),
-    projects: seed.projects.map((p) => ({ ...p, costs: { ...p.costs } })),
-    wbsProjects: structuredClone(seed.wbsProjects),
-    timesheetSubmissions: seed.timesheetSubmissions.map((t) => ({ ...t })),
-    pendingExpenses: seed.pendingExpenses.map((e) => ({ ...e })),
-    invoices: seed.invoices.map((i) => ({ ...i })),
-    resources: seed.resources.map((r) => ({ ...r })),
-    governanceAgents: seed.governanceAgents.map((a) => ({ ...a })),
-    auditLog: seed.auditLog.map((e) => ({ ...e })),
-    leaveRequests: seed.leaveRequests.map((l) => ({ ...l })),
+    inquiries: [],
+    projects: [],
+    wbsProjects: [],
+    timesheetSubmissions: [],
+    pendingExpenses: [],
+    invoices: [],
+    resources: [],
+    governanceAgents: [],
+    auditLog: [],
+    leaveRequests: [],
     projectDraft: { ...defaultProjectDraft },
     activeProjectId: null,
   };
 }
 
-function defaultWorkspaces(): Record<string, TwinWorkspace> {
-  const out: Record<string, TwinWorkspace> = {};
-  for (const [id] of Object.entries(twinSeeds)) {
-    out[id] = seedToWorkspace(getTwinSeed(id));
-  }
-  return out;
+function workspaceForTwinId(
+  workspaces: Record<string, TwinWorkspace>,
+  twinId: string
+): TwinWorkspace {
+  if (!twinId) return emptyWorkspace();
+  if (workspaces[twinId]) return workspaces[twinId];
+  return emptyWorkspace();
 }
 
+/** Persist only API-twin workspaces — never rehydrate Meridian/Horizon seed bundles. */
 function loadWorkspaces(): Record<string, TwinWorkspace> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultWorkspaces();
+    if (!raw) return {};
     const parsed = JSON.parse(raw) as Record<string, TwinWorkspace>;
-    const defaults = defaultWorkspaces();
-    for (const id of Object.keys(defaults)) {
-      if (!parsed[id]) parsed[id] = defaults[id];
+    const cleaned: Record<string, TwinWorkspace> = {};
+    for (const [id, ws] of Object.entries(parsed)) {
+      if (!isApiTwinId(id)) continue;
+      cleaned[id] = ws;
     }
-    return parsed;
+    return cleaned;
   } catch {
-    return defaultWorkspaces();
+    return {};
   }
 }
 
@@ -107,10 +255,16 @@ interface AecAppContextValue {
   activeTwin: EnterpriseTwinSummary;
   activeTwinId: string;
   twins: EnterpriseTwinSummary[];
+  twinDetail: TwinDetailView | null;
   isGenerating: boolean;
   twinGenerated: boolean;
+  twinsLoading: boolean;
+  twinDetailLoading: boolean;
+  twinError: string | null;
   generateTwin: (prompt?: string) => Promise<void>;
   switchTwin: (twinId: string) => void;
+  refreshTwins: () => Promise<void>;
+  loadTwinDetail: (id: string) => Promise<EnterpriseTwinSummary | null>;
 
   inquiries: Inquiry[];
   projects: Project[];
@@ -125,31 +279,114 @@ interface AecAppContextValue {
 
   projectDraft: ProjectDraft;
   activeProjectId: string | null;
+  pipelineLoading: boolean;
+  pipelineError: string | null;
   updateDraft: (partial: Partial<ProjectDraft>) => void;
   setDraftFromInquiry: (inquiry: Inquiry) => void;
   resetDraft: () => void;
   setActiveProjectId: (id: string) => void;
-  saveProjectFromDraft: () => string;
+  saveProjectFromDraft: () => Promise<string>;
+  refreshPipeline: () => Promise<void>;
+  generateInquiryProposal: (inquiry: Inquiry) => Promise<unknown>;
+  generateInquiryQuotation: (inquiry: Inquiry) => Promise<unknown>;
+  convertInquiryToProject: (inquiry: Inquiry) => Promise<string | null>;
+  updateInquiryStage: (inquiryId: string, stage: string) => Promise<void>;
+  loadProjectWbs: (projectId: string) => Promise<WbsProject | null>;
+  generateProjectWbs: (projectId: string) => Promise<WbsProject | null>;
+  approveProjectWbs: (projectId: string) => Promise<void>;
+  loadProjectProfitability: (projectId: string) => Promise<ProfitabilityView | null>;
 
-  submitTimesheet: (submission: Omit<TimesheetSubmission, "id" | "status">) => void;
-  approveTimesheet: (id: string) => void;
-  rejectTimesheet: (id: string) => void;
-  bulkApproveTimesheets: (ids: string[]) => void;
+  resourcesLoading: boolean;
+  resourcesError: string | null;
+  resourceSummary: ResourceSummaryView | null;
+  utilizationHeatmap: UtilizationHeatmapView | null;
+  skillsMatrix: SkillsMatrixView | null;
+  rateCards: RateCardView[];
+  allocations: CrossEntityAllocation[];
+  refreshResources: () => Promise<void>;
+  loadSkillsMatrix: () => Promise<SkillsMatrixView | null>;
+  loadRateCards: () => Promise<RateCardView[]>;
+  loadAllocations: () => Promise<CrossEntityAllocation[]>;
+  createResource: (input: {
+    name: string;
+    type: ResourceType;
+    entityId: string;
+    designation: string;
+    department: string;
+    costRate?: number;
+    billRate?: number;
+    contractExpiry?: string;
+  }) => Promise<ResourceRecord>;
 
-  submitExpense: (expense: Omit<PendingExpense, "id" | "status">) => void;
-  approveExpense: (id: string) => void;
-  rejectExpense: (id: string) => void;
+  timesheetsLoading: boolean;
+  timesheetsError: string | null;
+  timesheetSummary: TimesheetSummaryView | null;
+  timesheetWeekStart: string;
+  setTimesheetWeekStart: (weekStart: string) => void;
+  refreshTimesheets: (weekStart?: string) => Promise<void>;
+  loadMyTimesheet: (resourceId: string, weekStart?: string) => Promise<TimesheetDetailView | null>;
+  saveAndSubmitTimesheet: (input: {
+    resourceId: string;
+    weekStart: string;
+    weekDates: string[];
+    rows: TimesheetRow[];
+  }) => Promise<void>;
+  approveTimesheet: (id: string) => Promise<void>;
+  bulkApproveTimesheets: (ids: string[]) => Promise<void>;
 
-  createInvoice: (invoice: Omit<Invoice, "id" | "daysOutstanding" | "status">) => void;
+  expensesLoading: boolean;
+  expensesError: string | null;
+  expenseCategories: ExpenseCategoryOption[];
+  refreshExpenses: () => Promise<void>;
+  loadExpenseCategories: () => Promise<ExpenseCategoryOption[]>;
+  submitExpense: (input: {
+    resourceId: string;
+    expenseDate: string;
+    category: string;
+    categoryOther?: string;
+    amount: number;
+    projectId?: string;
+    notes?: string;
+    currency?: string;
+  }) => Promise<PendingExpense>;
 
-  addResource: (resource: Omit<ResourceRecord, "id" | "utilization" | "status">) => void;
+  accountingLoading: boolean;
+  accountingError: string | null;
+  accountingSummary: AccountingSummaryView | null;
+  apEntries: ApEntry[];
+  glEntries: GlJournalEntry[];
+  payrollRows: PayrollInput[];
+  payrollPeriod: string;
+  taxRules: TaxRuleOption[];
+  currencyIntelligence: CurrencyIntelligenceView | null;
+  refreshAccounting: () => Promise<void>;
+  refreshCurrency: () => Promise<void>;
+  loadTaxRules: () => Promise<TaxRuleOption[]>;
+  previewInvoice: (body: Record<string, unknown>) => Promise<InvoicePreviewView | null>;
+  createInvoice: (input: {
+    entityId: string;
+    client: string;
+    projectId?: string;
+    invoiceType: string;
+    currency: string;
+    netAmount: number;
+    taxRule: string;
+    dueDate?: string;
+  }) => Promise<Invoice>;
+  markInvoicePaid: (id: string) => Promise<void>;
+  chaseInvoice: (id: string) => Promise<void>;
+  escalateInvoice: (id: string) => Promise<void>;
+  processPayroll: () => Promise<void>;
+  refreshFxRates: () => Promise<void>;
+
+  addResource: (resource: Omit<ResourceRecord, "id" | "utilization" | "status">) => void; // @deprecated local-only
 
   handleAgentAction: (id: string, action: AgentAction) => void;
   approveLeave: (id: string) => void;
   rejectLeave: (id: string) => void;
 
   navBadges: NavBadges;
-  inquiryMetrics: ReturnType<typeof inquiryMetrics>;
+  inquiryMetrics: ReturnType<typeof computeInquiryMetrics>;
   projectNames: string[];
 }
 
@@ -157,43 +394,255 @@ const AecAppContext = createContext<AecAppContextValue | null>(null);
 
 export function AecAppProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [activeTwinId, setActiveTwinId] = useState(meridianTwin.id);
+  const [twins, setTwins] = useState<EnterpriseTwinSummary[]>([]);
+  const [activeTwinId, setActiveTwinId] = useState(loadStoredActiveTwinId);
+  const [twinDetail, setTwinDetail] = useState<TwinDetailView | null>(null);
   const [workspaces, setWorkspaces] = useState<Record<string, TwinWorkspace>>(loadWorkspaces);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [twinGenerated, setTwinGenerated] = useState(true);
+  const [twinGenerated, setTwinGenerated] = useState(false);
+  const [twinsLoading, setTwinsLoading] = useState(false);
+  const [twinDetailLoading, setTwinDetailLoading] = useState(false);
+  const [twinError, setTwinError] = useState<string | null>(null);
 
-  const twins = useMemo(() => Object.values(twinSeeds).map((s) => s.twin), []);
-  const activeTwin = twins.find((t) => t.id === activeTwinId) ?? meridianTwin;
-  const ws = workspaces[activeTwinId] ?? seedToWorkspace(getTwinSeed(activeTwinId));
+  const activeTwin = twins.find((t) => t.id === activeTwinId) ?? twins[0] ?? EMPTY_TWIN;
+  const workspaceKey = activeTwin.id || "__none__";
+  const ws = workspaceForTwinId(workspaces, activeTwin.id);
+
+  const loadTwinDetail = useCallback(async (id: string) => {
+    if (!id) {
+      setTwinDetail(null);
+      return null;
+    }
+    setTwinDetailLoading(true);
+    try {
+      let detailRaw: unknown;
+      try {
+        detailRaw = await twinSummary(id);
+      } catch {
+        detailRaw = await twinGet(id);
+      }
+      let layersRaw: unknown | undefined;
+      try {
+        layersRaw = await twinLayers(id);
+      } catch {
+        layersRaw = undefined;
+      }
+      const view = mapTwinDetailView(detailRaw, layersRaw);
+      setTwinDetail(view);
+      setTwins((prev) => {
+        if (!prev.some((t) => t.id === view.summary.id)) return [view.summary, ...prev];
+        return prev.map((t) => (t.id === view.summary.id ? view.summary : t));
+      });
+      return view.summary;
+    } catch (e) {
+      setTwinError(e instanceof Error ? e.message : "Failed to load twin detail");
+      return null;
+    } finally {
+      setTwinDetailLoading(false);
+    }
+  }, []);
+
+  const refreshTwins = useCallback(async () => {
+    if (!user) return;
+    setTwinsLoading(true);
+    setTwinError(null);
+    try {
+      const raw = await twinList();
+      const rows = extractKeyedArray<Record<string, unknown>>(raw, "twins");
+      const listed = rows.map(mapTwinListItem).filter((t) => t.id);
+      setTwins(listed);
+      if (listed.length === 0) {
+        setActiveTwinId("");
+        setTwinDetail(null);
+        setTwinGenerated(false);
+        return;
+      }
+      setTwinGenerated(true);
+      setActiveTwinId((prev) => pickDefaultTwinId(listed, prev));
+    } catch (e) {
+      setTwins([]);
+      setActiveTwinId("");
+      setTwinDetail(null);
+      setTwinGenerated(false);
+      setTwinError(e instanceof Error ? e.message : "Failed to load twins");
+    } finally {
+      setTwinsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    void refreshTwins();
+  }, [refreshTwins]);
+
+  // Clear stale twin detail when switching; pages load detail/pipeline on demand.
+  useEffect(() => {
+    setTwinDetail(null);
+  }, [activeTwinId]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(workspaces));
   }, [workspaces]);
 
+  useEffect(() => {
+    try {
+      if (activeTwinId) localStorage.setItem(ACTIVE_TWIN_KEY, activeTwinId);
+    } catch {
+      /* ignore */
+    }
+  }, [activeTwinId]);
+
   const patchWorkspace = useCallback(
     (updater: (prev: TwinWorkspace) => TwinWorkspace) => {
-      setWorkspaces((all) => ({
-        ...all,
-        [activeTwinId]: updater(all[activeTwinId] ?? seedToWorkspace(getTwinSeed(activeTwinId))),
-      }));
+      setWorkspaces((all) => {
+        const current = workspaceForTwinId(all, workspaceKey === "__none__" ? "" : workspaceKey);
+        return {
+          ...all,
+          [workspaceKey]: updater(current),
+        };
+      });
     },
-    [activeTwinId]
+    [workspaceKey]
   );
 
-  const generateTwin = useCallback(async (_prompt?: string) => {
-    setIsGenerating(true);
-    setTwinGenerated(false);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsGenerating(false);
-    setTwinGenerated(true);
-    toast.success("Enterprise Twin generated");
-  }, []);
+  const resolveTenantId = useCallback(async (): Promise<string | null> => {
+    const fromUser = resolveTenantIdFromUser(user?.tenant);
+    if (fromUser) return fromUser;
+    try {
+      const raw = await adminTenants({ page: "1", page_size: "1" });
+      const rows = extractKeyedArray<Record<string, unknown>>(raw, "tenants");
+      const id = rows[0] ? String(rows[0].id ?? "") : "";
+      return id || null;
+    } catch {
+      return null;
+    }
+  }, [user?.tenant]);
 
-  const switchTwin = useCallback((twinId: string) => {
-    if (!twinSeeds[twinId] || twinId === activeTwinId) return;
-    setActiveTwinId(twinId);
-    toast.success(`Switched to ${twinSeeds[twinId].twin.name}`);
+  const generateTwin = useCallback(
+    async (prompt?: string) => {
+      const text = (prompt ?? "").trim();
+      if (!text) {
+        toast.error("Prompt is required to generate a twin");
+        return;
+      }
+      setIsGenerating(true);
+      setTwinGenerated(false);
+      setTwinError(null);
+      try {
+        const tenantId = await resolveTenantId();
+        if (!tenantId) {
+          throw new Error("No tenant available. Create a tenant in Administration first.");
+        }
+        const preview = await twinGenerate({ tenant_id: tenantId, prompt: text });
+        const view = mapTwinDetailView(preview);
+        setTwins((prev) => {
+          const rest = prev.filter((t) => t.id !== view.summary.id);
+          return [view.summary, ...rest];
+        });
+        setTwinDetail(view);
+        setActiveTwinId(view.summary.id);
+        setTwinGenerated(true);
+        toast.success(`Enterprise Twin "${view.summary.name}" generated`);
+        void loadTwinDetail(view.summary.id);
+      } catch (e) {
+        setTwinGenerated(twins.length > 0);
+        const message = e instanceof Error ? e.message : "Twin generation failed";
+        setTwinError(message);
+        toast.error(message);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [resolveTenantId, twins.length, loadTwinDetail]
+  );
+
+  const switchTwin = useCallback(
+    (twinId: string) => {
+      if (twinId === activeTwinId) return;
+      const target = twins.find((t) => t.id === twinId);
+      if (!target) return;
+      setActiveTwinId(twinId);
+      setTwinGenerated(true);
+      toast.success(`Switched to ${target.name}`);
+    },
+    [activeTwinId, twins]
+  );
+
+  const [pipelineLoading, setPipelineLoading] = useState(false);
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [apiInquiryMetrics, setApiInquiryMetrics] = useState<ReturnType<
+    typeof mapInquiryMetrics
+  > | null>(null);
+
+  useEffect(() => {
+    setApiInquiryMetrics(null);
+    setPipelineError(null);
   }, [activeTwinId]);
+
+  const twinEntities = activeTwin.entities;
+
+  const refreshPipeline = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) {
+      setApiInquiryMetrics(null);
+      setPipelineError(null);
+      return;
+    }
+    setPipelineLoading(true);
+    setPipelineError(null);
+
+    let entities = twinEntities;
+    if (!entities.length) {
+      const summary = await loadTwinDetail(twinId);
+      entities = summary?.entities ?? [];
+    }
+
+    const cached = loadPipelineCache(twinId);
+    if (cached.inquiries.length || cached.projects.length) {
+      patchWorkspace((prev) => ({
+        ...prev,
+        inquiries: cached.inquiries.length ? cached.inquiries : prev.inquiries,
+        projects: cached.projects.length ? cached.projects : prev.projects,
+        wbsProjects:
+          Object.keys(cached.wbsByProjectId).length > 0
+            ? Object.values(cached.wbsByProjectId)
+            : prev.wbsProjects,
+      }));
+      if (cached.inquiryMetrics) setApiInquiryMetrics(cached.inquiryMetrics);
+    }
+    try {
+      const [inqRaw, metricsRaw, projRaw] = await Promise.all([
+        aecListInquiries(twinId),
+        aecInquiryMetrics(twinId),
+        aecListProjects(twinId),
+      ]);
+      const inquiries = (Array.isArray(inqRaw) ? inqRaw : []).map((row) =>
+        mapInquiry(row, entities)
+      );
+      const projects = (Array.isArray(projRaw) ? projRaw : []).map((row) =>
+        mapProject(row, entities)
+      );
+      const metrics = mapInquiryMetrics(metricsRaw);
+      setApiInquiryMetrics(metrics);
+      savePipelineCache(twinId, { inquiries, projects, inquiryMetrics: metrics });
+      patchWorkspace((prev) => ({
+        ...prev,
+        inquiries,
+        projects,
+        activeProjectId:
+          prev.activeProjectId && projects.some((p) => p.id === prev.activeProjectId)
+            ? prev.activeProjectId
+            : projects[0]?.id ?? null,
+      }));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load pipeline";
+      setPipelineError(message);
+      if (!cached.inquiries.length && !cached.projects.length) {
+        toast.error(`Pipeline API: ${message}`);
+      }
+    } finally {
+      setPipelineLoading(false);
+    }
+  }, [activeTwinId, twinEntities, patchWorkspace, loadTwinDetail]);
 
   const updateDraft = useCallback(
     (partial: Partial<ProjectDraft>) => {
@@ -207,20 +656,24 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
 
   const setDraftFromInquiry = useCallback(
     (inquiry: Inquiry) => {
-      const projectId = resolveProjectIdFromInquiry(inquiry);
+      const today = new Date();
+      const start = today.toISOString().slice(0, 10);
+      const end = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
+        .toISOString()
+        .slice(0, 10);
       patchWorkspace((prev) => ({
         ...prev,
-        activeProjectId: projectId,
         projectDraft: {
           name: inquiry.projectName,
           client: inquiry.client,
           entity: inquiry.entity,
+          entityId: inquiry.entityId,
           type: inquiry.projectType,
           billingType: billingTypeForInquiry(inquiry),
           currency: currencyForEntity(inquiry.entity),
           budget: inquiry.valueGbp,
-          startDate: "2026-04-01",
-          endDate: "2027-12-31",
+          startDate: start,
+          endDate: end,
           projectManager: inquiry.contact,
         },
       }));
@@ -243,195 +696,694 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [patchWorkspace]
   );
 
-  const saveProjectFromDraft = useCallback(() => {
+  const saveProjectFromDraft = useCallback(async () => {
     const draft = ws.projectDraft;
-    const id = ws.activeProjectId ?? slugToProjectId(draft.name);
-    const existing = ws.projects.find((p) => p.id === id);
-    const project: Project = existing ?? {
-      id,
-      name: draft.name,
-      client: draft.client,
-      entity: draft.entity,
-      type: draft.type,
-      billingType: draft.billingType,
-      currency: draft.currency,
-      budget: draft.budget,
-      budgetDisplay:
-        draft.currency === "AED"
-          ? `AED ${(draft.budget / 1_000_000).toFixed(1)}M`
-          : `£${Math.round(draft.budget / 1000)}K`,
-      health: "Good",
-      marginPct: 30,
-      progressPct: 0,
-      revenue: 0,
-      revenueDisplay: draft.currency === "AED" ? "AED 0" : "£0",
-      projectManager: draft.projectManager ?? "TBD",
-      costs: { employee: 0, contractor: 0, freelancer: 0, other: 0 },
-    };
+    const twinId = activeTwinId;
 
-    patchWorkspace((prev) => {
-      const projects = existing
-        ? prev.projects.map((p) =>
-            p.id === id
-              ? {
-                  ...project,
-                  progressPct: p.progressPct,
-                  health: p.health,
-                  costs: p.costs,
-                  revenue: p.revenue,
-                  revenueDisplay: p.revenueDisplay,
-                  marginPct: p.marginPct,
-                }
-              : p
-          )
-        : [...prev.projects, project];
-      const hasWbs = prev.wbsProjects.some((w) => w.id === id);
-      const wbsProjects = hasWbs
-        ? prev.wbsProjects
-        : [
-            ...prev.wbsProjects,
-            {
-              id,
-              name: draft.name,
-              riskSignal: {
-                severity: "Low" as const,
-                title: "New Project — WBS Draft",
-                message:
-                  "Work breakdown structure generated from project setup. Review and approve before mobilisation.",
-                recommendation: "Assign PM and confirm milestone dates with the client.",
-              },
-              phases: [
-                {
-                  id: `${id}-ph-1`,
-                  name: "Phase 1 · Mobilisation",
-                  status: "Not Started" as const,
-                  progress: 0,
-                  budgetGbp: Math.round(draft.budget * 0.15),
-                  spentGbp: 0,
-                  tasks: [{ id: `${id}-t1`, name: "Project kick-off", progress: 0 }],
-                },
-              ],
-              milestones: [
-                {
-                  id: `${id}-ms-1`,
-                  name: "Kick-off",
-                  phase: "Phase 1",
-                  plannedDate: draft.startDate,
-                  actualDate: null,
-                  varianceDays: 0,
-                  status: "On Track" as const,
-                },
-              ],
-            },
-          ];
-      return { ...prev, projects, wbsProjects, activeProjectId: id };
-    });
+    if (!twinId || !isApiTwinId(twinId)) {
+      toast.error("Select a live Enterprise Twin before creating a project");
+      throw new Error("No API twin selected");
+    }
+    if (!draft.entity && !draft.entityId) {
+      toast.error("Select an entity/organization for the project");
+      throw new Error("Entity required");
+    }
 
-    return id;
-  }, [ws.projectDraft, ws.activeProjectId, ws.projects, patchWorkspace]);
-
-  const submitTimesheet = useCallback(
-    (submission: Omit<TimesheetSubmission, "id" | "status">) => {
+    try {
+      const created = mapProject(
+        await aecCreateProject(twinId, draftToCreatePayload(draft)),
+        twinEntities
+      );
       patchWorkspace((prev) => ({
         ...prev,
-        timesheetSubmissions: [
-          ...prev.timesheetSubmissions,
-          { ...submission, id: `ts-${Date.now()}`, status: "Pending" },
-        ],
+        projects: prev.projects.some((p) => p.id === created.id)
+          ? prev.projects.map((p) => (p.id === created.id ? created : p))
+          : [...prev.projects, created],
+        activeProjectId: created.id,
       }));
+      const cache = loadPipelineCache(twinId);
+      savePipelineCache(twinId, {
+        projects: [created, ...cache.projects.filter((p) => p.id !== created.id)],
+      });
+      toast.success(`Project "${created.name}" created`);
+      return created.id;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Create project failed");
+      throw e;
+    }
+  }, [ws.projectDraft, patchWorkspace, activeTwinId, twinEntities]);
+
+  const generateInquiryProposal = useCallback(
+    async (inquiry: Inquiry) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select an API-backed enterprise twin first");
+      }
+      const data = await aecGenerateProposal(twinId, inquiry.id);
+      cacheProposal(twinId, inquiry.id, data);
+      return data;
     },
-    [patchWorkspace]
+    [activeTwinId]
+  );
+
+  const generateInquiryQuotation = useCallback(
+    async (inquiry: Inquiry) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select an API-backed enterprise twin first");
+      }
+      const data = await aecGenerateQuotation(twinId, inquiry.id);
+      cacheQuotation(twinId, inquiry.id, data);
+      return data;
+    },
+    [activeTwinId]
+  );
+
+  const convertInquiryToProject = useCallback(
+    async (inquiry: Inquiry) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return null;
+      if (inquiry.stage !== "Won") {
+        toast.error("Only Won inquiries can be converted via API");
+        return null;
+      }
+      try {
+        const today = new Date();
+        const start = today.toISOString().slice(0, 10);
+        const end = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
+          .toISOString()
+          .slice(0, 10);
+        const raw = (await aecConvertInquiry(twinId, inquiry.id, {
+          billingType: billingTypeForInquiry(inquiry),
+          startDate: start,
+          endDate: end,
+        })) as Record<string, unknown>;
+        const projectId = String(raw.projectId ?? "");
+        if (projectId) {
+          await refreshPipeline();
+          patchWorkspace((prev) => ({ ...prev, activeProjectId: projectId }));
+          toast.success("Inquiry converted to project");
+          return projectId;
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Convert failed");
+      }
+      return null;
+    },
+    [activeTwinId, refreshPipeline, patchWorkspace]
+  );
+
+  const updateInquiryStage = useCallback(
+    async (inquiryId: string, stage: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      const updated = mapInquiry(await aecUpdateInquiryStage(twinId, inquiryId, stage), twinEntities);
+      patchWorkspace((prev) => ({
+        ...prev,
+        inquiries: prev.inquiries.map((i) => (i.id === inquiryId ? updated : i)),
+      }));
+      await refreshPipeline();
+    },
+    [activeTwinId, twinEntities, patchWorkspace, refreshPipeline]
+  );
+
+  const loadProjectWbs = useCallback(
+    async (projectId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId) || !projectId) return null;
+      try {
+        const wbs = mapWbs(await aecGetWbs(twinId, projectId));
+        cacheWbs(twinId, projectId, wbs);
+        patchWorkspace((prev) => ({
+          ...prev,
+          wbsProjects: prev.wbsProjects.some((w) => w.id === projectId)
+            ? prev.wbsProjects.map((w) => (w.id === projectId ? wbs : w))
+            : [...prev.wbsProjects, wbs],
+          activeProjectId: projectId,
+        }));
+        return wbs;
+      } catch (e) {
+        const cached = loadPipelineCache(twinId).wbsByProjectId[projectId];
+        if (cached) {
+          patchWorkspace((prev) => ({
+            ...prev,
+            wbsProjects: prev.wbsProjects.some((w) => w.id === projectId)
+              ? prev.wbsProjects.map((w) => (w.id === projectId ? cached : w))
+              : [...prev.wbsProjects, cached],
+          }));
+          return cached;
+        }
+        toast.error(e instanceof Error ? e.message : "Failed to load WBS");
+        return null;
+      }
+    },
+    [activeTwinId, patchWorkspace]
+  );
+
+  const generateProjectWbs = useCallback(
+    async (projectId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return null;
+      try {
+        await aecGenerateWbs(twinId, projectId);
+        toast.success("WBS draft generated");
+        return await loadProjectWbs(projectId);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "WBS generate failed");
+        return null;
+      }
+    },
+    [activeTwinId, loadProjectWbs]
+  );
+
+  const approveProjectWbs = useCallback(
+    async (projectId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecApproveWbs(twinId, projectId);
+        toast.success("WBS approved");
+        await loadProjectWbs(projectId);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "WBS approve failed");
+      }
+    },
+    [activeTwinId, loadProjectWbs]
+  );
+
+  const loadProjectProfitability = useCallback(
+    async (projectId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId) || !projectId) return null;
+      try {
+        const view = mapProfitability(await aecProjectProfitability(twinId, projectId), twinEntities);
+        cacheProfitability(twinId, projectId, view);
+        return view;
+      } catch (e) {
+        const cached = loadPipelineCache(twinId).profitabilityByProjectId[projectId];
+        if (cached) return mapProfitability(cached, twinEntities);
+        toast.error(e instanceof Error ? e.message : "Failed to load profitability");
+        return null;
+      }
+    },
+    [activeTwinId, twinEntities]
+  );
+
+  const [timesheetsLoading, setTimesheetsLoading] = useState(false);
+  const [timesheetsError, setTimesheetsError] = useState<string | null>(null);
+  const [timesheetSummary, setTimesheetSummary] = useState<TimesheetSummaryView | null>(null);
+  const [timesheetWeekStart, setTimesheetWeekStart] = useState(() => mondayOf());
+  const [expensesLoading, setExpensesLoading] = useState(false);
+  const [expensesError, setExpensesError] = useState<string | null>(null);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryOption[]>([]);
+
+  useEffect(() => {
+    setTimesheetSummary(null);
+    setTimesheetsError(null);
+    setExpensesError(null);
+    setExpenseCategories([]);
+    setTimesheetWeekStart(mondayOf());
+  }, [activeTwinId]);
+
+  const refreshTimesheets = useCallback(
+    async (weekStart?: string) => {
+      const twinId = activeTwinId;
+      const week = weekStart ?? timesheetWeekStart;
+      if (weekStart) setTimesheetWeekStart(weekStart);
+      if (!twinId || !isApiTwinId(twinId)) {
+        setTimesheetsError(null);
+        return;
+      }
+      setTimesheetsLoading(true);
+      setTimesheetsError(null);
+      try {
+        const [listRaw, summaryRaw] = await Promise.all([
+          aecListTimesheets(twinId, { weekStart: week }),
+          aecTimesheetSummary(twinId, week),
+        ]);
+        const list = (Array.isArray(listRaw) ? listRaw : []).map(mapTimesheetSubmission);
+        const summary = mapTimesheetSummary(summaryRaw);
+        setTimesheetSummary(summary);
+        patchWorkspace((prev) => ({ ...prev, timesheetSubmissions: list }));
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to load timesheets";
+        setTimesheetsError(message);
+        toast.error(`Timesheets API: ${message}`);
+      } finally {
+        setTimesheetsLoading(false);
+      }
+    },
+    [activeTwinId, timesheetWeekStart, patchWorkspace]
+  );
+
+  const loadMyTimesheet = useCallback(
+    async (resourceId: string, weekStart?: string) => {
+      const twinId = activeTwinId;
+      const week = weekStart ?? timesheetWeekStart;
+      if (!twinId || !isApiTwinId(twinId) || !resourceId) return null;
+      try {
+        return mapTimesheetDetail(
+          await aecMyTimesheet(twinId, { weekStart: week, resourceId })
+        );
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to load timesheet");
+        return null;
+      }
+    },
+    [activeTwinId, timesheetWeekStart]
+  );
+
+  const saveAndSubmitTimesheet = useCallback(
+    async (input: {
+      resourceId: string;
+      weekStart: string;
+      weekDates: string[];
+      rows: TimesheetRow[];
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const payload = gridRowsToSavePayload(input.rows, input.weekDates, {
+        resourceId: input.resourceId,
+        weekStart: input.weekStart,
+      });
+      const saved = mapTimesheetDetail(await aecSaveTimesheet(twinId, payload));
+      if (!saved.id) throw new Error("Timesheet save did not return an id");
+      await aecSubmitTimesheet(twinId, saved.id);
+      await refreshTimesheets(input.weekStart);
+    },
+    [activeTwinId, refreshTimesheets]
   );
 
   const approveTimesheet = useCallback(
-    (id: string) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        timesheetSubmissions: prev.timesheetSubmissions.map((t) =>
-          t.id === id ? { ...t, status: "Approved" as const } : t
-        ),
-      }));
+    async (id: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecApproveTimesheets(twinId, [id]);
+        await refreshTimesheets();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Approve failed");
+        throw e;
+      }
     },
-    [patchWorkspace]
-  );
-
-  const rejectTimesheet = useCallback(
-    (id: string) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        timesheetSubmissions: prev.timesheetSubmissions.map((t) =>
-          t.id === id ? { ...t, status: "Rejected" as const } : t
-        ),
-      }));
-    },
-    [patchWorkspace]
+    [activeTwinId, refreshTimesheets]
   );
 
   const bulkApproveTimesheets = useCallback(
-    (ids: string[]) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        timesheetSubmissions: prev.timesheetSubmissions.map((t) =>
-          ids.includes(t.id) ? { ...t, status: "Approved" as const } : t
-        ),
-      }));
+    async (ids: string[]) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId) || !ids.length) return;
+      try {
+        await aecApproveTimesheets(twinId, ids);
+        await refreshTimesheets();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Bulk approve failed");
+        throw e;
+      }
     },
-    [patchWorkspace]
+    [activeTwinId, refreshTimesheets]
   );
+
+  const refreshExpenses = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) {
+      setExpensesError(null);
+      return;
+    }
+    setExpensesLoading(true);
+    setExpensesError(null);
+    try {
+      const listRaw = await aecListExpenses(twinId);
+      const list = (Array.isArray(listRaw) ? listRaw : []).map(mapExpense);
+      patchWorkspace((prev) => ({ ...prev, pendingExpenses: list }));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load expenses";
+      setExpensesError(message);
+      toast.error(`Expenses API: ${message}`);
+    } finally {
+      setExpensesLoading(false);
+    }
+  }, [activeTwinId, patchWorkspace]);
+
+  const loadExpenseCategories = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return [];
+    try {
+      const cats = mapExpenseCategories(await aecExpenseCategories(twinId));
+      setExpenseCategories(cats);
+      return cats;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load categories");
+      return [];
+    }
+  }, [activeTwinId]);
 
   const submitExpense = useCallback(
-    (expense: Omit<PendingExpense, "id" | "status">) => {
+    async (input: {
+      resourceId: string;
+      expenseDate: string;
+      category: string;
+      categoryOther?: string;
+      amount: number;
+      projectId?: string;
+      notes?: string;
+      currency?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const body: Record<string, unknown> = {
+        resourceId: input.resourceId,
+        expenseDate: input.expenseDate,
+        category: input.category,
+        amount: input.amount,
+        currency: input.currency ?? "GBP",
+        notes: input.notes ?? "",
+      };
+      if (input.categoryOther) body.categoryOther = input.categoryOther;
+      if (input.projectId) body.projectId = input.projectId;
+      const created = mapExpense(await aecCreateExpense(twinId, body));
       patchWorkspace((prev) => ({
         ...prev,
-        pendingExpenses: [
-          ...prev.pendingExpenses,
-          { ...expense, id: `exp-${Date.now()}`, status: "Pending" },
-        ],
+        pendingExpenses: [created, ...prev.pendingExpenses.filter((e) => e.id !== created.id)],
       }));
+      return created;
     },
-    [patchWorkspace]
+    [activeTwinId, patchWorkspace]
   );
 
-  const approveExpense = useCallback(
-    (id: string) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        pendingExpenses: prev.pendingExpenses.map((e) =>
-          e.id === id ? { ...e, status: "Approved" as const } : e
-        ),
-      }));
-    },
-    [patchWorkspace]
-  );
+  const [accountingLoading, setAccountingLoading] = useState(false);
+  const [accountingError, setAccountingError] = useState<string | null>(null);
+  const [accountingSummary, setAccountingSummary] = useState<AccountingSummaryView | null>(null);
+  const [apEntries, setApEntries] = useState<ApEntry[]>([]);
+  const [glEntries, setGlEntries] = useState<GlJournalEntry[]>([]);
+  const [payrollRows, setPayrollRows] = useState<PayrollInput[]>([]);
+  const [payrollPeriod, setPayrollPeriod] = useState(() => currentPayrollPeriod());
+  const [taxRules, setTaxRules] = useState<TaxRuleOption[]>([]);
+  const [currencyIntelligence, setCurrencyIntelligence] =
+    useState<CurrencyIntelligenceView | null>(null);
 
-  const rejectExpense = useCallback(
-    (id: string) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        pendingExpenses: prev.pendingExpenses.filter((e) => e.id !== id),
-      }));
+  useEffect(() => {
+    setAccountingSummary(null);
+    setApEntries([]);
+    setGlEntries([]);
+    setPayrollRows([]);
+    setTaxRules([]);
+    setCurrencyIntelligence(null);
+    setAccountingError(null);
+    setPayrollPeriod(currentPayrollPeriod());
+  }, [activeTwinId]);
+
+  const refreshAccounting = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) {
+      setAccountingError(null);
+      return;
+    }
+    const period = payrollPeriod || currentPayrollPeriod();
+    setAccountingLoading(true);
+    setAccountingError(null);
+    try {
+      const [summaryRaw, invoicesRaw, apRaw, glRaw, payrollRaw] = await Promise.all([
+        aecAccountingSummary(twinId),
+        aecListInvoices(twinId),
+        aecListAp(twinId),
+        aecListGlJournals(twinId),
+        aecPayroll(twinId, period),
+      ]);
+      setAccountingSummary(mapAccountingSummary(summaryRaw));
+      setApEntries((Array.isArray(apRaw) ? apRaw : []).map(mapApEntry));
+      setGlEntries(mapGlList(glRaw));
+      setPayrollRows(mapPayrollRows(payrollRaw, period));
+      const invoices = (Array.isArray(invoicesRaw) ? invoicesRaw : []).map(mapInvoice);
+      patchWorkspace((prev) => ({ ...prev, invoices }));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load accounting";
+      setAccountingError(message);
+      toast.error(`Accounting API: ${message}`);
+    } finally {
+      setAccountingLoading(false);
+    }
+  }, [activeTwinId, payrollPeriod, patchWorkspace]);
+
+  const refreshCurrency = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    try {
+      setCurrencyIntelligence(mapCurrencyIntelligence(await aecCurrencyIntelligence(twinId)));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load currency");
+    }
+  }, [activeTwinId]);
+
+  const loadTaxRules = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return [];
+    try {
+      const rules = mapTaxRules(await aecTaxRules(twinId));
+      setTaxRules(rules);
+      return rules;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load tax rules");
+      return [];
+    }
+  }, [activeTwinId]);
+
+  const previewInvoice = useCallback(
+    async (body: Record<string, unknown>) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return null;
+      try {
+        return mapInvoicePreview(await aecPreviewInvoice(twinId, body));
+      } catch {
+        return null;
+      }
     },
-    [patchWorkspace]
+    [activeTwinId]
   );
 
   const createInvoice = useCallback(
-    (invoice: Omit<Invoice, "id" | "daysOutstanding" | "status">) => {
-      const entityPrefix = invoice.entity;
-      const seq = ws.invoices.filter((i) => i.entity === entityPrefix).length + 40;
+    async (input: {
+      entityId: string;
+      client: string;
+      projectId?: string;
+      invoiceType: string;
+      currency: string;
+      netAmount: number;
+      taxRule: string;
+      dueDate?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const body: Record<string, unknown> = {
+        entityId: input.entityId,
+        client: input.client,
+        invoiceType: input.invoiceType.toLowerCase(),
+        currency: input.currency,
+        netAmount: input.netAmount,
+        taxRule: input.taxRule,
+      };
+      if (input.projectId) body.projectId = input.projectId;
+      if (input.dueDate) body.dueDate = input.dueDate;
+      const created = mapInvoice(await aecCreateInvoice(twinId, body));
       patchWorkspace((prev) => ({
         ...prev,
-        invoices: [
-          {
-            ...invoice,
-            id: `INV-${entityPrefix}-${seq}`,
-            daysOutstanding: 0,
-            status: "Pending",
-          },
-          ...prev.invoices,
-        ],
+        invoices: [created, ...prev.invoices.filter((i) => i.id !== created.id)],
+      }));
+      return created;
+    },
+    [activeTwinId, patchWorkspace]
+  );
+
+  const markInvoicePaid = useCallback(
+    async (id: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      const updated = mapInvoice(await aecMarkInvoicePaid(twinId, id));
+      patchWorkspace((prev) => ({
+        ...prev,
+        invoices: prev.invoices.map((i) => (i.id === id ? updated : i)),
       }));
     },
-    [patchWorkspace, ws.invoices]
+    [activeTwinId, patchWorkspace]
+  );
+
+  const chaseInvoice = useCallback(
+    async (id: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      const updated = mapInvoice(await aecChaseInvoice(twinId, id));
+      patchWorkspace((prev) => ({
+        ...prev,
+        invoices: prev.invoices.map((i) => (i.id === id ? updated : i)),
+      }));
+    },
+    [activeTwinId, patchWorkspace]
+  );
+
+  const escalateInvoice = useCallback(
+    async (id: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      const updated = mapInvoice(await aecEscalateInvoice(twinId, id));
+      patchWorkspace((prev) => ({
+        ...prev,
+        invoices: prev.invoices.map((i) => (i.id === id ? updated : i)),
+      }));
+    },
+    [activeTwinId, patchWorkspace]
+  );
+
+  const processPayroll = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    const period = payrollPeriod || currentPayrollPeriod();
+    const raw = await aecProcessPayroll(twinId, period);
+    setPayrollRows(mapPayrollRows(raw, period));
+  }, [activeTwinId, payrollPeriod]);
+
+  const refreshFxRates = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    await aecRefreshCurrencyRates(twinId);
+    await refreshCurrency();
+  }, [activeTwinId, refreshCurrency]);
+
+  const [resourcesLoading, setResourcesLoading] = useState(false);
+  const [resourcesError, setResourcesError] = useState<string | null>(null);
+  const [resourceSummary, setResourceSummary] = useState<ResourceSummaryView | null>(null);
+  const [utilizationHeatmap, setUtilizationHeatmap] = useState<UtilizationHeatmapView | null>(null);
+  const [skillsMatrix, setSkillsMatrix] = useState<SkillsMatrixView | null>(null);
+  const [rateCards, setRateCards] = useState<RateCardView[]>([]);
+  const [allocations, setAllocations] = useState<CrossEntityAllocation[]>([]);
+
+  useEffect(() => {
+    setResourceSummary(null);
+    setUtilizationHeatmap(null);
+    setSkillsMatrix(null);
+    setRateCards([]);
+    setAllocations([]);
+    setResourcesError(null);
+  }, [activeTwinId]);
+
+  const refreshResources = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) {
+      setResourcesError(null);
+      return;
+    }
+    setResourcesLoading(true);
+    setResourcesError(null);
+    let entities = twinEntities;
+    if (!entities.length) {
+      const summary = await loadTwinDetail(twinId);
+      entities = summary?.entities ?? [];
+    }
+    try {
+      const [listRaw, summaryRaw, utilRaw] = await Promise.all([
+        aecListResources(twinId),
+        aecResourceSummary(twinId),
+        aecResourceUtilization(twinId, { weeks: "8" }),
+      ]);
+      const list = (Array.isArray(listRaw) ? listRaw : []).map((row) => mapResource(row, entities));
+      const summary = mapResourceSummary(summaryRaw);
+      const util = mapUtilization(utilRaw);
+      setResourceSummary(summary);
+      setUtilizationHeatmap(util);
+      patchWorkspace((prev) => ({ ...prev, resources: list }));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load resources";
+      setResourcesError(message);
+      toast.error(`Resources API: ${message}`);
+    } finally {
+      setResourcesLoading(false);
+    }
+  }, [activeTwinId, twinEntities, patchWorkspace, loadTwinDetail]);
+
+  const loadSkillsMatrix = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return null;
+    try {
+      const view = mapSkillsMatrix(await aecSkillsMatrix(twinId));
+      setSkillsMatrix(view);
+      return view;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load skills");
+      return null;
+    }
+  }, [activeTwinId]);
+
+  const loadRateCards = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return [];
+    let entities = twinEntities;
+    if (!entities.length) {
+      const summary = await loadTwinDetail(twinId);
+      entities = summary?.entities ?? [];
+    }
+    try {
+      const cards = mapRateCards(await aecRateCards(twinId), entities);
+      setRateCards(cards);
+      return cards;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load rate cards");
+      return [];
+    }
+  }, [activeTwinId, twinEntities, loadTwinDetail]);
+
+  const loadAllocations = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return [];
+    let entities = twinEntities;
+    if (!entities.length) {
+      const summary = await loadTwinDetail(twinId);
+      entities = summary?.entities ?? [];
+    }
+    try {
+      const rows = mapAllocations(await aecResourceAllocations(twinId), entities);
+      setAllocations(rows);
+      return rows;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load allocations");
+      return [];
+    }
+  }, [activeTwinId, twinEntities, loadTwinDetail]);
+
+  const createResource = useCallback(
+    async (input: {
+      name: string;
+      type: ResourceType;
+      entityId: string;
+      designation: string;
+      department: string;
+      costRate?: number;
+      billRate?: number;
+      contractExpiry?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const created = mapResource(
+        await aecCreateResource(twinId, draftToCreateResourcePayload(input)),
+        twinEntities
+      );
+      patchWorkspace((prev) => ({
+        ...prev,
+        resources: prev.resources.some((r) => r.id === created.id || r.resourceId === created.resourceId)
+          ? prev.resources.map((r) =>
+              r.id === created.id || r.resourceId === created.resourceId ? created : r
+            )
+          : [...prev.resources, created],
+      }));
+      return created;
+    },
+    [activeTwinId, twinEntities, patchWorkspace]
   );
 
   const addResource = useCallback(
@@ -512,7 +1464,10 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [ws]
   );
 
-  const metrics = useMemo(() => inquiryMetrics(ws.inquiries), [ws.inquiries]);
+  const metrics = useMemo(
+    () => apiInquiryMetrics ?? computeInquiryMetrics(ws.inquiries),
+    [apiInquiryMetrics, ws.inquiries]
+  );
   const projectNames = useMemo(() => ws.projects.map((p) => p.name), [ws.projects]);
 
   const value = useMemo(
@@ -520,10 +1475,16 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       activeTwin,
       activeTwinId,
       twins,
+      twinDetail,
       isGenerating,
       twinGenerated,
+      twinsLoading,
+      twinDetailLoading,
+      twinError,
       generateTwin,
       switchTwin,
+      refreshTwins,
+      loadTwinDetail,
       inquiries: ws.inquiries,
       projects: ws.projects,
       wbsProjects: ws.wbsProjects,
@@ -536,19 +1497,69 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       leaveRequests: ws.leaveRequests,
       projectDraft: ws.projectDraft,
       activeProjectId: ws.activeProjectId,
+      pipelineLoading,
+      pipelineError,
       updateDraft,
       setDraftFromInquiry,
       resetDraft,
       setActiveProjectId,
       saveProjectFromDraft,
-      submitTimesheet,
+      refreshPipeline,
+      generateInquiryProposal,
+      generateInquiryQuotation,
+      convertInquiryToProject,
+      updateInquiryStage,
+      loadProjectWbs,
+      generateProjectWbs,
+      approveProjectWbs,
+      loadProjectProfitability,
+      resourcesLoading,
+      resourcesError,
+      resourceSummary,
+      utilizationHeatmap,
+      skillsMatrix,
+      rateCards,
+      allocations,
+      refreshResources,
+      loadSkillsMatrix,
+      loadRateCards,
+      loadAllocations,
+      createResource,
+      timesheetsLoading,
+      timesheetsError,
+      timesheetSummary,
+      timesheetWeekStart,
+      setTimesheetWeekStart,
+      refreshTimesheets,
+      loadMyTimesheet,
+      saveAndSubmitTimesheet,
       approveTimesheet,
-      rejectTimesheet,
       bulkApproveTimesheets,
+      expensesLoading,
+      expensesError,
+      expenseCategories,
+      refreshExpenses,
+      loadExpenseCategories,
       submitExpense,
-      approveExpense,
-      rejectExpense,
+      accountingLoading,
+      accountingError,
+      accountingSummary,
+      apEntries,
+      glEntries,
+      payrollRows,
+      payrollPeriod,
+      taxRules,
+      currencyIntelligence,
+      refreshAccounting,
+      refreshCurrency,
+      loadTaxRules,
+      previewInvoice,
       createInvoice,
+      markInvoicePaid,
+      chaseInvoice,
+      escalateInvoice,
+      processPayroll,
+      refreshFxRates,
       addResource,
       handleAgentAction,
       approveLeave,
@@ -561,24 +1572,79 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       activeTwin,
       activeTwinId,
       twins,
+      twinDetail,
       isGenerating,
       twinGenerated,
+      twinsLoading,
+      twinDetailLoading,
+      twinError,
       generateTwin,
       switchTwin,
+      refreshTwins,
+      loadTwinDetail,
       ws,
       updateDraft,
       setDraftFromInquiry,
       resetDraft,
       setActiveProjectId,
       saveProjectFromDraft,
-      submitTimesheet,
+      pipelineLoading,
+      pipelineError,
+      refreshPipeline,
+      generateInquiryProposal,
+      generateInquiryQuotation,
+      convertInquiryToProject,
+      updateInquiryStage,
+      loadProjectWbs,
+      generateProjectWbs,
+      approveProjectWbs,
+      loadProjectProfitability,
+      resourcesLoading,
+      resourcesError,
+      resourceSummary,
+      utilizationHeatmap,
+      skillsMatrix,
+      rateCards,
+      allocations,
+      refreshResources,
+      loadSkillsMatrix,
+      loadRateCards,
+      loadAllocations,
+      createResource,
+      timesheetsLoading,
+      timesheetsError,
+      timesheetSummary,
+      timesheetWeekStart,
+      refreshTimesheets,
+      loadMyTimesheet,
+      saveAndSubmitTimesheet,
       approveTimesheet,
-      rejectTimesheet,
       bulkApproveTimesheets,
+      expensesLoading,
+      expensesError,
+      expenseCategories,
+      refreshExpenses,
+      loadExpenseCategories,
       submitExpense,
-      approveExpense,
-      rejectExpense,
+      accountingLoading,
+      accountingError,
+      accountingSummary,
+      apEntries,
+      glEntries,
+      payrollRows,
+      payrollPeriod,
+      taxRules,
+      currencyIntelligence,
+      refreshAccounting,
+      refreshCurrency,
+      loadTaxRules,
+      previewInvoice,
       createInvoice,
+      markInvoicePaid,
+      chaseInvoice,
+      escalateInvoice,
+      processPayroll,
+      refreshFxRates,
       addResource,
       handleAgentAction,
       approveLeave,
@@ -603,10 +1669,17 @@ export function useAecTwin() {
   return {
     activeTwin: app.activeTwin,
     activeTwinId: app.activeTwinId,
+    twins: app.twins,
+    twinDetail: app.twinDetail,
     isGenerating: app.isGenerating,
     twinGenerated: app.twinGenerated,
+    twinsLoading: app.twinsLoading,
+    twinDetailLoading: app.twinDetailLoading,
+    twinError: app.twinError,
     generateTwin: app.generateTwin,
     switchTwin: app.switchTwin,
+    refreshTwins: app.refreshTwins,
+    loadTwinDetail: app.loadTwinDetail,
   };
 }
 

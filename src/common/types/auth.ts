@@ -1,6 +1,6 @@
 import type { RoleKey } from "@/common/data/roleData";
 
-/** Logged-in user from `/auth/login` + session restore */
+/** Logged-in user from `POST /api/login` + session restore */
 export interface AuthUser {
   id: number;
   email: string;

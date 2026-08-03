@@ -175,7 +175,7 @@ export default function Users() {
     queryKey: ["admin", "roles", "users-dialog", form.orgId || "__none__"],
     queryFn: async () => {
       if (!form.orgId) return [];
-      const raw = await adminRoles({ page: "1", page_size: "500", o_id: form.orgId });
+      const raw = await adminRoles({ page: "1", page_size: "500", organization_id: form.orgId });
       return extractKeyedArray<Record<string, unknown>>(raw, "roles");
     },
     enabled: dialogOpen && !!form.orgId,

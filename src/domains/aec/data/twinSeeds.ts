@@ -3,10 +3,6 @@ import { meridianTwin, horizonTwin } from "./meridian";
 import { inquiries as meridianInquiries } from "./inquiries";
 import { projects as meridianProjects } from "./projects";
 import { wbsProjects as meridianWbs } from "./wbs";
-import { timesheetSubmissions as meridianTimesheets } from "./timesheets";
-import { pendingExpenses as meridianExpenses } from "./expenses";
-import { invoices as meridianInvoices } from "./accounting";
-import { resources as meridianResources } from "./resources";
 import { governanceAgents, initialAuditLog } from "./agentGovernance";
 import type { Inquiry } from "./inquiries";
 import type { Project } from "./projects";
@@ -15,6 +11,7 @@ import type { TimesheetSubmission } from "./timesheets";
 import type { PendingExpense } from "./expenses";
 import type { Invoice } from "./accounting";
 import type { ResourceRecord } from "./resources";
+import { resources as meridianResources } from "./resources";
 import type { GovernanceAgent, AuditLogEntry } from "./agentGovernance";
 import type { LeaveRequest } from "./leave";
 
@@ -123,9 +120,9 @@ export const twinSeeds: Record<string, TwinSeedBundle> = {
     inquiries: meridianInquiries,
     projects: meridianProjects,
     wbsProjects: meridianWbs,
-    timesheetSubmissions: meridianTimesheets,
-    pendingExpenses: meridianExpenses,
-    invoices: meridianInvoices,
+    timesheetSubmissions: [],
+    pendingExpenses: [],
+    invoices: [],
     resources: meridianResources,
     governanceAgents: governanceAgents.map((a) => ({ ...a })),
     auditLog: initialAuditLog.map((e) => ({ ...e })),

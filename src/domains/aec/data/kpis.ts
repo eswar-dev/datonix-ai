@@ -28,6 +28,10 @@ export interface KpiItem {
   id: string;
   name: string;
   category: string;
+  /** Human label for category (e.g. Financial KPIs) */
+  categoryLabel?: string;
+  /** Definition text from twin API (`description`) — not a measured value */
+  description?: string;
   target: string;
   actual: string;
   status: KpiStatus;

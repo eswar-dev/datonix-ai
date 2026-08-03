@@ -7,8 +7,8 @@ import { Skeleton } from "@/common/components/ui/skeleton";
 import { DEFAULT_TWIN_PROMPT, useAecTwin } from "@/domains/aec/context/AecTwinContext";
 
 export function GenerateTwinPanel() {
-  const { isGenerating, twinGenerated, generateTwin } = useAecTwin();
-  const [prompt, setPrompt] = useState(DEFAULT_TWIN_PROMPT);
+  const { isGenerating, twinGenerated, generateTwin, activeTwin, twinDetail } = useAecTwin();
+  const [prompt, setPrompt] = useState("");
 
   const handleGenerate = () => {
     void generateTwin(prompt);
@@ -22,7 +22,7 @@ export function GenerateTwinPanel() {
           Generate Enterprise Twin
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Describe your organization to generate a four-layer enterprise twin with agents and KPIs.
+          Describe your organization to generate a four-layer enterprise twin via the API.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -32,20 +32,31 @@ export function GenerateTwinPanel() {
           rows={4}
           className="resize-none"
           disabled={isGenerating}
+          placeholder="e.g. A multi-entity AEC holding company with architecture, engineering, and construction subsidiaries…"
         />
-        <Button onClick={handleGenerate} disabled={isGenerating}>
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating…
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Twin
-            </>
-          )}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleGenerate} disabled={isGenerating || !prompt.trim()}>
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating…
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Twin
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isGenerating}
+            onClick={() => setPrompt(DEFAULT_TWIN_PROMPT)}
+          >
+            Use example prompt
+          </Button>
+        </div>
 
         {isGenerating && (
           <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
@@ -59,9 +70,15 @@ export function GenerateTwinPanel() {
           </div>
         )}
 
-        {!isGenerating && twinGenerated && (
+        {!isGenerating && twinGenerated && activeTwin.id && (
           <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm text-success">
-            Enterprise twin model is active. Four layers mapped with 6 AI agents and 8 KPIs.
+            Active twin: <span className="font-medium">{activeTwin.name}</span>
+            {" · "}
+            {activeTwin.entities.length} entities
+            {" · "}
+            {twinDetail?.agents.length ?? 0} agents
+            {" · "}
+            {twinDetail?.kpis.length ?? 0} KPIs
           </div>
         )}
       </CardContent>
