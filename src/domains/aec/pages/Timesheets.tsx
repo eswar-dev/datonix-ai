@@ -23,6 +23,7 @@ export default function Timesheets() {
     setTimesheetWeekStart,
     refreshTimesheets,
     approveTimesheet,
+    rejectTimesheet,
     bulkApproveTimesheets,
     timesheetsLoading,
     timesheetsError,
@@ -52,6 +53,24 @@ export default function Timesheets() {
         return n;
       });
       toast.success(`Approved timesheet for ${row?.employee ?? "employee"}`);
+    } catch {
+      /* toasted in context */
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reject = async (id: string) => {
+    const row = timesheetSubmissions.find((r) => r.id === id);
+    setBusy(true);
+    try {
+      await rejectTimesheet(id);
+      setSelected((s) => {
+        const n = new Set(s);
+        n.delete(id);
+        return n;
+      });
+      toast.error(`Rejected timesheet for ${row?.employee ?? "employee"}`);
     } catch {
       /* toasted in context */
     } finally {
@@ -154,6 +173,7 @@ export default function Timesheets() {
           onToggleSelect={toggleSelect}
           onToggleAll={toggleAll}
           onApprove={(id) => void approve(id)}
+          onReject={(id) => void reject(id)}
         />
       )}
     </div>

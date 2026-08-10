@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { ExecutiveKpiGrid } from "@/domains/aec/components/ExecutiveKpiGrid";
+import { CostCompositionChart } from "@/domains/aec/components/CostCompositionChart";
+import { AiAlertPanel } from "@/domains/aec/components/AiAlertPanel";
 import {
   PipelineEmptyState,
   PipelineErrorBanner,
@@ -9,78 +11,89 @@ import {
 } from "@/domains/aec/components/PipelineUi";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { MetricStrip } from "@/domains/aec/components/MetricStrip";
+import { Button } from "@/common/components/ui/button";
 
 export default function ExecutiveDashboard() {
   const {
+    executiveDashboard,
     accountingSummary,
     resourceSummary,
-    twinDetail,
     activeTwin,
     activeTwinId,
+    projects,
+    loadExecutiveDashboard,
     refreshAccounting,
     refreshResources,
-    loadTwinDetail,
-    projects,
+    dashboardsLoading,
+    dashboardsError,
   } = useAecApp();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!activeTwinId) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void Promise.all([
-      refreshAccounting(),
-      refreshResources(),
-      loadTwinDetail(activeTwinId),
-    ])
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load dashboard");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // Intentionally only re-fetch when twin changes — refresh* identities change after load.
+    void loadExecutiveDashboard();
+    void refreshAccounting();
+    void refreshResources();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTwinId]);
 
-  const kpis = useMemo(
-    () => ({
+  const kpis = useMemo(() => {
+    if (executiveDashboard) {
+      return {
+        groupRevenueGbp: executiveDashboard.groupRevenueGbp,
+        groupMarginPct: executiveDashboard.groupMarginPct,
+        projectsAtRisk: executiveDashboard.projectsAtRisk,
+        activeProjects: projects.length || executiveDashboard.activeProjects,
+        staffCount:
+          activeTwin.staffCount ||
+          (resourceSummary
+            ? resourceSummary.inHouse + resourceSummary.contractors + resourceSummary.freelancers
+            : executiveDashboard.staffCount),
+        avgUtilization: executiveDashboard.avgUtilization || resourceSummary?.avgUtilization || 0,
+        arDaysOutstanding: executiveDashboard.arDaysOutstanding,
+        cashRunwayDays: executiveDashboard.cashRunwayDays,
+      };
+    }
+    return {
       groupRevenueGbp: accountingSummary?.revenueYtd ?? 0,
       groupMarginPct: accountingSummary?.grossMarginPct ?? 0,
       projectsAtRisk: projects.filter((p) => p.health === "At Risk" || p.health === "Critical").length,
-      activeProjects: projects.length || twinDetail?.metadata.activeProjects || 0,
+      activeProjects: projects.length,
       staffCount: activeTwin.staffCount || (resourceSummary
         ? resourceSummary.inHouse + resourceSummary.contractors + resourceSummary.freelancers
         : 0),
       avgUtilization: resourceSummary?.avgUtilization ?? 0,
-      arDaysOutstanding: accountingSummary?.ar60Plus
-        ? Math.round(accountingSummary.ar60Plus > 0 ? 60 : 0)
-        : 0,
+      arDaysOutstanding: 0,
       cashRunwayDays: 0,
-    }),
-    [accountingSummary, resourceSummary, twinDetail, activeTwin.staffCount, projects]
-  );
+    };
+  }, [executiveDashboard, accountingSummary, resourceSummary, activeTwin.staffCount, projects]);
+
+  const loading = dashboardsLoading;
 
   return (
     <div className="space-y-6">
       <AecPageHeader
         title="Executive Dashboard"
-        subtitle="Live KPIs from accounting, resources, and twin summary."
+        subtitle="Live KPIs from the executive dashboard API."
         breadcrumb={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Executive" },
         ]}
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void loadExecutiveDashboard()}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        }
       />
 
       {loading && <PipelineLoadingBanner label="Loading executive metrics…" />}
-      <PipelineErrorBanner message={error ?? ""} />
+      <PipelineErrorBanner message={dashboardsError ?? ""} />
 
-      {!loading && !accountingSummary && !resourceSummary ? (
+      {!loading && !executiveDashboard && !accountingSummary && !resourceSummary ? (
         <PipelineEmptyState>No dashboard metrics yet for this twin.</PipelineEmptyState>
       ) : (
         <>
@@ -101,21 +114,54 @@ export default function ExecutiveDashboard() {
                 value: String(resourceSummary?.capacityRisk ?? 0),
               },
               {
-                label: "Bench",
-                value: String(resourceSummary?.benchCount ?? 0),
+                label: "Revenue Δ",
+                value: executiveDashboard
+                  ? `${executiveDashboard.revenueChangePct}%`
+                  : "—",
               },
             ]}
           />
 
-          <Card className="rounded-card">
-            <CardHeader>
-              <CardTitle className="text-base">Notes</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Charts that need dedicated report APIs (revenue-by-entity trend, cost composition history)
-              are omitted. Use Accounting, Resources, and Pipeline screens for detail.
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {executiveDashboard && (
+              <Card className="rounded-card">
+                <CardHeader>
+                  <CardTitle className="text-base">Cost composition</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CostCompositionChart
+                    costs={executiveDashboard.costComposition}
+                    currency={executiveDashboard.reportingCurrency}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {executiveDashboard?.revenueByEntity?.length ? (
+              <Card className="rounded-card">
+                <CardHeader>
+                  <CardTitle className="text-base">Revenue by entity</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {executiveDashboard.revenueByEntity.map((row) => (
+                    <div
+                      key={row.entity}
+                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                    >
+                      <span className="font-medium">{row.entity}</span>
+                      <span className="tabular-nums">
+                        £{Math.round(row.revenueGbp).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
+
+          {executiveDashboard?.alerts?.length ? (
+            <AiAlertPanel alerts={executiveDashboard.alerts} />
+          ) : null}
         </>
       )}
     </div>

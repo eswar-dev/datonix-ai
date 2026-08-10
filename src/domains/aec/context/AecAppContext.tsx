@@ -34,8 +34,11 @@ import {
   aecUpdateInquiryStage,
 } from "@/common/api/aecPipeline";
 import {
+  aecApproveRateCard,
   aecCreateResource,
   aecListResources,
+  aecOrgChart,
+  aecRateCardPendingRevisions,
   aecRateCards,
   aecResourceAllocations,
   aecResourceSummary,
@@ -53,6 +56,17 @@ import {
   aecSubmitTimesheet,
   aecTimesheetSummary,
 } from "@/common/api/aecTimesheets";
+import {
+  aecApprovalAction,
+  aecExecutiveDashboard,
+  aecLeaveDecision,
+  aecListLeaveRequests,
+  aecMyDashboard,
+  aecReportsLibrary,
+  aecRunReport,
+  aecSubmitLeave,
+  type ApprovalAction,
+} from "@/common/api/aecDashboards";
 import {
   aecAccountingSummary,
   aecChaseInvoice,
@@ -94,6 +108,22 @@ import {
   mapWbs,
   type ProfitabilityView,
 } from "@/domains/aec/api/pipelineMappers";
+import {
+  leaveTypeToApi,
+  mapExecutiveDashboard,
+  mapLeaveList,
+  mapLeaveRequest,
+  mapLeaveSummaryFromList,
+  mapMyDashboard,
+  mapOrgChartForest,
+  mapReportRows,
+  mapReportsLibrary,
+  wrapOrgForest,
+  type ExecutiveDashboardView,
+  type MyDashboardView,
+} from "@/domains/aec/api/dashboardsMappers";
+import type { OrgMember } from "@/domains/aec/data/orgChart";
+import type { ReportItem, ReportTableRow } from "@/domains/aec/data/reports";
 import {
   draftToCreateResourcePayload,
   mapAllocations,
@@ -332,13 +362,22 @@ interface AecAppContextValue {
     rows: TimesheetRow[];
   }) => Promise<void>;
   approveTimesheet: (id: string) => Promise<void>;
+  rejectTimesheet: (id: string, notes?: string) => Promise<void>;
   bulkApproveTimesheets: (ids: string[]) => Promise<void>;
+  decideApproval: (input: {
+    id: string;
+    type: "timesheet" | "expense" | "leave";
+    action: ApprovalAction;
+    notes?: string;
+  }) => Promise<void>;
 
   expensesLoading: boolean;
   expensesError: string | null;
   expenseCategories: ExpenseCategoryOption[];
   refreshExpenses: () => Promise<void>;
   loadExpenseCategories: () => Promise<ExpenseCategoryOption[]>;
+  approveExpense: (id: string, notes?: string) => Promise<void>;
+  rejectExpense: (id: string, notes?: string) => Promise<void>;
   submitExpense: (input: {
     resourceId: string;
     expenseDate: string;
@@ -349,6 +388,50 @@ interface AecAppContextValue {
     notes?: string;
     currency?: string;
   }) => Promise<PendingExpense>;
+
+  leaveLoading: boolean;
+  leaveError: string | null;
+  leaveSummaryLive: ReturnType<typeof mapLeaveSummaryFromList> | null;
+  refreshLeave: (opts?: { scope?: "team" | "mine"; status?: string }) => Promise<void>;
+  submitLeaveRequest: (input: {
+    startDate: string;
+    endDate: string;
+    leaveType: string;
+    notes?: string;
+    resourceId?: string;
+  }) => Promise<void>;
+  approveLeave: (id: string, notes?: string) => Promise<void>;
+  rejectLeave: (id: string, notes?: string) => Promise<void>;
+
+  orgChartRoot: OrgMember | null;
+  orgChartLoading: boolean;
+  orgChartError: string | null;
+  loadOrgChart: () => Promise<OrgMember | null>;
+
+  reportLibraryLive: ReportItem[];
+  reportRows: ReportTableRow[];
+  reportsLoading: boolean;
+  reportsError: string | null;
+  loadReportLibrary: () => Promise<ReportItem[]>;
+  runReport: (reportId: string, query?: Record<string, string>) => Promise<ReportTableRow[]>;
+
+  myDashboard: MyDashboardView | null;
+  executiveDashboard: ExecutiveDashboardView | null;
+  dashboardsLoading: boolean;
+  dashboardsError: string | null;
+  loadMyDashboard: () => Promise<MyDashboardView | null>;
+  loadExecutiveDashboard: () => Promise<ExecutiveDashboardView | null>;
+
+  rateCardPendingRevisions: {
+    id: string;
+    resourceId: string;
+    resourceName: string;
+    fromValue: string;
+    toValue: string;
+    status: string;
+  }[];
+  loadRateCardPendingRevisions: () => Promise<void>;
+  approveRateCard: (rateCardId: string) => Promise<void>;
 
   accountingLoading: boolean;
   accountingError: string | null;
@@ -382,8 +465,6 @@ interface AecAppContextValue {
   addResource: (resource: Omit<ResourceRecord, "id" | "utilization" | "status">) => void; // @deprecated local-only
 
   handleAgentAction: (id: string, action: AgentAction) => void;
-  approveLeave: (id: string) => void;
-  rejectLeave: (id: string) => void;
 
   navBadges: NavBadges;
   inquiryMetrics: ReturnType<typeof computeInquiryMetrics>;
@@ -896,6 +977,32 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
   const [expensesLoading, setExpensesLoading] = useState(false);
   const [expensesError, setExpensesError] = useState<string | null>(null);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryOption[]>([]);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+  const [leaveSummaryLive, setLeaveSummaryLive] = useState<ReturnType<
+    typeof mapLeaveSummaryFromList
+  > | null>(null);
+  const [orgChartRoot, setOrgChartRoot] = useState<OrgMember | null>(null);
+  const [orgChartLoading, setOrgChartLoading] = useState(false);
+  const [orgChartError, setOrgChartError] = useState<string | null>(null);
+  const [reportLibraryLive, setReportLibraryLive] = useState<ReportItem[]>([]);
+  const [reportRows, setReportRows] = useState<ReportTableRow[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
+  const [myDashboard, setMyDashboard] = useState<MyDashboardView | null>(null);
+  const [executiveDashboard, setExecutiveDashboard] = useState<ExecutiveDashboardView | null>(null);
+  const [dashboardsLoading, setDashboardsLoading] = useState(false);
+  const [dashboardsError, setDashboardsError] = useState<string | null>(null);
+  const [rateCardPendingRevisions, setRateCardPendingRevisions] = useState<
+    {
+      id: string;
+      resourceId: string;
+      resourceName: string;
+      fromValue: string;
+      toValue: string;
+      status: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     setTimesheetSummary(null);
@@ -903,6 +1010,17 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     setExpensesError(null);
     setExpenseCategories([]);
     setTimesheetWeekStart(mondayOf());
+    setLeaveError(null);
+    setLeaveSummaryLive(null);
+    setOrgChartRoot(null);
+    setOrgChartError(null);
+    setReportLibraryLive([]);
+    setReportRows([]);
+    setReportsError(null);
+    setMyDashboard(null);
+    setExecutiveDashboard(null);
+    setDashboardsError(null);
+    setRateCardPendingRevisions([]);
   }, [activeTwinId]);
 
   const refreshTimesheets = useCallback(
@@ -976,6 +1094,30 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [activeTwinId, refreshTimesheets]
   );
 
+  const decideApproval = useCallback(
+    async (input: {
+      id: string;
+      type: "timesheet" | "expense" | "leave";
+      action: ApprovalAction;
+      notes?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecApprovalAction(twinId, {
+          id: input.id,
+          type: input.type,
+          action: input.action,
+          notes: input.notes,
+        });
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Approval action failed");
+        throw e;
+      }
+    },
+    [activeTwinId]
+  );
+
   const approveTimesheet = useCallback(
     async (id: string) => {
       const twinId = activeTwinId;
@@ -989,6 +1131,14 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       }
     },
     [activeTwinId, refreshTimesheets]
+  );
+
+  const rejectTimesheet = useCallback(
+    async (id: string, notes?: string) => {
+      await decideApproval({ id, type: "timesheet", action: "reject", notes });
+      await refreshTimesheets();
+    },
+    [decideApproval, refreshTimesheets]
   );
 
   const bulkApproveTimesheets = useCallback(
@@ -1073,6 +1223,22 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       return created;
     },
     [activeTwinId, patchWorkspace]
+  );
+
+  const approveExpense = useCallback(
+    async (id: string, notes?: string) => {
+      await decideApproval({ id, type: "expense", action: "approve", notes });
+      await refreshExpenses();
+    },
+    [decideApproval, refreshExpenses]
+  );
+
+  const rejectExpense = useCallback(
+    async (id: string, notes?: string) => {
+      await decideApproval({ id, type: "expense", action: "reject", notes });
+      await refreshExpenses();
+    },
+    [decideApproval, refreshExpenses]
   );
 
   const [accountingLoading, setAccountingLoading] = useState(false);
@@ -1429,28 +1595,229 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [patchWorkspace, ws.governanceAgents, user?.name]
   );
 
-  const approveLeave = useCallback(
-    (id: string) => {
+  const refreshLeave = useCallback(
+    async (opts?: { scope?: "team" | "mine"; status?: string }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        setLeaveError(null);
+        return;
+      }
+      setLeaveLoading(true);
+      setLeaveError(null);
+      try {
+        const raw = await aecListLeaveRequests(twinId, {
+          scope: opts?.scope ?? "team",
+          status: opts?.status ?? "all",
+        });
+        const list = mapLeaveList(raw);
+        setLeaveSummaryLive(mapLeaveSummaryFromList(list));
+        patchWorkspace((prev) => ({ ...prev, leaveRequests: list }));
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to load leave";
+        setLeaveError(message);
+        toast.error(`Leave API: ${message}`);
+      } finally {
+        setLeaveLoading(false);
+      }
+    },
+    [activeTwinId, patchWorkspace]
+  );
+
+  const submitLeaveRequest = useCallback(
+    async (input: {
+      startDate: string;
+      endDate: string;
+      leaveType: string;
+      notes?: string;
+      resourceId?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const created = mapLeaveRequest(
+        await aecSubmitLeave(twinId, {
+          startDate: input.startDate,
+          endDate: input.endDate,
+          leaveType: leaveTypeToApi(input.leaveType),
+          notes: input.notes,
+          resourceId: input.resourceId,
+        })
+      );
       patchWorkspace((prev) => ({
         ...prev,
-        leaveRequests: prev.leaveRequests.map((l) =>
-          l.id === id ? { ...l, status: "Approved" as const } : l
-        ),
+        leaveRequests: [created, ...prev.leaveRequests.filter((l) => l.id !== created.id)],
       }));
+      await refreshLeave();
     },
-    [patchWorkspace]
+    [activeTwinId, patchWorkspace, refreshLeave]
+  );
+
+  const approveLeave = useCallback(
+    async (id: string, notes?: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecLeaveDecision(twinId, id, { action: "approve", notes });
+        await refreshLeave();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Leave approve failed");
+        throw e;
+      }
+    },
+    [activeTwinId, refreshLeave]
   );
 
   const rejectLeave = useCallback(
-    (id: string) => {
-      patchWorkspace((prev) => ({
-        ...prev,
-        leaveRequests: prev.leaveRequests.map((l) =>
-          l.id === id ? { ...l, status: "Rejected" as const } : l
-        ),
-      }));
+    async (id: string, notes?: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecLeaveDecision(twinId, id, { action: "reject", notes });
+        await refreshLeave();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Leave reject failed");
+        throw e;
+      }
     },
-    [patchWorkspace]
+    [activeTwinId, refreshLeave]
+  );
+
+  const loadOrgChart = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return null;
+    setOrgChartLoading(true);
+    setOrgChartError(null);
+    try {
+      const forest = mapOrgChartForest(await aecOrgChart(twinId));
+      const root = wrapOrgForest(forest);
+      setOrgChartRoot(root);
+      return root;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load org chart";
+      setOrgChartError(message);
+      toast.error(`Org chart: ${message}`);
+      return null;
+    } finally {
+      setOrgChartLoading(false);
+    }
+  }, [activeTwinId]);
+
+  const loadReportLibrary = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return [];
+    setReportsLoading(true);
+    setReportsError(null);
+    try {
+      const items = mapReportsLibrary(await aecReportsLibrary(twinId));
+      setReportLibraryLive(items);
+      return items;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load reports";
+      setReportsError(message);
+      toast.error(`Reports: ${message}`);
+      return [];
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [activeTwinId]);
+
+  const runReport = useCallback(
+    async (reportId: string, query: Record<string, string> = {}) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return [];
+      setReportsLoading(true);
+      setReportsError(null);
+      try {
+        const raw = await aecRunReport(twinId, reportId, query);
+        const rows = mapReportRows(reportId, raw);
+        setReportRows(rows);
+        return rows;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to run report";
+        setReportsError(message);
+        toast.error(`Report run: ${message}`);
+        return [];
+      } finally {
+        setReportsLoading(false);
+      }
+    },
+    [activeTwinId]
+  );
+
+  const loadMyDashboard = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return null;
+    setDashboardsLoading(true);
+    setDashboardsError(null);
+    try {
+      const view = mapMyDashboard(await aecMyDashboard(twinId));
+      setMyDashboard(view);
+      return view;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load my dashboard";
+      setDashboardsError(message);
+      toast.error(`Dashboard: ${message}`);
+      return null;
+    } finally {
+      setDashboardsLoading(false);
+    }
+  }, [activeTwinId]);
+
+  const loadExecutiveDashboard = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return null;
+    setDashboardsLoading(true);
+    setDashboardsError(null);
+    try {
+      const view = mapExecutiveDashboard(await aecExecutiveDashboard(twinId));
+      setExecutiveDashboard(view);
+      return view;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load executive dashboard";
+      setDashboardsError(message);
+      toast.error(`Executive dashboard: ${message}`);
+      return null;
+    } finally {
+      setDashboardsLoading(false);
+    }
+  }, [activeTwinId]);
+
+  const loadRateCardPendingRevisions = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    try {
+      const raw = await aecRateCardPendingRevisions(twinId);
+      const list = (Array.isArray(raw) ? raw : []).map((row) => {
+        const o = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
+        return {
+          id: String(o.id ?? ""),
+          resourceId: String(o.resourceId ?? ""),
+          resourceName: String(o.resourceName ?? ""),
+          fromValue: String(o.fromValue ?? "—"),
+          toValue: String(o.toValue ?? "—"),
+          status: String(o.status ?? "Pending"),
+        };
+      });
+      setRateCardPendingRevisions(list);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load pending revisions");
+    }
+  }, [activeTwinId]);
+
+  const approveRateCard = useCallback(
+    async (rateCardId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecApproveRateCard(twinId, rateCardId);
+        await Promise.all([loadRateCards(), loadRateCardPendingRevisions()]);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Rate card approve failed");
+        throw e;
+      }
+    },
+    [activeTwinId, loadRateCards, loadRateCardPendingRevisions]
   );
 
   const navBadges = useMemo<NavBadges>(
@@ -1534,13 +1901,22 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       loadMyTimesheet,
       saveAndSubmitTimesheet,
       approveTimesheet,
+      rejectTimesheet,
       bulkApproveTimesheets,
+      decideApproval,
       expensesLoading,
       expensesError,
       expenseCategories,
       refreshExpenses,
       loadExpenseCategories,
+      approveExpense,
+      rejectExpense,
       submitExpense,
+      leaveLoading,
+      leaveError,
+      leaveSummaryLive,
+      refreshLeave,
+      submitLeaveRequest,
       accountingLoading,
       accountingError,
       accountingSummary,
@@ -1564,6 +1940,25 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       handleAgentAction,
       approveLeave,
       rejectLeave,
+      orgChartRoot,
+      orgChartLoading,
+      orgChartError,
+      loadOrgChart,
+      reportLibraryLive,
+      reportRows,
+      reportsLoading,
+      reportsError,
+      loadReportLibrary,
+      runReport,
+      myDashboard,
+      executiveDashboard,
+      dashboardsLoading,
+      dashboardsError,
+      loadMyDashboard,
+      loadExecutiveDashboard,
+      rateCardPendingRevisions,
+      loadRateCardPendingRevisions,
+      approveRateCard,
       navBadges,
       inquiryMetrics: metrics,
       projectNames,
@@ -1619,13 +2014,22 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       loadMyTimesheet,
       saveAndSubmitTimesheet,
       approveTimesheet,
+      rejectTimesheet,
       bulkApproveTimesheets,
+      decideApproval,
       expensesLoading,
       expensesError,
       expenseCategories,
       refreshExpenses,
       loadExpenseCategories,
+      approveExpense,
+      rejectExpense,
       submitExpense,
+      leaveLoading,
+      leaveError,
+      leaveSummaryLive,
+      refreshLeave,
+      submitLeaveRequest,
       accountingLoading,
       accountingError,
       accountingSummary,
@@ -1649,6 +2053,25 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       handleAgentAction,
       approveLeave,
       rejectLeave,
+      orgChartRoot,
+      orgChartLoading,
+      orgChartError,
+      loadOrgChart,
+      reportLibraryLive,
+      reportRows,
+      reportsLoading,
+      reportsError,
+      loadReportLibrary,
+      runReport,
+      myDashboard,
+      executiveDashboard,
+      dashboardsLoading,
+      dashboardsError,
+      loadMyDashboard,
+      loadExecutiveDashboard,
+      rateCardPendingRevisions,
+      loadRateCardPendingRevisions,
+      approveRateCard,
       navBadges,
       metrics,
       projectNames,
@@ -1705,39 +2128,36 @@ export function useAecDashboardData() {
   const isManagerView = viewMode === "admin" && user?.isManager;
 
   return useMemo(() => {
+    if (app.myDashboard) {
+      return {
+        ...app.myDashboard,
+        teamUtilization: isManagerView
+          ? app.myDashboard.teamUtilization.length
+            ? app.myDashboard.teamUtilization
+            : app.resources.slice(0, 5).map((r) => ({
+                name: r.name,
+                utilization: r.utilization,
+                entity: r.entity,
+              }))
+          : [],
+      };
+    }
+
     const pendingTs = app.timesheetSubmissions.filter((t) => t.status === "Pending").length;
     const pendingExp = app.pendingExpenses.filter((e) => e.status === "Pending").length;
     const pendingLeave = app.leaveRequests.filter((l) => l.status === "Pending").length;
 
-    const myName = user?.name ?? "";
-    const surname = myName.split(" ").pop() ?? "";
-    const myProjects = app.projects
-      .filter(
-        (p) =>
-          p.projectManager.toLowerCase().includes(surname.toLowerCase()) ||
-          (myName.includes("Alex") && p.name === "Holborn Retrofit") ||
-          (myName.includes("Priya") && p.name.includes("Kings Cross"))
-      )
-      .slice(0, isManagerView ? 6 : 3)
-      .map((p) => ({
+    return {
+      utilizationPct: app.resourceSummary?.avgUtilization ?? 0,
+      leaveBalanceDays: app.leaveSummaryLive?.avgBalanceDays ?? 0,
+      myProjects: app.projects.slice(0, isManagerView ? 6 : 3).map((p) => ({
         name: p.name,
         role: isManagerView ? `PM: ${p.projectManager}` : "Team member",
         progress: p.progressPct,
-        health: (p.health === "Critical" ? "At Risk" : p.health) as "Good" | "At Risk",
-      }));
-
-    const projects =
-      myProjects.length > 0
-        ? myProjects
-        : [
-            { name: "Kings Cross Tower", role: "Lead Architect", progress: 64, health: "Good" as const },
-            { name: "Holborn Retrofit", role: "Design Review", progress: 20, health: "Good" as const },
-          ];
-
-    return {
-      utilizationPct: isManagerView ? 73 : 82,
-      leaveBalanceDays: 12,
-      myProjects: projects,
+        health: (p.health === "Critical" ? "At Risk" : p.health === "At Risk" ? "At Risk" : "Good") as
+          | "Good"
+          | "At Risk",
+      })),
       pendingApprovals: [
         { type: "TS", label: "Timesheets pending", count: pendingTs },
         { type: "EXP", label: "Expenses pending", count: pendingExp },
@@ -1759,5 +2179,5 @@ export function useAecDashboardData() {
           }))
         : [],
     };
-  }, [app, user, isManagerView]);
+  }, [app, isManagerView]);
 }

@@ -1,38 +1,58 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
+import { useEffect, useState } from "react";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
-import { PipelineEmptyState } from "@/domains/aec/components/PipelineUi";
+import { MemberProfilePanel } from "@/domains/aec/components/MemberProfilePanel";
+import { OrgHierarchyTree } from "@/domains/aec/components/OrgHierarchyTree";
+import {
+  PipelineEmptyState,
+  PipelineErrorBanner,
+  PipelineLoadingBanner,
+} from "@/domains/aec/components/PipelineUi";
+import { useAecApp } from "@/domains/aec/context/AecAppContext";
+import type { OrgMember } from "@/domains/aec/data/orgChart";
+import { flattenOrgMembers } from "@/domains/aec/data/orgChart";
+import { Button } from "@/common/components/ui/button";
 
 export default function OrgChart() {
+  const { orgChartRoot, orgChartLoading, orgChartError, loadOrgChart } = useAecApp();
+  const [selected, setSelected] = useState<OrgMember | null>(null);
+
+  useEffect(() => {
+    void loadOrgChart();
+  }, [loadOrgChart]);
+
+  useEffect(() => {
+    setSelected(null);
+  }, [orgChartRoot]);
+
+  const count = orgChartRoot ? flattenOrgMembers(orgChartRoot).length : 0;
+
   return (
     <div className="space-y-6">
       <AecPageHeader
         title="Organization Chart"
-        subtitle="Hierarchy of resources by reporting manager."
+        subtitle={count ? `${count} resources in hierarchy` : "Hierarchy of resources by reporting manager."}
         breadcrumb={[
           { label: "Resources", href: "/resources/planning" },
           { label: "Organization Chart" },
         ]}
+        actions={
+          <Button size="sm" variant="outline" onClick={() => void loadOrgChart()} disabled={orgChartLoading}>
+            Refresh
+          </Button>
+        }
       />
 
-      <Card className="rounded-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Pending backend</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>
-            Resource model already has <code className="text-foreground">reporting_manager</code>, but
-            there is no org-chart / hierarchy API yet.
-          </p>
-          <p>
-            Needed: <code className="text-foreground">GET /api/v1/aec/twins/&#123;twin_id&#125;/resources/org-chart</code>{" "}
-            (or include <code className="text-foreground">reportingManagerId</code> on resource list).
-          </p>
-        </CardContent>
-      </Card>
+      {orgChartLoading && <PipelineLoadingBanner label="Loading organization chart…" />}
+      <PipelineErrorBanner message={orgChartError ?? ""} />
 
-      <PipelineEmptyState>
-        Organization Chart will light up once the hierarchy endpoint is available.
-      </PipelineEmptyState>
+      {!orgChartLoading && !orgChartRoot ? (
+        <PipelineEmptyState>No org hierarchy for this twin yet.</PipelineEmptyState>
+      ) : orgChartRoot ? (
+        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <OrgHierarchyTree root={orgChartRoot} selectedId={selected?.id ?? null} onSelect={setSelected} />
+          <MemberProfilePanel member={selected?.id === "__org_root__" ? null : selected} />
+        </div>
+      ) : null}
     </div>
   );
 }

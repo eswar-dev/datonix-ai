@@ -17,6 +17,7 @@ interface TimesheetApprovalGridProps {
   onToggleSelect: (id: string) => void;
   onToggleAll: (checked: boolean) => void;
   onApprove: (id: string) => void;
+  onReject?: (id: string) => void;
 }
 
 export function TimesheetApprovalGrid({
@@ -25,6 +26,7 @@ export function TimesheetApprovalGrid({
   onToggleSelect,
   onToggleAll,
   onApprove,
+  onReject,
 }: TimesheetApprovalGridProps) {
   const pending = rows.filter((r) => r.status === "Pending");
   const allPendingSelected = pending.length > 0 && pending.every((r) => selected.has(r.id));
@@ -87,9 +89,16 @@ export function TimesheetApprovalGrid({
                 </TableCell>
                 <TableCell className="text-right">
                   {row.status === "Pending" && (
-                    <Button size="sm" onClick={() => onApprove(row.id)}>
-                      Approve
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      {onReject && (
+                        <Button size="sm" variant="outline" onClick={() => onReject(row.id)}>
+                          Reject
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => onApprove(row.id)}>
+                        Approve
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>

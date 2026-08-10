@@ -88,3 +88,44 @@ export async function aecRateCards(
   const raw = await apiJson<unknown>(path, { ...init, method: "GET" });
   return unwrapAecData(raw);
 }
+
+export async function aecOrgChart(twinId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/resources/org-chart`, {
+    ...init,
+    method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecApproveRateCard(
+  twinId: string,
+  rateCardId: string,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/rate-cards/${rateCardId}/approve`, {
+    ...init,
+    method: "POST",
+    ...jsonInit({}),
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecRateCardPendingRevisions(twinId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/rate-cards/pending-revisions`, {
+    ...init,
+    method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecRateCardHistory(
+  twinId: string,
+  resourceId: string,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(
+    `${twinBase(twinId)}/resources/${resourceId}/rate-cards/history`,
+    { ...init, method: "GET" }
+  );
+  return unwrapAecData(raw);
+}

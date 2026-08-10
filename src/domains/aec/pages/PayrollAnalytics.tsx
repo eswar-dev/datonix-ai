@@ -66,6 +66,10 @@ export default function PayrollAnalytics() {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+        Payroll analytics APIs are not available yet. This screen shows sample layout only — not live twin data.
+        Use Accounting → payroll inputs for live payroll processing.
+      </div>
       <AecPageHeader
         title="Payroll Analytics"
         subtitle="AI decision intelligence over payroll data · Datonix consumes payroll — it does not process it"

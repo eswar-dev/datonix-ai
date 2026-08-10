@@ -2,33 +2,27 @@ import { useEffect } from "react";
 import { useAuth } from "@/common/contexts/AuthContext";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { MyDashboardWidgets } from "@/domains/aec/components/MyDashboardWidgets";
-import { PipelineLoadingBanner } from "@/domains/aec/components/PipelineUi";
+import {
+  PipelineErrorBanner,
+  PipelineLoadingBanner,
+} from "@/domains/aec/components/PipelineUi";
 import { useAecApp, useAecDashboardData } from "@/domains/aec/context/AecAppContext";
+import { Button } from "@/common/components/ui/button";
 
 export default function MyDashboard() {
   const { user } = useAuth();
   const data = useAecDashboardData();
   const {
     activeTwinId,
-    refreshTimesheets,
-    refreshExpenses,
-    refreshResources,
-    refreshPipeline,
-    timesheetsLoading,
-    expensesLoading,
-    resourcesLoading,
-    pipelineLoading,
+    loadMyDashboard,
+    dashboardsLoading,
+    dashboardsError,
   } = useAecApp();
   const isManagerView = data.teamUtilization.length > 0;
-  const loading = timesheetsLoading || expensesLoading || resourcesLoading || pipelineLoading;
 
   useEffect(() => {
     if (!activeTwinId) return;
-    void refreshPipeline();
-    void refreshTimesheets();
-    void refreshExpenses();
-    void refreshResources();
-    // Intentionally only re-fetch when twin changes — refresh* identities change after load.
+    void loadMyDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTwinId]);
 
@@ -42,9 +36,15 @@ export default function MyDashboard() {
             : `Personal workspace for ${user?.name ?? "you"} — projects and pending approvals.`
         }
         breadcrumb={[{ label: "My Dashboard" }]}
+        actions={
+          <Button size="sm" variant="outline" onClick={() => void loadMyDashboard()} disabled={dashboardsLoading}>
+            Refresh
+          </Button>
+        }
       />
 
-      {loading && <PipelineLoadingBanner label="Loading dashboard…" />}
+      {dashboardsLoading && <PipelineLoadingBanner label="Loading dashboard…" />}
+      <PipelineErrorBanner message={dashboardsError ?? ""} />
 
       <MyDashboardWidgets data={data} isManagerView={isManagerView} />
     </div>

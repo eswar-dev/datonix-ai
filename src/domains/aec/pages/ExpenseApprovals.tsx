@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -35,7 +36,10 @@ export default function ExpenseApprovals() {
     refreshExpenses,
     expensesLoading,
     expensesError,
+    approveExpense,
+    rejectExpense,
   } = useAecApp();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshExpenses();
@@ -50,6 +54,30 @@ export default function ExpenseApprovals() {
     [pendingExpenses]
   );
   const pendingValue = pending.reduce((s, e) => s + e.amount, 0);
+
+  const onApprove = async (id: string) => {
+    setBusyId(id);
+    try {
+      await approveExpense(id);
+      toast.success("Expense approved");
+    } catch {
+      /* toasted */
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const onReject = async (id: string) => {
+    setBusyId(id);
+    try {
+      await rejectExpense(id);
+      toast.error("Expense rejected");
+    } catch {
+      /* toasted */
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -91,6 +119,7 @@ export default function ExpenseApprovals() {
                 <TableHead>Date</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,6 +142,27 @@ export default function ExpenseApprovals() {
                             : "Pending"
                       }
                     />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {e.status === "Pending" && (
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyId === e.id}
+                          onClick={() => void onReject(e.id)}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={busyId === e.id}
+                          onClick={() => void onApprove(e.id)}
+                        >
+                          Approve
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
