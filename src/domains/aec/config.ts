@@ -23,6 +23,7 @@ import {
   Wallet,
   CalendarOff,
   ListChecks,
+  Banknote,
 } from "lucide-react";
 import type { DomainConfig } from "@/domains/types";
 import { aecLoginConfig } from "./login";
@@ -52,6 +53,7 @@ import AiAgentGovernance from "./pages/AiAgentGovernance";
 import ProjectPortfolio from "./pages/ProjectPortfolio";
 import ExpenseApprovals from "./pages/ExpenseApprovals";
 import LeaveManagement from "./pages/LeaveManagement";
+import PayrollAnalytics from "./pages/PayrollAnalytics";
 
 export const aecConfig: DomainConfig = {
   id: "aec",
@@ -187,6 +189,12 @@ export const aecConfig: DomainConfig = {
       group: "Accounting",
     },
     {
+      title: "Payroll Analytics",
+      path: "/payroll",
+      icon: Banknote,
+      group: "Accounting",
+    },
+    {
       title: "Currency Intelligence",
       path: "/currency",
       icon: Globe,
@@ -244,6 +252,7 @@ export const aecConfig: DomainConfig = {
     { path: "/leave", Component: LeaveManagement },
     { path: "/accounting", Component: Accounting },
     { path: "/accounting/create-invoice", Component: CreateInvoice },
+    { path: "/payroll", Component: PayrollAnalytics },
     { path: "/currency", Component: CurrencyIntelligence },
     { path: "/dashboard", Component: MyDashboard },
     { path: "/dashboard/executive", Component: ExecutiveDashboard },

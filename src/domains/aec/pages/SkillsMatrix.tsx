@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
+import { Badge } from "@/common/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -10,127 +10,158 @@ import {
 } from "@/common/components/ui/table";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import {
-  PipelineEmptyState,
-  PipelineLoadingBanner,
-} from "@/domains/aec/components/PipelineUi";
-import { useAecApp } from "@/domains/aec/context/AecAppContext";
+  ratingBadgeClass,
+  skillCategoryCards,
+  skillColumnGroups,
+  skillMatrixPeople,
+  skillRatingLegend,
+} from "@/domains/aec/data/skillsMatrixMock";
 import { cn } from "@/common/lib/utils";
 
-function ratingColor(r: number) {
-  if (r >= 4) return "text-success font-semibold";
-  if (r >= 3) return "text-accent";
-  return "text-muted-foreground";
+function utilClass(pct: number): string {
+  if (pct >= 85) return "text-destructive font-semibold";
+  if (pct >= 70) return "text-amber-700 font-medium";
+  return "text-teal-700 font-medium";
+}
+
+function typeBadge(type: string) {
+  if (type === "CONTRACTOR") return "border-amber-500/30 bg-amber-500/10 text-amber-800";
+  if (type === "FREELANCER") return "border-violet-500/30 bg-violet-500/10 text-violet-800";
+  return "border-sky-500/30 bg-sky-500/10 text-sky-800";
 }
 
 export default function SkillsMatrix() {
-  const { skillsMatrix, loadSkillsMatrix, resourcesLoading } = useAecApp();
-
-  useEffect(() => {
-    void loadSkillsMatrix();
-  }, [loadSkillsMatrix]);
-
-  const skillColumns = useMemo(() => {
-    const names = new Set<string>();
-    for (const person of skillsMatrix?.individuals ?? []) {
-      for (const s of person.skills) names.add(s.name);
-    }
-    return [...names];
-  }, [skillsMatrix]);
-
-  const loading = resourcesLoading && !skillsMatrix;
+  const allColumns = skillColumnGroups.flatMap((g) => g.columns);
 
   return (
     <div className="space-y-6">
       <AecPageHeader
         title="Skills Matrix"
-        subtitle="Entity skill coverage and individual ratings from the twin API."
+        subtitle="Auto-generated skill categories by company type · Resource coverage and utilisation"
         breadcrumb={[
           { label: "Resources", href: "/resources/planning" },
           { label: "Skills Matrix" },
         ]}
       />
 
-      {loading && <PipelineLoadingBanner label="Loading skills…" />}
-
-      {!loading && !skillsMatrix?.byEntity.length && !skillsMatrix?.individuals.length ? (
-        <PipelineEmptyState>No skills data for this twin yet.</PipelineEmptyState>
-      ) : null}
-
-      {(skillsMatrix?.byEntity ?? []).map((table) => (
-        <Card key={table.entity} className="rounded-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{table.entity}</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Skill</TableHead>
-                  <TableHead className="text-right">Coverage</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {table.skills.length ? (
-                  table.skills.map((skill) => (
-                    <TableRow key={skill}>
-                      <TableCell className="font-medium">{skill}</TableCell>
-                      <TableCell className="text-right tabular-nums">{table.coverage}%</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
+      <div className="grid gap-4 lg:grid-cols-3">
+        {skillCategoryCards.map((card) => (
+          <Card key={card.id} className="rounded-card">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-base">{card.title}</CardTitle>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-bold">{card.entityCode}</span>
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-x-auto p-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={2} className="text-muted-foreground">
-                      No skills tagged for this entity.
-                    </TableCell>
+                    <TableHead>Skill</TableHead>
+                    <TableHead className="text-right">Resources</TableHead>
+                    <TableHead className="text-right">Available</TableHead>
+                    <TableHead className="text-right">Util%</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ))}
-
-      {(skillsMatrix?.individuals.length ?? 0) > 0 && (
-        <Card className="rounded-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Individual Skill Ratings (1–5)</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Entity</TableHead>
-                  <TableHead>Role</TableHead>
-                  {skillColumns.map((name) => (
-                    <TableHead key={name} className="text-center">{name}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {skillsMatrix!.individuals.map((person) => {
-                  const byName = new Map(person.skills.map((s) => [s.name, s.rating]));
-                  return (
-                    <TableRow key={`${person.name}-${person.entity}`}>
-                      <TableCell className="font-medium">{person.name}</TableCell>
-                      <TableCell>{person.entity}</TableCell>
-                      <TableCell className="text-muted-foreground">{person.role}</TableCell>
-                      {skillColumns.map((name) => {
-                        const rating = byName.get(name);
-                        return (
-                          <TableCell key={name} className={cn("text-center tabular-nums", rating != null && ratingColor(rating))}>
-                            {rating ?? "—"}
-                          </TableCell>
-                        );
-                      })}
+                </TableHeader>
+                <TableBody>
+                  {card.skills.map((sk) => (
+                    <TableRow key={sk.name}>
+                      <TableCell className="font-medium">{sk.name}</TableCell>
+                      <TableCell className="text-right">{sk.resources}</TableCell>
+                      <TableCell className="text-right">{sk.available}</TableCell>
+                      <TableCell className={cn("text-right", utilClass(sk.utilPct))}>
+                        {sk.utilPct}%
+                      </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="rounded-card">
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle className="text-base">Individual Skill Ratings</CardTitle>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {skillRatingLegend.map((l) => (
+                <span
+                  key={l.rating}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-semibold",
+                    ratingBadgeClass(l.rating)
+                  )}
+                >
+                  {l.rating} · {l.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead rowSpan={2} className="align-bottom min-w-[180px]">
+                  Resource
+                </TableHead>
+                {skillColumnGroups.map((g) => (
+                  <TableHead
+                    key={g.id}
+                    colSpan={g.columns.length}
+                    className="text-center border-l"
+                  >
+                    {g.label}
+                  </TableHead>
+                ))}
+              </TableRow>
+              <TableRow>
+                {allColumns.map((col) => (
+                  <TableHead key={col} className="text-center text-xs font-normal min-w-[64px]">
+                    {col}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {skillMatrixPeople.map((person) => (
+                <TableRow key={person.id}>
+                  <TableCell>
+                    <div className="font-medium">{person.name}</div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                      <span>{person.role}</span>
+                      <Badge variant="outline" className={`text-[9px] ${typeBadge(person.employmentType)}`}>
+                        {person.employmentType === "IN-HOUSE" ? "In-House" : person.employmentType === "CONTRACTOR" ? "Con" : "Fre"}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  {allColumns.map((col) => {
+                    const rating = person.ratings[col];
+                    return (
+                      <TableCell key={col} className="text-center p-1">
+                        {rating == null ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <span
+                            className={cn(
+                              "inline-flex h-7 w-7 items-center justify-center rounded border text-xs font-bold",
+                              ratingBadgeClass(rating)
+                            )}
+                          >
+                            {rating}
+                          </span>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

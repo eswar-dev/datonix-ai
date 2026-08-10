@@ -111,7 +111,19 @@ const horizonWbs: WbsProject[] = [
 ];
 
 const horizonLeave: LeaveRequest[] = [
-  { id: "hz-lv-1", employee: "Tom Bradley", entity: "ME", type: "Annual Leave", startDate: "2026-04-07", endDate: "2026-04-11", days: 5, status: "Pending", impact: "Low — no active project conflicts" },
+  {
+    id: "hz-lv-1",
+    employee: "Tom Bradley",
+    employmentType: "IN-HOUSE",
+    entity: "ME",
+    type: "Annual Leave",
+    startDate: "2026-04-07",
+    endDate: "2026-04-11",
+    days: 5,
+    approver: "E. Walsh",
+    status: "Pending",
+    impact: "Low — no active project conflicts",
+  },
 ];
 
 export const twinSeeds: Record<string, TwinSeedBundle> = {
@@ -127,8 +139,32 @@ export const twinSeeds: Record<string, TwinSeedBundle> = {
     governanceAgents: governanceAgents.map((a) => ({ ...a })),
     auditLog: initialAuditLog.map((e) => ({ ...e })),
     leaveRequests: [
-      { id: "lv-1", employee: "Alex Chen", entity: "MA", type: "Annual Leave", startDate: "2026-04-14", endDate: "2026-04-18", days: 5, status: "Pending", impact: "Medium — Kings Cross Tower design review may shift" },
-      { id: "lv-2", employee: "Layla Patel", entity: "MA", type: "Sick Leave", startDate: "2026-03-18", endDate: "2026-03-19", days: 2, status: "Approved", impact: "Low — Camden Housing DD covered by backup" },
+      {
+        id: "lv-1",
+        employee: "Alex Chen",
+        employmentType: "IN-HOUSE",
+        entity: "MA",
+        type: "Annual Leave",
+        startDate: "2026-04-14",
+        endDate: "2026-04-18",
+        days: 5,
+        approver: "S. Mehta",
+        status: "Pending",
+        impact: "Medium — Kings Cross Tower design review may shift",
+      },
+      {
+        id: "lv-2",
+        employee: "Layla Patel",
+        employmentType: "IN-HOUSE",
+        entity: "MA",
+        type: "Sick Leave",
+        startDate: "2026-03-18",
+        endDate: "2026-03-19",
+        days: 2,
+        approver: "J. Okafor",
+        status: "Approved",
+        impact: "Low — Camden Housing DD covered by backup",
+      },
     ],
   },
   [horizonTwin.id]: {
