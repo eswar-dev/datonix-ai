@@ -17,27 +17,63 @@ import {
   PipelineLoadingBanner,
 } from "@/domains/aec/components/PipelineUi";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
+import { aecCurrencyRates } from "@/common/api/aecAccounting";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 import { cn } from "@/common/lib/utils";
 import { toast } from "sonner";
 
+type RateRow = {
+  pair: string;
+  rate: number;
+  changePct: number;
+  asOf: string;
+};
+
+function mapRatesPayload(raw: unknown): RateRow[] {
+  const root =
+    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const list = Array.isArray(root.rates) ? root.rates : Array.isArray(raw) ? raw : [];
+  return list.map((item) => {
+    const r = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+    return {
+      pair: String(r.pair ?? `${r.baseCurrency ?? ""}/${r.quoteCurrency ?? ""}`),
+      rate: Number(r.rate ?? 0) || 0,
+      changePct: Number(r.changePct ?? r.change24h ?? 0) || 0,
+      asOf: String(r.asOf ?? "—"),
+    };
+  });
+}
+
 export default function CurrencyIntelligence() {
-  const { currencyIntelligence, refreshCurrency, refreshFxRates } = useAecApp();
+  const { currencyIntelligence, refreshCurrency, refreshFxRates, activeTwinId } = useAecApp();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rateRows, setRateRows] = useState<RateRow[]>([]);
+
+  const loadRates = async () => {
+    if (!activeTwinId || !isApiTwinId(activeTwinId)) {
+      setRateRows([]);
+      return;
+    }
+    const raw = await aecCurrencyRates(activeTwinId);
+    setRateRows(mapRatesPayload(raw));
+  };
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    void refreshCurrency()
+    void Promise.all([refreshCurrency(), loadRates()])
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
       .finally(() => setLoading(false));
-  }, [refreshCurrency]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshCurrency, activeTwinId]);
 
   const onRefreshRates = async () => {
     setRefreshing(true);
     try {
       await refreshFxRates();
+      await loadRates();
       toast.success("FX rates refreshed");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Refresh failed");
@@ -76,6 +112,54 @@ export default function CurrencyIntelligence() {
             exposureGbp={view.fxExposure}
             fxPnlGbp={view.fxPnlImpactYtd}
           />
+
+          <Card className="rounded-card">
+            <CardHeader>
+              <CardTitle className="text-base">Stored FX rates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {rateRows.length === 0 ? (
+                <PipelineEmptyState>No stored rates from currency/rates yet.</PipelineEmptyState>
+              ) : (
+                <div className="overflow-x-auto rounded-card border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Pair</TableHead>
+                        <TableHead className="text-right">Rate</TableHead>
+                        <TableHead className="text-right">Change %</TableHead>
+                        <TableHead>As of</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rateRows.map((r) => (
+                        <TableRow key={r.pair}>
+                          <TableCell className="font-medium">{r.pair}</TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {r.rate.toFixed(4)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "text-right tabular-nums",
+                              r.changePct < 0 && "text-destructive",
+                              r.changePct > 0 && "text-success"
+                            )}
+                          >
+                            {r.changePct === 0
+                              ? "—"
+                              : `${r.changePct > 0 ? "+" : ""}${r.changePct.toFixed(2)}%`}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {r.asOf !== "—" ? new Date(r.asOf).toLocaleString() : "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           <Card className="rounded-card">
             <CardHeader>

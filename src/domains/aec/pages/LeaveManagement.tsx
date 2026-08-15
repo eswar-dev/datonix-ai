@@ -3,6 +3,12 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/common/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/common/components/ui/dialog";
 import { Input } from "@/common/components/ui/input";
 import { Label } from "@/common/components/ui/label";
 import {
@@ -37,6 +43,8 @@ import {
   leaveTypes,
   type LeaveType,
 } from "@/domains/aec/data/leave";
+import { aecLeaveDetail } from "@/common/api/aecDashboards";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 
 function formatShortDate(iso: string): string {
   if (!iso) return "—";
@@ -61,9 +69,16 @@ export default function LeaveManagement() {
     submitLeaveRequest,
     approveLeave,
     rejectLeave,
+    holidays,
+    holidaysMeta,
+    loadHolidays,
+    activeTwinId,
   } = useAecApp();
   const [showForm, setShowForm] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [form, setForm] = useState({
     type: "Annual Leave" as LeaveType,
     startDate: "",
@@ -73,7 +88,8 @@ export default function LeaveManagement() {
 
   useEffect(() => {
     void refreshLeave({ scope: "team", status: "all" });
-  }, [refreshLeave]);
+    void loadHolidays();
+  }, [refreshLeave, loadHolidays]);
 
   const pendingCount = useMemo(
     () => leaveRequests.filter((r) => r.status === "Pending").length,
@@ -86,6 +102,22 @@ export default function LeaveManagement() {
     leaveDaysMonth: 0,
     avgBalanceDays: 0,
     monthLabel: new Date().toLocaleDateString(undefined, { month: "short", year: "numeric" }),
+  };
+
+  const openDetail = async (id: string) => {
+    if (!activeTwinId || !isApiTwinId(activeTwinId)) return;
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setDetail(null);
+    try {
+      const raw = await aecLeaveDetail(activeTwinId, id);
+      setDetail(raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load leave detail");
+      setDetailOpen(false);
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   const approve = async (id: string) => {
@@ -178,6 +210,39 @@ export default function LeaveManagement() {
               },
             ]}
           />
+
+          {holidaysMeta && (
+            <Card className="rounded-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">
+                  Public holidays — {holidaysMeta.countryCode || "—"} {holidaysMeta.year}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <MetricStrip
+                  metrics={[
+                    { label: "Total", value: String(holidaysMeta.publicHolidaysTotal) },
+                    { label: "Remaining", value: String(holidaysMeta.publicHolidaysLeft) },
+                  ]}
+                />
+                <div className="flex flex-wrap gap-2">
+                  {holidays.length === 0 ? (
+                    <span className="text-sm text-muted-foreground">No holidays returned.</span>
+                  ) : (
+                    holidays.map((h) => (
+                      <span
+                        key={`${h.date}-${h.name}`}
+                        className="rounded border px-2 py-1 text-xs"
+                      >
+                        <span className="font-medium">{h.name}</span>
+                        <span className="ml-1 text-muted-foreground">{formatShortDate(h.date)}</span>
+                      </span>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {showForm && (
             <Card className="rounded-card">
@@ -301,21 +366,30 @@ export default function LeaveManagement() {
                           />
                         </TableCell>
                         <TableCell className="text-right">
-                          {r.status === "Pending" && (
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={() => void reject(r.id)}
-                              >
-                                Reject
-                              </Button>
-                              <Button size="sm" disabled={busy} onClick={() => void approve(r.id)}>
-                                Approve
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => void openDetail(r.id)}
+                            >
+                              Detail
+                            </Button>
+                            {r.status === "Pending" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={busy}
+                                  onClick={() => void reject(r.id)}
+                                >
+                                  Reject
+                                </Button>
+                                <Button size="sm" disabled={busy} onClick={() => void approve(r.id)}>
+                                  Approve
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -400,6 +474,41 @@ export default function LeaveManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Leave request detail</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : detail ? (
+            <dl className="grid gap-3 text-sm">
+              {(
+                [
+                  ["Employee", detail.employee ?? detail.resourceName],
+                  ["Type", detail.leaveTypeLabel ?? detail.leaveType],
+                  ["Entity", detail.entityCode],
+                  ["From", detail.startDate],
+                  ["To", detail.endDate],
+                  ["Days", detail.days],
+                  ["Status", detail.statusLabel ?? detail.status],
+                  ["Approver", detail.approver],
+                  ["Impact", detail.impact],
+                  ["Notes", detail.notes],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 border-b pb-2">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="text-right font-medium">{String(value ?? "—")}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">No detail available.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

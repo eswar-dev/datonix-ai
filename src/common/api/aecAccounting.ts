@@ -115,10 +115,50 @@ export async function aecListAp(
   return unwrapAecData(raw);
 }
 
+export async function aecCreateAp(
+  twinId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/ap`, {
+    ...init,
+    method: "POST",
+    ...jsonInit(body),
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecUpdateAp(
+  twinId: string,
+  billId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/ap/${billId}`, {
+    ...init,
+    method: "PATCH",
+    ...jsonInit(body),
+  });
+  return unwrapAecData(raw);
+}
+
 export async function aecListGlJournals(twinId: string, init: ApiInit = {}) {
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/gl/journals`, {
     ...init,
     method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecCreateGlJournal(
+  twinId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/gl/journals`, {
+    ...init,
+    method: "POST",
+    ...jsonInit(body),
   });
   return unwrapAecData(raw);
 }
@@ -162,6 +202,22 @@ export async function aecRefreshCurrencyRates(twinId: string, init: ApiInit = {}
     ...init,
     method: "POST",
     ...jsonInit({}),
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecCurrencyRates(twinId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/currency/rates`, {
+    ...init,
+    method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecGetInvoice(twinId: string, invoiceId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/accounting/invoices/${invoiceId}`, {
+    ...init,
+    method: "GET",
   });
   return unwrapAecData(raw);
 }

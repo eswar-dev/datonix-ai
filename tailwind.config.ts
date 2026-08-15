@@ -18,7 +18,7 @@ export default {
         sora: ["Sora", "system-ui", "sans-serif"],
       },
       spacing: {
-        "sidebar-expanded": "240px",
+        "sidebar-expanded": "220px",
         "sidebar-collapsed": "56px",
       },
       colors: {

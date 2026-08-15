@@ -129,8 +129,9 @@ export function mapAllocations(
     const project = String(o.project ?? "");
     const allocatedEntity = entityCode(o.allocatedEntity, allocId, twinEntities);
     return {
+      id: o.id != null ? String(o.id) : undefined,
       resource: String(o.resource ?? ""),
-      type: "IN-HOUSE" as ResourceType,
+      type: mapResourceType(o.type ?? "employee"),
       homeEntity: entityCode(o.homeEntity, homeId, twinEntities),
       allocatedTo: project
         ? `${allocatedEntity} · ${String(o.period ?? project)}`
@@ -230,4 +231,124 @@ export function draftToCreateResourcePayload(input: {
     ...(input.billRate != null ? { billRate: input.billRate } : {}),
     ...(input.contractExpiry ? { contractExpiry: input.contractExpiry } : {}),
   };
+}
+
+export interface SkillOverviewCategory {
+  id: string;
+  title: string;
+  entityCode?: string;
+  skills: { name: string; skillId: string; resources: number; available: number; utilPct: number }[];
+}
+
+export interface SkillsOverviewView {
+  categories: SkillOverviewCategory[];
+}
+
+export function mapSkillsOverview(raw: unknown): SkillsOverviewView {
+  const o = asRecord(raw);
+  return {
+    categories: asArray(o.categories).map((item) => {
+      const c = asRecord(item);
+      return {
+        id: String(c.id ?? ""),
+        title: String(c.title ?? ""),
+        entityCode: c.entityCode != null ? String(c.entityCode) : undefined,
+        skills: asArray(c.skills).map((sk) => {
+          const s = asRecord(sk);
+          return {
+            name: String(s.name ?? ""),
+            skillId: String(s.skillId ?? ""),
+            resources: Number(s.resources ?? 0) || 0,
+            available: Number(s.available ?? 0) || 0,
+            utilPct: Number(s.utilPct ?? 0) || 0,
+          };
+        }),
+      };
+    }),
+  };
+}
+
+export interface SkillsFullMatrixView {
+  legend: { rating: number; label: string }[];
+  groups: {
+    id: string;
+    label: string;
+    columns: { key: string; label: string; skillId: string }[];
+  }[];
+  people: {
+    resourceId: string;
+    name: string;
+    role: string;
+    employmentType: string;
+    entityCode: string;
+    ratings: Record<string, number | null | undefined>;
+  }[];
+}
+
+export function mapSkillsFullMatrix(raw: unknown): SkillsFullMatrixView {
+  const o = asRecord(raw);
+  return {
+    legend: asArray(o.legend).map((item) => {
+      const l = asRecord(item);
+      return { rating: Number(l.rating ?? 0) || 0, label: String(l.label ?? "") };
+    }),
+    groups: asArray(o.groups).map((item) => {
+      const g = asRecord(item);
+      return {
+        id: String(g.id ?? ""),
+        label: String(g.label ?? ""),
+        columns: asArray(g.columns).map((col) => {
+          const c = asRecord(col);
+          return {
+            key: String(c.key ?? ""),
+            label: String(c.label ?? ""),
+            skillId: String(c.skillId ?? ""),
+          };
+        }),
+      };
+    }),
+    people: asArray(o.people).map((item) => {
+      const p = asRecord(item);
+      const ratingsRaw = asRecord(p.ratings);
+      const ratings: Record<string, number | null> = {};
+      for (const [k, v] of Object.entries(ratingsRaw)) {
+        ratings[k] = v == null ? null : Number(v) || 0;
+      }
+      return {
+        resourceId: String(p.resourceId ?? ""),
+        name: String(p.name ?? ""),
+        role: String(p.role ?? ""),
+        employmentType: String(p.employmentType ?? ""),
+        entityCode: String(p.entityCode ?? ""),
+        ratings,
+      };
+    }),
+  };
+}
+
+export interface SkillReviewItem {
+  id: string;
+  resourceId: string;
+  resourceName: string;
+  skillName: string;
+  matchedSkillId: string | null;
+  suggestedRating: number;
+  source: string;
+  status: string;
+}
+
+export function mapSkillReviewQueue(raw: unknown): SkillReviewItem[] {
+  return asArray(raw).map((item) => {
+    const o = asRecord(item);
+    return {
+      id: String(o.id ?? ""),
+      resourceId: String(o.resourceId ?? ""),
+      resourceName: String(o.resourceName ?? ""),
+      skillName: String(o.skillName ?? ""),
+      matchedSkillId: o.matchedSkillId != null ? String(o.matchedSkillId) : null,
+      suggestedRating: Number(o.suggestedRating ?? 3) || 3,
+      source: String(o.source ?? ""),
+      status: String(o.status ?? "Pending"),
+    };
+  });
 }

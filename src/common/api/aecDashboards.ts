@@ -98,6 +98,14 @@ export async function aecLeaveDecision(
   return unwrapAecData(raw);
 }
 
+export async function aecLeaveDetail(twinId: string, leaveId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/leave/requests/${leaveId}`, {
+    ...init,
+    method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
 export async function aecHolidays(
   twinId: string,
   query: { year?: string; countryCode?: string; entityId?: string } = {},
@@ -118,6 +126,19 @@ export async function aecReportsLibrary(twinId: string, init: ApiInit = {}) {
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/reports`, {
     ...init,
     method: "GET",
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecCreateReport(
+  twinId: string,
+  body: { name: string; description?: string; reportType?: string; filters?: Record<string, unknown> },
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/reports`, {
+    ...init,
+    method: "POST",
+    ...jsonInit(body),
   });
   return unwrapAecData(raw);
 }

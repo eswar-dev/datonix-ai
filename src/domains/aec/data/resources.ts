@@ -52,6 +52,7 @@ export const utilizationHeatmap = {
 };
 
 export interface CrossEntityAllocation {
+  id?: string;
   resource: string;
   type: ResourceType;
   homeEntity: string;

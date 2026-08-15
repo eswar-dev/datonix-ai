@@ -22,7 +22,9 @@ import {
 import {
   aecApproveWbs,
   aecConvertInquiry,
+  aecCreateInquiry,
   aecCreateProject,
+  aecDeleteInquiry,
   aecGenerateProposal,
   aecGenerateQuotation,
   aecGenerateWbs,
@@ -32,18 +34,25 @@ import {
   aecListProjects,
   aecProjectProfitability,
   aecUpdateInquiryStage,
+  aecUpdateProject,
 } from "@/common/api/aecPipeline";
 import {
+  aecArchiveResource,
   aecApproveRateCard,
+  aecCreateRateCard,
   aecCreateResource,
   aecListResources,
   aecOrgChart,
+  aecRateCardExpiryWatcher,
+  aecRateCardHistory,
   aecRateCardPendingRevisions,
+  aecRateCardSummary,
   aecRateCards,
   aecResourceAllocations,
   aecResourceSummary,
   aecResourceUtilization,
   aecSkillsMatrix,
+  aecUpdateResource,
 } from "@/common/api/aecResources";
 import {
   aecApproveTimesheets,
@@ -58,10 +67,13 @@ import {
 } from "@/common/api/aecTimesheets";
 import {
   aecApprovalAction,
+  aecCreateReport,
   aecExecutiveDashboard,
+  aecHolidays,
   aecLeaveDecision,
   aecListLeaveRequests,
   aecMyDashboard,
+  aecReportFilters,
   aecReportsLibrary,
   aecRunReport,
   aecSubmitLeave,
@@ -70,6 +82,8 @@ import {
 import {
   aecAccountingSummary,
   aecChaseInvoice,
+  aecCreateAp,
+  aecCreateGlJournal,
   aecCreateInvoice,
   aecCurrencyIntelligence,
   aecEscalateInvoice,
@@ -82,6 +96,7 @@ import {
   aecProcessPayroll,
   aecRefreshCurrencyRates,
   aecTaxRules,
+  aecUpdateAp,
 } from "@/common/api/aecAccounting";
 import {
   EMPTY_TWIN,
@@ -321,6 +336,19 @@ interface AecAppContextValue {
   generateInquiryQuotation: (inquiry: Inquiry) => Promise<unknown>;
   convertInquiryToProject: (inquiry: Inquiry) => Promise<string | null>;
   updateInquiryStage: (inquiryId: string, stage: string) => Promise<void>;
+  createInquiry: (input: {
+    clientName: string;
+    entityId: string;
+    projectName: string;
+    projectType: string;
+    currency?: string;
+    receivedDate: string;
+    stage?: string;
+    estimatedValue?: number;
+    contactName?: string;
+  }) => Promise<Inquiry>;
+  deleteInquiry: (inquiryId: string) => Promise<void>;
+  updateProject: (projectId: string, body: Record<string, unknown>) => Promise<void>;
   loadProjectWbs: (projectId: string) => Promise<WbsProject | null>;
   generateProjectWbs: (projectId: string) => Promise<WbsProject | null>;
   approveProjectWbs: (projectId: string) => Promise<void>;
@@ -347,6 +375,8 @@ interface AecAppContextValue {
     billRate?: number;
     contractExpiry?: string;
   }) => Promise<ResourceRecord>;
+  updateResource: (resourceId: string, body: Record<string, unknown>) => Promise<ResourceRecord>;
+  archiveResource: (resourceId: string) => Promise<void>;
 
   timesheetsLoading: boolean;
   timesheetsError: string | null;
@@ -432,6 +462,55 @@ interface AecAppContextValue {
   }[];
   loadRateCardPendingRevisions: () => Promise<void>;
   approveRateCard: (rateCardId: string) => Promise<void>;
+  createRateCardRevision: (input: {
+    resourceId: string;
+    effectiveDate: string;
+    hourlyCostRate?: number;
+    hourlyBillingRate?: number;
+    dailyCostRate?: number;
+    dailyBillingRate?: number;
+    currency?: string;
+    notes?: string;
+  }) => Promise<void>;
+  loadRateCardSummary: () => Promise<{
+    inHouseRateCards: number;
+    contractorRateCards: number;
+    freelancerRateCards: number;
+    pendingRevisions: number;
+  } | null>;
+  rateCardExpiry: { id: string; resourceName: string; contractEndDate: string; daysRemaining: number }[];
+  loadRateCardExpiry: () => Promise<void>;
+  loadRateCardHistory: (resourceId: string) => Promise<unknown[]>;
+
+  holidays: { date: string; name: string; year: number }[];
+  holidaysMeta: { countryCode: string; year: number; publicHolidaysLeft: number; publicHolidaysTotal: number } | null;
+  loadHolidays: (year?: string) => Promise<void>;
+
+  reportFilters: {
+    projects: { id: string; name: string }[];
+    entities: { id: string; name: string; code: string }[];
+    departments: string[];
+    resourceTypes: { value: string; label: string }[];
+  } | null;
+  loadReportFilters: () => Promise<void>;
+  createCustomReport: (input: { name: string; description?: string }) => Promise<void>;
+
+  createApBill: (input: {
+    entityId: string;
+    supplier: string;
+    amount: number;
+    currency?: string;
+    dueDate?: string;
+    reference?: string;
+    notes?: string;
+  }) => Promise<void>;
+  markApPaid: (billId: string) => Promise<void>;
+  createGlJournal: (input: {
+    description: string;
+    entityId?: string;
+    date?: string;
+    lines: { accountCode: string; accountName: string; debit?: number; credit?: number }[];
+  }) => Promise<void>;
 
   accountingLoading: boolean;
   accountingError: string | null;
@@ -888,6 +967,77 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [activeTwinId, twinEntities, patchWorkspace, refreshPipeline]
   );
 
+  const createInquiry = useCallback(
+    async (input: {
+      clientName: string;
+      entityId: string;
+      projectName: string;
+      projectType: string;
+      currency?: string;
+      receivedDate: string;
+      stage?: string;
+      estimatedValue?: number;
+      contactName?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const body: Record<string, unknown> = {
+        clientName: input.clientName,
+        entityId: input.entityId,
+        projectName: input.projectName,
+        projectType: input.projectType,
+        currency: input.currency ?? "GBP",
+        receivedDate: input.receivedDate,
+        stage: (input.stage ?? "inquiry").toLowerCase(),
+      };
+      if (input.estimatedValue != null) body.value = input.estimatedValue;
+      if (input.contactName) body.contactName = input.contactName;
+      const created = mapInquiry(await aecCreateInquiry(twinId, body), twinEntities);
+      await refreshPipeline();
+      return created;
+    },
+    [activeTwinId, twinEntities, refreshPipeline]
+  );
+
+  const deleteInquiry = useCallback(
+    async (inquiryId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecDeleteInquiry(twinId, inquiryId);
+        patchWorkspace((prev) => ({
+          ...prev,
+          inquiries: prev.inquiries.filter((i) => i.id !== inquiryId),
+        }));
+        await refreshPipeline();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Delete inquiry failed");
+        throw e;
+      }
+    },
+    [activeTwinId, patchWorkspace, refreshPipeline]
+  );
+
+  const updateProject = useCallback(
+    async (projectId: string, body: Record<string, unknown>) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        const updated = mapProject(await aecUpdateProject(twinId, projectId, body), twinEntities);
+        patchWorkspace((prev) => ({
+          ...prev,
+          projects: prev.projects.map((p) => (p.id === projectId ? updated : p)),
+        }));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Update project failed");
+        throw e;
+      }
+    },
+    [activeTwinId, twinEntities, patchWorkspace]
+  );
+
   const loadProjectWbs = useCallback(
     async (projectId: string) => {
       const twinId = activeTwinId;
@@ -1003,6 +1153,22 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       status: string;
     }[]
   >([]);
+  const [rateCardExpiry, setRateCardExpiry] = useState<
+    { id: string; resourceName: string; contractEndDate: string; daysRemaining: number }[]
+  >([]);
+  const [holidays, setHolidays] = useState<{ date: string; name: string; year: number }[]>([]);
+  const [holidaysMeta, setHolidaysMeta] = useState<{
+    countryCode: string;
+    year: number;
+    publicHolidaysLeft: number;
+    publicHolidaysTotal: number;
+  } | null>(null);
+  const [reportFilters, setReportFilters] = useState<{
+    projects: { id: string; name: string }[];
+    entities: { id: string; name: string; code: string }[];
+    departments: string[];
+    resourceTypes: { value: string; label: string }[];
+  } | null>(null);
 
   useEffect(() => {
     setTimesheetSummary(null);
@@ -1021,6 +1187,10 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     setExecutiveDashboard(null);
     setDashboardsError(null);
     setRateCardPendingRevisions([]);
+    setRateCardExpiry([]);
+    setHolidays([]);
+    setHolidaysMeta(null);
+    setReportFilters(null);
   }, [activeTwinId]);
 
   const refreshTimesheets = useCallback(
@@ -1552,6 +1722,45 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [activeTwinId, twinEntities, patchWorkspace]
   );
 
+  const updateResource = useCallback(
+    async (resourceId: string, body: Record<string, unknown>) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const updated = mapResource(await aecUpdateResource(twinId, resourceId, body), twinEntities);
+      patchWorkspace((prev) => ({
+        ...prev,
+        resources: prev.resources.map((r) =>
+          r.id === resourceId || r.resourceId === resourceId ? updated : r
+        ),
+      }));
+      return updated;
+    },
+    [activeTwinId, twinEntities, patchWorkspace]
+  );
+
+  const archiveResource = useCallback(
+    async (resourceId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecArchiveResource(twinId, resourceId);
+        patchWorkspace((prev) => ({
+          ...prev,
+          resources: prev.resources.filter(
+            (r) => r.id !== resourceId && r.resourceId !== resourceId
+          ),
+        }));
+        await refreshResources();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Archive resource failed");
+        throw e;
+      }
+    },
+    [activeTwinId, patchWorkspace, refreshResources]
+  );
+
   const addResource = useCallback(
     (resource: Omit<ResourceRecord, "id" | "utilization" | "status">) => {
       patchWorkspace((prev) => ({
@@ -1820,6 +2029,223 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     [activeTwinId, loadRateCards, loadRateCardPendingRevisions]
   );
 
+  const createRateCardRevision = useCallback(
+    async (input: {
+      resourceId: string;
+      effectiveDate: string;
+      hourlyCostRate?: number;
+      hourlyBillingRate?: number;
+      dailyCostRate?: number;
+      dailyBillingRate?: number;
+      currency?: string;
+      notes?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      const body: Record<string, unknown> = {
+        resourceId: input.resourceId,
+        effectiveDate: input.effectiveDate,
+        currency: input.currency ?? "GBP",
+      };
+      if (input.hourlyCostRate != null) body.hourlyCostRate = input.hourlyCostRate;
+      if (input.hourlyBillingRate != null) body.hourlyBillingRate = input.hourlyBillingRate;
+      if (input.dailyCostRate != null) body.dailyCostRate = input.dailyCostRate;
+      if (input.dailyBillingRate != null) body.dailyBillingRate = input.dailyBillingRate;
+      if (input.notes) body.notes = input.notes;
+      await aecCreateRateCard(twinId, body);
+      await Promise.all([loadRateCards(), loadRateCardPendingRevisions()]);
+    },
+    [activeTwinId, loadRateCards, loadRateCardPendingRevisions]
+  );
+
+  const loadRateCardSummary = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return null;
+    try {
+      const raw = (await aecRateCardSummary(twinId)) as Record<string, unknown>;
+      return {
+        inHouseRateCards: Number(raw.inHouseRateCards ?? 0) || 0,
+        contractorRateCards: Number(raw.contractorRateCards ?? 0) || 0,
+        freelancerRateCards: Number(raw.freelancerRateCards ?? 0) || 0,
+        pendingRevisions: Number(raw.pendingRevisions ?? 0) || 0,
+      };
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load rate card summary");
+      return null;
+    }
+  }, [activeTwinId]);
+
+  const loadRateCardExpiry = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    try {
+      const raw = await aecRateCardExpiryWatcher(twinId);
+      setRateCardExpiry(
+        (Array.isArray(raw) ? raw : []).map((row) => {
+          const o = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
+          return {
+            id: String(o.id ?? ""),
+            resourceName: String(o.resourceName ?? ""),
+            contractEndDate: String(o.contractEndDate ?? ""),
+            daysRemaining: Number(o.daysRemaining ?? 0) || 0,
+          };
+        })
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load expiry watcher");
+    }
+  }, [activeTwinId]);
+
+  const loadRateCardHistory = useCallback(
+    async (resourceId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId) || !resourceId) return [];
+      try {
+        const raw = await aecRateCardHistory(twinId, resourceId);
+        return Array.isArray(raw) ? raw : [];
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to load rate card history");
+        return [];
+      }
+    },
+    [activeTwinId]
+  );
+
+  const loadHolidays = useCallback(
+    async (year?: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        const raw = (await aecHolidays(twinId, year ? { year } : {})) as Record<string, unknown>;
+        setHolidaysMeta({
+          countryCode: String(raw.countryCode ?? ""),
+          year: Number(raw.year ?? new Date().getFullYear()) || new Date().getFullYear(),
+          publicHolidaysLeft: Number(raw.publicHolidaysLeft ?? 0) || 0,
+          publicHolidaysTotal: Number(raw.publicHolidaysTotal ?? 0) || 0,
+        });
+        setHolidays(
+          (Array.isArray(raw.holidays) ? raw.holidays : []).map((h) => {
+            const o = h && typeof h === "object" ? (h as Record<string, unknown>) : {};
+            return {
+              date: String(o.date ?? ""),
+              name: String(o.name ?? ""),
+              year: Number(o.year ?? raw.year ?? 0) || 0,
+            };
+          })
+        );
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to load holidays");
+      }
+    },
+    [activeTwinId]
+  );
+
+  const loadReportFilters = useCallback(async () => {
+    const twinId = activeTwinId;
+    if (!twinId || !isApiTwinId(twinId)) return;
+    try {
+      const raw = (await aecReportFilters(twinId)) as Record<string, unknown>;
+      setReportFilters({
+        projects: (Array.isArray(raw.projects) ? raw.projects : []).map((p) => {
+          const o = p && typeof p === "object" ? (p as Record<string, unknown>) : {};
+          return { id: String(o.id ?? ""), name: String(o.name ?? "") };
+        }),
+        entities: (Array.isArray(raw.entities) ? raw.entities : []).map((e) => {
+          const o = e && typeof e === "object" ? (e as Record<string, unknown>) : {};
+          return {
+            id: String(o.id ?? ""),
+            name: String(o.name ?? ""),
+            code: String(o.code ?? ""),
+          };
+        }),
+        departments: (Array.isArray(raw.departments) ? raw.departments : []).map(String),
+        resourceTypes: (Array.isArray(raw.resourceTypes) ? raw.resourceTypes : []).map((r) => {
+          const o = r && typeof r === "object" ? (r as Record<string, unknown>) : {};
+          return { value: String(o.value ?? ""), label: String(o.label ?? o.value ?? "") };
+        }),
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load report filters");
+    }
+  }, [activeTwinId]);
+
+  const createCustomReport = useCallback(
+    async (input: { name: string; description?: string }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      await aecCreateReport(twinId, input);
+      await loadReportLibrary();
+    },
+    [activeTwinId, loadReportLibrary]
+  );
+
+  const createApBill = useCallback(
+    async (input: {
+      entityId: string;
+      supplier: string;
+      amount: number;
+      currency?: string;
+      dueDate?: string;
+      reference?: string;
+      notes?: string;
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      await aecCreateAp(twinId, {
+        entityId: input.entityId,
+        supplier: input.supplier,
+        amount: input.amount,
+        currency: input.currency ?? "GBP",
+        dueDate: input.dueDate,
+        reference: input.reference,
+        notes: input.notes,
+      });
+      await refreshAccounting();
+    },
+    [activeTwinId, refreshAccounting]
+  );
+
+  const markApPaid = useCallback(
+    async (billId: string) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) return;
+      try {
+        await aecUpdateAp(twinId, billId, { status: "paid" });
+        await refreshAccounting();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "AP update failed");
+        throw e;
+      }
+    },
+    [activeTwinId, refreshAccounting]
+  );
+
+  const createGlJournal = useCallback(
+    async (input: {
+      description: string;
+      entityId?: string;
+      date?: string;
+      lines: { accountCode: string; accountName: string; debit?: number; credit?: number }[];
+    }) => {
+      const twinId = activeTwinId;
+      if (!twinId || !isApiTwinId(twinId)) {
+        throw new Error("Select a live Enterprise Twin first");
+      }
+      await aecCreateGlJournal(twinId, {
+        description: input.description,
+        entityId: input.entityId,
+        date: input.date,
+        lines: input.lines,
+      });
+      await refreshAccounting();
+    },
+    [activeTwinId, refreshAccounting]
+  );
+
   const navBadges = useMemo<NavBadges>(
     () => ({
       inquiries: ws.inquiries.filter((i) => i.stage !== "Won" && i.stage !== "Lost").length,
@@ -1876,6 +2302,9 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       generateInquiryQuotation,
       convertInquiryToProject,
       updateInquiryStage,
+      createInquiry,
+      deleteInquiry,
+      updateProject,
       loadProjectWbs,
       generateProjectWbs,
       approveProjectWbs,
@@ -1892,6 +2321,8 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       loadRateCards,
       loadAllocations,
       createResource,
+      updateResource,
+      archiveResource,
       timesheetsLoading,
       timesheetsError,
       timesheetSummary,
@@ -1959,6 +2390,20 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       rateCardPendingRevisions,
       loadRateCardPendingRevisions,
       approveRateCard,
+      createRateCardRevision,
+      loadRateCardSummary,
+      rateCardExpiry,
+      loadRateCardExpiry,
+      loadRateCardHistory,
+      holidays,
+      holidaysMeta,
+      loadHolidays,
+      reportFilters,
+      loadReportFilters,
+      createCustomReport,
+      createApBill,
+      markApPaid,
+      createGlJournal,
       navBadges,
       inquiryMetrics: metrics,
       projectNames,
@@ -1990,6 +2435,9 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       generateInquiryQuotation,
       convertInquiryToProject,
       updateInquiryStage,
+      createInquiry,
+      deleteInquiry,
+      updateProject,
       loadProjectWbs,
       generateProjectWbs,
       approveProjectWbs,
@@ -2006,6 +2454,8 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       loadRateCards,
       loadAllocations,
       createResource,
+      updateResource,
+      archiveResource,
       timesheetsLoading,
       timesheetsError,
       timesheetSummary,
@@ -2072,6 +2522,25 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       rateCardPendingRevisions,
       loadRateCardPendingRevisions,
       approveRateCard,
+      createRateCardRevision,
+      loadRateCardSummary,
+      rateCardExpiry,
+      loadRateCardExpiry,
+      loadRateCardHistory,
+      holidays,
+      holidaysMeta,
+      loadHolidays,
+      reportFilters,
+      loadReportFilters,
+      createCustomReport,
+      createApBill,
+      markApPaid,
+      createGlJournal,
+      createInquiry,
+      deleteInquiry,
+      updateProject,
+      updateResource,
+      archiveResource,
       navBadges,
       metrics,
       projectNames,

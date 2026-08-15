@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileSpreadsheet, Loader2 } from "lucide-react";
+import { FileSpreadsheet, Loader2, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
+import { Button } from "@/common/components/ui/button";
+import { Input } from "@/common/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,9 @@ export default function CustomerInquiries() {
     generateInquiryProposal,
     generateInquiryQuotation,
     convertInquiryToProject,
+    updateInquiryStage,
+    createInquiry,
+    deleteInquiry,
   } = useAecApp();
   const [entityFilter, setEntityFilter] = useState<InquiryEntity | "all">("all");
   const [stageFilter, setStageFilter] = useState<InquiryStage | "all">("all");
@@ -54,6 +59,16 @@ export default function CustomerInquiries() {
   const [proposalData, setProposalData] = useState<Record<string, unknown> | null>(null);
   const [quotationData, setQuotationData] = useState<Record<string, unknown> | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    clientName: "",
+    projectName: "",
+    projectType: "Commercial",
+    entityId: "",
+    receivedDate: new Date().toISOString().slice(0, 10),
+    estimatedValue: "",
+    contactName: "",
+  });
 
   useEffect(() => {
     void refreshPipeline();
@@ -125,6 +140,62 @@ export default function CustomerInquiries() {
     );
   };
 
+  const handleStageChange = async (inquiry: Inquiry, stage: string) => {
+    try {
+      await updateInquiryStage(inquiry.id, stage);
+      toast.success(`Stage updated to ${stage}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Stage update failed");
+    }
+  };
+
+  const handleDelete = async (inquiry: Inquiry) => {
+    if (!window.confirm(`Archive inquiry for ${inquiry.client}?`)) return;
+    try {
+      await deleteInquiry(inquiry.id);
+      toast.success("Inquiry archived");
+    } catch {
+      /* toasted */
+    }
+  };
+
+  const handleCreate = async () => {
+    const entityId = createForm.entityId || activeTwin.entities[0]?.id;
+    if (!createForm.clientName.trim() || !createForm.projectName.trim() || !entityId) {
+      toast.error("Client, project name, and entity are required");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await createInquiry({
+        clientName: createForm.clientName.trim(),
+        projectName: createForm.projectName.trim(),
+        projectType: createForm.projectType,
+        entityId,
+        receivedDate: createForm.receivedDate,
+        currency: "GBP",
+        stage: "inquiry",
+        estimatedValue: createForm.estimatedValue ? Number(createForm.estimatedValue) : undefined,
+        contactName: createForm.contactName || undefined,
+      });
+      setShowCreate(false);
+      setCreateForm({
+        clientName: "",
+        projectName: "",
+        projectType: "Commercial",
+        entityId: "",
+        receivedDate: new Date().toISOString().slice(0, 10),
+        estimatedValue: "",
+        contactName: "",
+      });
+      toast.success("Inquiry created");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Create failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const proposalTitle = String(proposalData?.title ?? "Proposal");
   const proposalSections = Array.isArray(proposalData?.sections)
     ? (proposalData.sections as string[])
@@ -145,10 +216,89 @@ export default function CustomerInquiries() {
           { label: "Pipeline", href: "/customer-inquiries" },
           { label: "Customer Inquiries" },
         ]}
+        actions={
+          <Button size="sm" onClick={() => setShowCreate((v) => !v)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Inquiry
+          </Button>
+        }
       />
 
       {pipelineLoading && <PipelineLoadingBanner label="Syncing inquiries from API…" />}
       <PipelineErrorBanner message={pipelineError ?? ""} />
+
+      {showCreate && (
+        <Card className="rounded-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Create Inquiry</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Client</Label>
+              <Input
+                value={createForm.clientName}
+                onChange={(e) => setCreateForm((f) => ({ ...f, clientName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Project name</Label>
+              <Input
+                value={createForm.projectName}
+                onChange={(e) => setCreateForm((f) => ({ ...f, projectName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Project type</Label>
+              <Input
+                value={createForm.projectType}
+                onChange={(e) => setCreateForm((f) => ({ ...f, projectType: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Entity</Label>
+              <Select
+                value={createForm.entityId || activeTwin.entities[0]?.id || ""}
+                onValueChange={(v) => setCreateForm((f) => ({ ...f, entityId: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select entity" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeTwin.entities.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.code} — {e.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Received date</Label>
+              <Input
+                type="date"
+                value={createForm.receivedDate}
+                onChange={(e) => setCreateForm((f) => ({ ...f, receivedDate: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Estimated value</Label>
+              <Input
+                type="number"
+                value={createForm.estimatedValue}
+                onChange={(e) => setCreateForm((f) => ({ ...f, estimatedValue: e.target.value }))}
+              />
+            </div>
+            <div className="flex items-end gap-2">
+              <Button onClick={() => void handleCreate()} disabled={actionLoading}>
+                Create
+              </Button>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <MetricStrip
         metrics={[
@@ -202,6 +352,8 @@ export default function CustomerInquiries() {
         onGenerateProposal={(inq) => void handleGenerateProposal(inq)}
         onGenerateQuotation={(inq) => void handleGenerateQuotation(inq)}
         onConvert={(inq) => void handleConvert(inq)}
+        onStageChange={(inq, stage) => void handleStageChange(inq, stage)}
+        onDelete={(inq) => void handleDelete(inq)}
       />
 
       <Dialog open={!!proposalInquiry} onOpenChange={(o) => !o && setProposalInquiry(null)}>

@@ -14,7 +14,7 @@ function LayoutInner() {
       <AppSidebar />
       <div
         className="flex flex-1 flex-col transition-all duration-200"
-        style={{ marginLeft: collapsed ? 56 : 240 }}
+        style={{ marginLeft: collapsed ? 56 : 220 }}
       >
         <AppHeader />
         <main className="flex-1 p-6">

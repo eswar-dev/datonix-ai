@@ -23,6 +23,7 @@ const routeNames: Record<string, string> = {
   "/enterprise-twin": "Enterprise Twin",
   "/multi-twin": "Multi-Twin Manager",
   "/data-ingestion": "Data Ingestion",
+  "/data-ingestion/add": "Add Datasource",
   "/customer-inquiries": "Customer Inquiries",
   "/projects": "Project Portfolio",
   "/projects/create": "Create Project",

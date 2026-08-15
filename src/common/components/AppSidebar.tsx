@@ -6,95 +6,76 @@ import { useAuth } from "@/common/contexts/AuthContext";
 import { useDomain } from "@/common/contexts/DomainContext";
 import { adminNavItems } from "@/common/config/adminNav";
 import type { DomainNavItem } from "@/domains/types";
-import { Badge } from "@/common/components/ui/badge";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 
-function HexagonLogo({ collapsed, label, tagline }: { collapsed: boolean; label: string; tagline: string }) {
+const SIDEBAR_BG = "#0F1420";
+const NAV_MUTED = "#7A8099";
+const NAV_ACTIVE_BG = "rgba(232, 68, 46, 0.08)";
+const NAV_ACTIVE_BORDER = "#E8442E";
+const LABEL_COLOR = "#4A5168";
+
+function NavBadge({ item }: { item: DomainNavItem }) {
+  if (item.badge === undefined) return null;
+  const isCount = item.badgeType === "count" || typeof item.badge === "number";
+  const isLive = item.badgeType === "live";
+  const isNew = item.badgeType === "new";
+
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="relative shrink-0">
-        <svg
-          width={collapsed ? 32 : 36}
-          height={collapsed ? 28 : 32}
-          viewBox="0 0 52 44"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M13 2L39 2L52 22L39 42L13 42L0 22Z" stroke="#89D8F8" strokeWidth="2" fill="none" />
-          <circle cx="26" cy="22" r="4.5" fill="#0099FF" />
-          <circle cx="36" cy="23" r="3.8" fill="#0099FF" />
-          <circle cx="26" cy="12" r="3.5" fill="#0099FF" />
-          <circle cx="16" cy="22" r="3.2" fill="#0099FF" />
-          <circle cx="26" cy="33" r="3.2" fill="#0099FF" />
-          <circle cx="36" cy="33" r="1.8" fill="#0099FF" />
-          <circle cx="16" cy="12" r="1.4" fill="#0099FF" />
-          <line x1="26" y1="22" x2="36" y2="23" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="26" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="16" y2="22" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="26" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.4" />
-          <line x1="26" y1="22" x2="36" y2="33" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
-          <line x1="26" y1="22" x2="16" y2="12" stroke="#0099FF" strokeWidth="0.8" opacity="0.3" />
-        </svg>
-      </div>
-      {!collapsed && (
-        <div className="min-w-0">
-          <h1 className="text-[18px] font-black tracking-tight leading-tight" style={{ fontFamily: "'Arial Black', 'Arial', sans-serif", color: "#0099FF" }}>
-            Datonix
-          </h1>
-          <p className="text-[10px] font-semibold tracking-wide" style={{ color: "#aaccdd" }}>
-            {label}
-          </p>
-          <p className="text-[4px] font-bold uppercase tracking-[2.2px]" style={{ color: "#aaccdd" }}>
-            {tagline}
-          </p>
-        </div>
-      )}
-    </div>
+    <span
+      className="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+      style={{
+        background: isCount ? "#F5A623" : isLive || isNew ? "#00C4A7" : "#E8442E",
+        color: isCount ? "#0A0E17" : "#0A0E17",
+      }}
+    >
+      {item.badge}
+    </span>
   );
+}
+
+function isPathActive(pathname: string, path: string): boolean {
+  if (path === "/projects") return pathname === "/projects";
+  if (path === "/resources/planning") {
+    return pathname === "/resources/planning" || pathname === "/resources/add";
+  }
+  return pathname === path || pathname.startsWith(`${path}/`);
 }
 
 function NavLink({
   item,
   active,
+  parentActive,
   collapsed,
 }: {
   item: DomainNavItem;
   active: boolean;
+  parentActive: boolean;
   collapsed: boolean;
 }) {
+  const highlighted = active || parentActive;
+
   return (
     <Link
-      key={item.path}
       to={item.path}
       title={item.title}
       className={cn(
-        "group flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150",
-        active ? "font-bold text-white" : "hover:bg-white/[0.05]"
+        "group flex items-center gap-2.5 text-[11.5px] font-medium transition-colors",
+        item.nested ? "py-1.5 pl-[22px] pr-3.5" : "py-1.5 px-3.5",
+        highlighted ? "font-semibold text-[#E8EAF0]" : "text-[#7A8099] hover:text-[#E8EAF0]",
       )}
       style={{
-        padding: "10px 12px",
-        borderRadius: "8px",
-        ...(active
-          ? { background: "#2a4a6a", color: "#ffffff" }
-          : { color: "#8aaec8" }),
+        borderLeft: `2px solid ${highlighted ? NAV_ACTIVE_BORDER : "transparent"}`,
+        background: highlighted ? NAV_ACTIVE_BG : undefined,
       }}
     >
       <item.icon
-        className="h-[18px] w-[18px] shrink-0"
-        style={{ color: active ? "#ffffff" : "#8aaec8" }}
+        className={cn("shrink-0", item.nested ? "h-3 w-3" : "h-[15px] w-[15px]")}
+        style={{ color: highlighted ? "#E8EAF0" : NAV_MUTED }}
       />
       {!collapsed && (
         <>
-          <span className="flex-1 truncate">{item.title}</span>
-          {item.badge !== undefined && (
-            <Badge
-              variant="secondary"
-              className="h-5 min-w-5 justify-center px-1.5 text-[10px]"
-              style={{ background: "#0099FF", color: "#fff" }}
-            >
-              {item.badge}
-            </Badge>
-          )}
+          <span className="min-w-0 flex-1 truncate">{item.title}</span>
+          <NavBadge item={item} />
         </>
       )}
     </Link>
@@ -105,32 +86,53 @@ function applyAecBadges(items: DomainNavItem[], badges: ReturnType<typeof useAec
   const badgeMap: Record<string, number | undefined> = {
     "/customer-inquiries": badges.inquiries,
     "/timesheets": badges.timesheets,
-    "/expenses/approvals": badges.expenses,
-    "/leave": badges.leave,
     "/ai-agents": badges.agents,
   };
   return items.map((item) => {
     const count = badgeMap[item.path];
-    return count !== undefined && count > 0 ? { ...item, badge: count } : { ...item, badge: undefined };
+    if (count !== undefined && count > 0) {
+      return { ...item, badge: count, badgeType: "count" as const };
+    }
+    if (item.badgeType === "live" || item.badgeType === "new") {
+      return item;
+    }
+    return { ...item, badge: undefined, badgeType: undefined };
   });
 }
 
 function DomainNav({ items, collapsed }: { items: DomainNavItem[]; collapsed: boolean }) {
   const location = useLocation();
+  const pathname = location.pathname;
+
+  const childParentMap = new Map<string, string>();
+  for (const item of items) {
+    if (item.parentPath) childParentMap.set(item.path, item.parentPath);
+  }
+
   const hasGroups = items.some((item) => item.group);
 
-  if (!hasGroups) {
+  const renderItem = (item: DomainNavItem) => {
+    const active = isPathActive(pathname, item.path);
+    const parentActive =
+      !active &&
+      items.some(
+        (child) =>
+          child.parentPath === item.path &&
+          (pathname === child.path || pathname.startsWith(`${child.path}/`)),
+      );
     return (
-      <>
-        {items.map((item) => {
-          const active =
-            item.path === "/projects"
-              ? location.pathname === "/projects"
-              : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-          return <NavLink key={item.path} item={item} active={active} collapsed={collapsed} />;
-        })}
-      </>
+      <NavLink
+        key={`${item.path}-${item.title}`}
+        item={item}
+        active={active}
+        parentActive={parentActive}
+        collapsed={collapsed}
+      />
     );
+  };
+
+  if (!hasGroups) {
+    return <>{items.map(renderItem)}</>;
   }
 
   const groups: { label: string | null; items: DomainNavItem[] }[] = [];
@@ -147,22 +149,16 @@ function DomainNav({ items, collapsed }: { items: DomainNavItem[]; collapsed: bo
   return (
     <>
       {groups.map((group, gi) => (
-        <div key={gi} className={gi > 0 ? "mt-3" : ""}>
+        <div key={gi} className={gi > 0 ? "mt-1" : ""}>
           {!collapsed && group.label && (
             <p
-              className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider"
-              style={{ color: "#5a7a95" }}
+              className="px-3.5 pb-1 pt-2.5 text-[9px] font-bold uppercase tracking-[0.18em]"
+              style={{ color: LABEL_COLOR }}
             >
               {group.label}
             </p>
           )}
-          {group.items.map((item) => {
-            const active =
-              item.path === "/projects"
-                ? location.pathname === "/projects"
-                : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-            return <NavLink key={item.path} item={item} active={active} collapsed={collapsed} />;
-          })}
+          {group.items.map(renderItem)}
         </div>
       ))}
     </>
@@ -171,16 +167,41 @@ function DomainNav({ items, collapsed }: { items: DomainNavItem[]; collapsed: bo
 
 function AecSidebarNav({ collapsed }: { collapsed: boolean }) {
   const domain = useDomain();
-  const { navBadges } = useAecApp();
+  const { navBadges, activeTwin } = useAecApp();
   const items = applyAecBadges(domain.nav, navBadges);
   return <DomainNav items={items} collapsed={collapsed} />;
+}
+
+function AecEntitySwitcher({ collapsed }: { collapsed: boolean }) {
+  const { activeTwin } = useAecApp();
+  const entity = activeTwin.entities[0];
+
+  if (collapsed) return null;
+
+  return (
+    <div
+      className="rounded-lg border px-2.5 py-2"
+      style={{
+        background: "rgba(0, 196, 167, 0.06)",
+        borderColor: "rgba(0, 196, 167, 0.18)",
+      }}
+    >
+      <p className="text-[8.5px] font-bold uppercase tracking-wider text-teal">Active Entity</p>
+      <p className="mt-0.5 text-[11px] font-semibold text-[#E8EAF0]">
+        {entity?.name ?? "Select entity"}
+      </p>
+      <p className="text-[9px] text-[#7A8099]">
+        {activeTwin.name} · {activeTwin.reportingCurrency}
+      </p>
+    </div>
+  );
 }
 
 export function AppSidebar() {
   const { collapsed, toggle } = useSidebarState();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const domain = useDomain();
 
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -194,52 +215,17 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col transition-all duration-200 rounded-[10px]",
-        collapsed ? "w-sidebar-collapsed" : "w-sidebar-expanded"
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r transition-all duration-200",
+        collapsed ? "w-sidebar-collapsed" : "w-sidebar-expanded",
       )}
-      style={{ background: "#1a2a3a" }}
+      style={{ background: SIDEBAR_BG, borderColor: "#1E2840" }}
     >
-      {/* Logo header */}
-      <div
-        className={cn(
-          "flex items-center border-b border-white/[0.06]",
-          collapsed ? "justify-center px-2 h-16" : "px-4 h-16"
-        )}
-        style={{ background: "#152030", borderRadius: "10px 10px 0 0" }}
-      >
-        <HexagonLogo collapsed={collapsed} label={domain.label} tagline={domain.tagline} />
-      </div>
-
-      {/* User Profile */}
-      <div className={cn(
-        "border-b border-white/[0.06] px-3 py-3",
-        collapsed ? "flex justify-center" : "flex items-center gap-3"
-      )}>
-        <div className="relative h-9 w-9 shrink-0">
-          <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2a4a6a" }}>
-            {user?.initials || "?"}
-          </div>
-          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-400" style={{ borderColor: "#1a2a3a" }} />
-        </div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-[13px] font-bold text-white truncate">{user?.name || "Guest"}</p>
-            <p className="text-[11px] truncate" style={{ color: "#7a9ab5" }}>
-              {user?.industry} • {user?.title}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Back button for admin */}
       {isAdminRoute && (
         <div className="px-2 pt-3 pb-1">
           <button
             onClick={() => navigate(domain.defaultRoute ?? "/dashboard")}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-white/[0.06]"
-            )}
-            style={{ color: "#8aaec8" }}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/[0.03]"
+            style={{ color: NAV_MUTED }}
             title="Back to Home"
           >
             <ArrowLeft className="h-5 w-5 shrink-0" />
@@ -248,27 +234,44 @@ export function AppSidebar() {
         </div>
       )}
 
-      <nav className="flex-1 space-y-[2px] px-2 py-3 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto py-2">
         {isAdminRoute ? (
-          adminNavItems.map((item) => {
-            const active = location.pathname === item.path;
-            return <NavLink key={item.path} item={item} active={active} collapsed={collapsed} />;
-          })
+          <div className="px-1">
+            {adminNavItems.map((item) => {
+              const active = location.pathname === item.path;
+              return (
+                <NavLink
+                  key={item.path}
+                  item={item}
+                  active={active}
+                  parentActive={false}
+                  collapsed={collapsed}
+                />
+              );
+            })}
+          </div>
         ) : isAec ? (
           <AecSidebarNav collapsed={collapsed} />
         ) : (
-          <DomainNav items={domain.nav} collapsed={collapsed} />
+          <div className="px-1">
+            <DomainNav items={domain.nav} collapsed={collapsed} />
+          </div>
         )}
       </nav>
 
-      {/* Sign Out */}
+      {isAec && (
+        <div className="border-t px-2.5 py-2.5" style={{ borderColor: "#1E2840" }}>
+          <AecEntitySwitcher collapsed={collapsed} />
+        </div>
+      )}
+
       <button
         onClick={handleLogout}
         className={cn(
-          "flex items-center gap-3 border-t border-white/[0.06] px-4 py-3 text-sm font-medium transition-colors hover:bg-white/[0.06]",
-          collapsed ? "justify-center px-2" : ""
+          "flex items-center gap-3 border-t px-4 py-3 text-sm font-medium transition-colors hover:bg-white/[0.03]",
+          collapsed ? "justify-center px-2" : "",
         )}
-        style={{ color: "#8aaec8" }}
+        style={{ color: NAV_MUTED, borderColor: "#1E2840" }}
         title="Sign Out"
       >
         <LogOut className="h-4 w-4 shrink-0" />
@@ -277,8 +280,8 @@ export function AppSidebar() {
 
       <button
         onClick={toggle}
-        className="flex h-10 items-center justify-center border-t border-white/[0.06] transition-colors"
-        style={{ color: "#8aaec8" }}
+        className="flex h-10 items-center justify-center border-t transition-colors hover:bg-white/[0.03]"
+        style={{ color: NAV_MUTED, borderColor: "#1E2840" }}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

@@ -20,6 +20,9 @@ import {
 } from "@/domains/aec/components/PipelineUi";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { cn } from "@/common/lib/utils";
+import { aecUpdateWbsMilestone, aecUpdateWbsPhase, aecUpdateWbsTask } from "@/common/api/aecPipeline";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
+import { toast } from "sonner";
 
 export default function WbsBuilder() {
   const {
@@ -27,6 +30,7 @@ export default function WbsBuilder() {
     activeProjectId,
     wbsProjects,
     projects,
+    activeTwinId,
     setActiveProjectId,
     loadProjectWbs,
     generateProjectWbs,
@@ -213,7 +217,29 @@ export default function WbsBuilder() {
             </CardHeader>
             <CardContent>
               {project.phases.length ? (
-                <WbsTree phases={project.phases} />
+                <WbsTree
+                  phases={project.phases}
+                  onUpdatePhaseProgress={async (phaseId, progress) => {
+                    if (!activeTwinId || !isApiTwinId(activeTwinId) || !selectedId) return;
+                    try {
+                      await aecUpdateWbsPhase(activeTwinId, selectedId, phaseId, { progress });
+                      await loadProjectWbs(selectedId);
+                      toast.success("Phase progress updated");
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Phase update failed");
+                    }
+                  }}
+                  onUpdateTaskProgress={async (taskId, progress) => {
+                    if (!activeTwinId || !isApiTwinId(activeTwinId) || !selectedId) return;
+                    try {
+                      await aecUpdateWbsTask(activeTwinId, selectedId, taskId, { progress });
+                      await loadProjectWbs(selectedId);
+                      toast.success("Task progress updated");
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Task update failed");
+                    }
+                  }}
+                />
               ) : (
                 <p className="py-6 text-sm text-muted-foreground">
                   No phases yet. Click Generate WBS to create a draft from the API.
@@ -227,7 +253,22 @@ export default function WbsBuilder() {
             </CardHeader>
             <CardContent>
               {project.milestones.length ? (
-                <MilestoneTable milestones={project.milestones} bordered={false} />
+                <MilestoneTable
+                  milestones={project.milestones}
+                  bordered={false}
+                  onUpdateStatus={async (milestoneId, status) => {
+                    if (!activeTwinId || !isApiTwinId(activeTwinId) || !selectedId) return;
+                    try {
+                      await aecUpdateWbsMilestone(activeTwinId, selectedId, milestoneId, {
+                        status,
+                      });
+                      await loadProjectWbs(selectedId);
+                      toast.success("Milestone updated");
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Milestone update failed");
+                    }
+                  }}
+                />
               ) : (
                 <p className="py-6 text-sm text-muted-foreground">No milestones yet.</p>
               )}

@@ -18,6 +18,7 @@ interface TimesheetApprovalGridProps {
   onToggleAll: (checked: boolean) => void;
   onApprove: (id: string) => void;
   onReject?: (id: string) => void;
+  onDetail?: (id: string) => void;
 }
 
 export function TimesheetApprovalGrid({
@@ -27,6 +28,7 @@ export function TimesheetApprovalGrid({
   onToggleAll,
   onApprove,
   onReject,
+  onDetail,
 }: TimesheetApprovalGridProps) {
   const pending = rows.filter((r) => r.status === "Pending");
   const allPendingSelected = pending.length > 0 && pending.every((r) => selected.has(r.id));
@@ -88,18 +90,25 @@ export function TimesheetApprovalGrid({
                   />
                 </TableCell>
                 <TableCell className="text-right">
-                  {row.status === "Pending" && (
-                    <div className="flex justify-end gap-1">
-                      {onReject && (
-                        <Button size="sm" variant="outline" onClick={() => onReject(row.id)}>
-                          Reject
-                        </Button>
-                      )}
-                      <Button size="sm" onClick={() => onApprove(row.id)}>
-                        Approve
+                  <div className="flex justify-end gap-1">
+                    {onDetail && (
+                      <Button size="sm" variant="ghost" onClick={() => onDetail(row.id)}>
+                        Detail
                       </Button>
-                    </div>
-                  )}
+                    )}
+                    {row.status === "Pending" && (
+                      <>
+                        {onReject && (
+                          <Button size="sm" variant="outline" onClick={() => onReject(row.id)}>
+                            Reject
+                          </Button>
+                        )}
+                        <Button size="sm" onClick={() => onApprove(row.id)}>
+                          Approve
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))

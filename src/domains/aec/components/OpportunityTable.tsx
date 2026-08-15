@@ -1,5 +1,12 @@
-import { ArrowRight, FileText, FileSpreadsheet } from "lucide-react";
+import { ArrowRight, FileText, FileSpreadsheet, Trash2 } from "lucide-react";
 import { Button } from "@/common/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/common/components/ui/select";
 import {
   Table,
   TableBody,
@@ -10,14 +17,25 @@ import {
 } from "@/common/components/ui/table";
 import { StatusBadge } from "./StatusBadge";
 import { PipelineEmptyState } from "./PipelineUi";
-import type { Inquiry } from "@/domains/aec/data/inquiries";
+import type { Inquiry, InquiryStage } from "@/domains/aec/data/inquiries";
 import { cn } from "@/common/lib/utils";
+
+const STAGES: InquiryStage[] = [
+  "Inquiry",
+  "Qualification",
+  "Proposal",
+  "Negotiation",
+  "Won",
+  "Lost",
+];
 
 interface OpportunityTableProps {
   inquiries: Inquiry[];
   onGenerateProposal: (inquiry: Inquiry) => void;
   onGenerateQuotation: (inquiry: Inquiry) => void;
   onConvert: (inquiry: Inquiry) => void;
+  onStageChange?: (inquiry: Inquiry, stage: string) => void;
+  onDelete?: (inquiry: Inquiry) => void;
 }
 
 function scoreColor(score: number) {
@@ -40,6 +58,8 @@ export function OpportunityTable({
   onGenerateProposal,
   onGenerateQuotation,
   onConvert,
+  onStageChange,
+  onDelete,
 }: OpportunityTableProps) {
   if (inquiries.length === 0) {
     return <PipelineEmptyState>No inquiries match the current filters.</PipelineEmptyState>;
@@ -54,10 +74,10 @@ export function OpportunityTable({
               <TableHead className="min-w-[180px]">Client</TableHead>
               <TableHead className="min-w-[110px]">Type</TableHead>
               <TableHead className="w-[72px]">Entity</TableHead>
-              <TableHead className="min-w-[140px]">Stage</TableHead>
+              <TableHead className="min-w-[160px]">Stage</TableHead>
               <TableHead className="w-[88px] text-right">AI Score</TableHead>
               <TableHead className="w-[100px] text-right">Value</TableHead>
-              <TableHead className="min-w-[240px] text-right">Actions</TableHead>
+              <TableHead className="min-w-[280px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -86,10 +106,28 @@ export function OpportunityTable({
                     </span>
                   </TableCell>
                   <TableCell className="align-middle">
-                    <div className="flex flex-col gap-1">
-                      <StatusBadge status={stageBadge(inq.stageLabel, inq.stage)} />
-                      <span className="text-xs text-muted-foreground">{inq.stageLabel}</span>
-                    </div>
+                    {onStageChange ? (
+                      <Select
+                        value={inq.stage}
+                        onValueChange={(v) => onStageChange(inq, v)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STAGES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <StatusBadge status={stageBadge(inq.stageLabel, inq.stage)} />
+                        <span className="text-xs text-muted-foreground">{inq.stageLabel}</span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className={cn("align-middle text-right tabular-nums", scoreColor(inq.score))}>
                     {inq.score}
@@ -115,6 +153,16 @@ export function OpportunityTable({
                         <Button variant="outline" size="sm" className="h-8" onClick={() => onConvert(inq)}>
                           Convert
                           <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 text-destructive"
+                          onClick={() => onDelete(inq)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}
                     </div>

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
+import { Button } from "@/common/components/ui/button";
+import { Input } from "@/common/components/ui/input";
+import { Label } from "@/common/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -8,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/ui/select";
-import { Label } from "@/common/components/ui/label";
 import {
   Table,
   TableBody,
@@ -30,6 +32,12 @@ import {
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import type { ProfitabilityView } from "@/domains/aec/api/pipelineMappers";
 import type { BillingType, ProjectEntity, ProjectHealth } from "@/domains/aec/data/projects";
+import {
+  aecProjectProfitabilityAudit,
+  aecUpdateProjectProfitability,
+} from "@/common/api/aecPipeline";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
+import { toast } from "sonner";
 
 const healthBadge: Record<ProjectHealth, string> = {
   Good: "Active",
@@ -41,6 +49,7 @@ export default function ProjectProfitability() {
   const {
     projects,
     activeTwin,
+    activeTwinId,
     activeProjectId,
     loadProjectProfitability,
     pipelineLoading,
@@ -53,6 +62,35 @@ export default function ProjectProfitability() {
   const [apiView, setApiView] = useState<ProfitabilityView | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    revenue: "",
+    employeeCost: "",
+    contractorCost: "",
+    freelancerCost: "",
+    otherCost: "",
+    reason: "",
+  });
+  const [auditRows, setAuditRows] = useState<Record<string, unknown>[]>([]);
+
+  const reload = async (id: string) => {
+    const view = await loadProjectProfitability(id);
+    setApiView(view);
+    if (activeTwinId && isApiTwinId(activeTwinId)) {
+      try {
+        const audit = await aecProjectProfitabilityAudit(activeTwinId, id);
+        const list = Array.isArray(audit)
+          ? audit
+          : audit && typeof audit === "object" && Array.isArray((audit as { entries?: unknown }).entries)
+            ? (audit as { entries: unknown[] }).entries
+            : [];
+        setAuditRows(list as Record<string, unknown>[]);
+      } catch {
+        setAuditRows([]);
+      }
+    }
+    return view;
+  };
 
   useEffect(() => {
     void refreshPipeline();
@@ -66,9 +104,8 @@ export default function ProjectProfitability() {
     if (!selectedId) return;
     setLoading(true);
     setError(null);
-    void loadProjectProfitability(selectedId)
+    void reload(selectedId)
       .then((view) => {
-        setApiView(view);
         if (!view) setError("No profitability data returned for this project.");
       })
       .catch((e) => {
@@ -76,7 +113,8 @@ export default function ProjectProfitability() {
         setError(e instanceof Error ? e.message : "Failed to load profitability");
       })
       .finally(() => setLoading(false));
-  }, [selectedId, loadProjectProfitability]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const entityOptions = useMemo(() => {
     const fromTwin = activeTwin.entities.map((e) => e.code).filter(Boolean);
@@ -241,9 +279,72 @@ export default function ProjectProfitability() {
 
         <Card className="rounded-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Profitability Statement</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Profitability Statement</CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setShowEdit((v) => !v)}>
+                Edit costs
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {showEdit && (
+              <div className="grid gap-3 rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-3">
+                {(
+                  [
+                    ["revenue", "Revenue"],
+                    ["employeeCost", "Employee cost"],
+                    ["contractorCost", "Contractor cost"],
+                    ["freelancerCost", "Freelancer cost"],
+                    ["otherCost", "Other cost"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div key={key} className="space-y-1">
+                    <Label>{label}</Label>
+                    <Input
+                      type="number"
+                      value={editForm[key]}
+                      onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                    />
+                  </div>
+                ))}
+                <div className="space-y-1 sm:col-span-2">
+                  <Label>Reason</Label>
+                  <Input
+                    value={editForm.reason}
+                    onChange={(e) => setEditForm((f) => ({ ...f, reason: e.target.value }))}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (!activeTwinId || !isApiTwinId(activeTwinId) || !selectedId) return;
+                      const body: Record<string, unknown> = { reason: editForm.reason };
+                      for (const key of [
+                        "revenue",
+                        "employeeCost",
+                        "contractorCost",
+                        "freelancerCost",
+                        "otherCost",
+                      ] as const) {
+                        if (editForm[key]) body[key] = Number(editForm[key]);
+                      }
+                      void aecUpdateProjectProfitability(activeTwinId, selectedId, body)
+                        .then(() => reload(selectedId))
+                        .then(() => {
+                          toast.success("Profitability updated");
+                          setShowEdit(false);
+                        })
+                        .catch((e) =>
+                          toast.error(e instanceof Error ? e.message : "Update failed")
+                        );
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            )}
             {statement.length ? (
               <ProfitabilityStatement lines={statement} currency={selected.currency} />
             ) : (
@@ -252,6 +353,44 @@ export default function ProjectProfitability() {
           </CardContent>
         </Card>
       </div>
+
+      {auditRows.length > 0 && (
+        <Card className="rounded-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Profitability audit</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Field</TableHead>
+                  <TableHead>Old</TableHead>
+                  <TableHead>New</TableHead>
+                  <TableHead>Reason</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {auditRows.map((row, i) => {
+                  const details =
+                    row.details && typeof row.details === "object"
+                      ? (row.details as Record<string, unknown>)
+                      : row;
+                  return (
+                    <TableRow key={String(row.id ?? i)}>
+                      <TableCell>{String(details.field ?? row.action ?? "—")}</TableCell>
+                      <TableCell>{String(details.oldValue ?? "—")}</TableCell>
+                      <TableCell>{String(details.newValue ?? "—")}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {String(details.reason ?? "")}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="rounded-card">
         <CardHeader className="pb-3">

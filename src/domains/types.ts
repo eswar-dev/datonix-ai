@@ -9,7 +9,10 @@ export interface DomainNavItem {
   path: string;
   icon: LucideIcon;
   badge?: string | number;
+  badgeType?: "count" | "live" | "new";
   group?: string;
+  nested?: boolean;
+  parentPath?: string;
 }
 
 export interface DomainRoute {

@@ -21,6 +21,38 @@ import { AgentList } from "@/domains/aec/components/AgentList";
 import { StatusBadge } from "@/domains/aec/components/StatusBadge";
 import { useAecTwin } from "@/domains/aec/context/AecTwinContext";
 import { buildEntityTree } from "@/domains/aec/data/meridian";
+import { aecCompliance } from "@/common/api/aecPipeline";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
+
+type ComplianceRuleView = {
+  id: string;
+  region: string;
+  requirement: string;
+  description: string;
+  status: string;
+};
+
+function mapComplianceLayer(raw: unknown): ComplianceRuleView[] {
+  const root = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const jurisdictions = Array.isArray(root.jurisdictions) ? root.jurisdictions : [];
+  const rows: ComplianceRuleView[] = [];
+  for (const j of jurisdictions) {
+    const ju = j && typeof j === "object" ? (j as Record<string, unknown>) : {};
+    const region = String(ju.label ?? ju.code ?? "—");
+    const rules = Array.isArray(ju.rules) ? ju.rules : [];
+    for (const rule of rules) {
+      const r = rule && typeof rule === "object" ? (rule as Record<string, unknown>) : {};
+      rows.push({
+        id: String(r.id ?? `${region}-${r.code}`),
+        region,
+        requirement: String(r.title ?? r.code ?? "Rule"),
+        description: String(r.description ?? ""),
+        status: String(r.status ?? "active"),
+      });
+    }
+  }
+  return rows;
+}
 
 export default function EnterpriseTwin() {
   const {
@@ -36,10 +68,21 @@ export default function EnterpriseTwin() {
     loadTwinDetail,
   } = useAecTwin();
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [complianceRows, setComplianceRows] = useState<ComplianceRuleView[]>([]);
 
   useEffect(() => {
     if (activeTwinId) void loadTwinDetail(activeTwinId);
   }, [activeTwinId, loadTwinDetail]);
+
+  useEffect(() => {
+    if (!activeTwinId || !isApiTwinId(activeTwinId)) {
+      setComplianceRows([]);
+      return;
+    }
+    void aecCompliance(activeTwinId)
+      .then((raw) => setComplianceRows(mapComplianceLayer(raw)))
+      .catch(() => setComplianceRows([]));
+  }, [activeTwinId]);
 
   const entityTree = buildEntityTree(activeTwin);
   const layers = twinDetail?.layers ?? [];
@@ -47,6 +90,16 @@ export default function EnterpriseTwin() {
   const detailBusy = twinDetailLoading && !twinDetail;
   const showContent =
     Boolean(activeTwin.id) && twinGenerated && !isGenerating && !twinsLoading && !detailBusy;
+
+  const fallbackCompliance =
+    twinDetail?.compliance.map((item, i) => ({
+      id: `twin-${i}`,
+      region: item.region,
+      requirement: item.requirement,
+      description: "",
+      status: item.status,
+    })) ?? [];
+  const complianceDisplay = complianceRows.length > 0 ? complianceRows : fallbackCompliance;
 
   return (
     <div className="space-y-6">
@@ -213,17 +266,20 @@ export default function EnterpriseTwin() {
                   <CardTitle className="text-base">Compliance</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {(twinDetail?.compliance.length ?? 0) === 0 ? (
+                  {complianceDisplay.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No compliance items on this twin.</p>
                   ) : (
-                    twinDetail?.compliance.map((item) => (
+                    complianceDisplay.map((item) => (
                       <div
-                        key={`${item.region}-${item.requirement}`}
+                        key={item.id}
                         className="flex items-center justify-between rounded-lg border px-3 py-2"
                       >
                         <div>
                           <p className="text-sm font-medium">{item.requirement}</p>
-                          <p className="text-xs text-muted-foreground">{item.region}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.region}
+                            {item.description ? ` · ${item.description}` : ""}
+                          </p>
                         </div>
                         <StatusBadge status={item.status} />
                       </div>

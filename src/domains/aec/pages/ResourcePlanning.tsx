@@ -20,6 +20,7 @@ import {
   PipelineErrorBanner,
   PipelineLoadingBanner,
 } from "@/domains/aec/components/PipelineUi";
+import { toast } from "sonner";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 
 export default function ResourcePlanning() {
@@ -31,6 +32,8 @@ export default function ResourcePlanning() {
     resourcesLoading,
     resourcesError,
     refreshResources,
+    archiveResource,
+    updateResource,
   } = useAecApp();
   const [entityFilter, setEntityFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -153,7 +156,19 @@ export default function ResourcePlanning() {
       {!resourcesLoading && !filtered.length ? (
         <PipelineEmptyState>No resources found for this twin.</PipelineEmptyState>
       ) : (
-        <ResourceDirectoryTable resources={filtered} />
+        <ResourceDirectoryTable
+          resources={filtered}
+          onUpdate={async (r, body) => {
+            await updateResource(r.resourceId || r.id, body);
+            toast.success(`Updated ${body.name}`);
+          }}
+          onArchive={(r) => {
+            if (!window.confirm(`Archive ${r.name}?`)) return;
+            void archiveResource(r.resourceId || r.id)
+              .then(() => toast.success(`Archived ${r.name}`))
+              .catch(() => undefined);
+          }}
+        />
       )}
     </div>
   );

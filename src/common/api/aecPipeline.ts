@@ -232,3 +232,79 @@ export async function aecProjectProfitability(
   });
   return unwrapAecData(raw);
 }
+
+export async function aecUpdateProjectProfitability(
+  twinId: string,
+  projectId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/projects/${projectId}/profitability`, {
+    ...init,
+    method: "PATCH",
+    ...jsonInit(body),
+  });
+  return unwrapAecData(raw);
+}
+
+export async function aecProjectProfitabilityAudit(
+  twinId: string,
+  projectId: string,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(
+    `${twinBase(twinId)}/projects/${projectId}/profitability/audit`,
+    { ...init, method: "GET" }
+  );
+  return unwrapAecData(raw);
+}
+
+export async function aecUpdateWbsPhase(
+  twinId: string,
+  projectId: string,
+  phaseId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(
+    `${twinBase(twinId)}/projects/${projectId}/wbs/phases/${phaseId}`,
+    { ...init, method: "PATCH", ...jsonInit(body) }
+  );
+  return unwrapAecData(raw);
+}
+
+export async function aecUpdateWbsTask(
+  twinId: string,
+  projectId: string,
+  taskId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(
+    `${twinBase(twinId)}/projects/${projectId}/wbs/tasks/${taskId}`,
+    { ...init, method: "PATCH", ...jsonInit(body) }
+  );
+  return unwrapAecData(raw);
+}
+
+export async function aecUpdateWbsMilestone(
+  twinId: string,
+  projectId: string,
+  milestoneId: string,
+  body: Record<string, unknown>,
+  init: ApiInit = {}
+) {
+  const raw = await apiJson<unknown>(
+    `${twinBase(twinId)}/projects/${projectId}/wbs/milestones/${milestoneId}`,
+    { ...init, method: "PATCH", ...jsonInit(body) }
+  );
+  return unwrapAecData(raw);
+}
+
+export async function aecCompliance(twinId: string, init: ApiInit = {}) {
+  const raw = await apiJson<unknown>(`${twinBase(twinId)}/compliance`, {
+    ...init,
+    method: "GET",
+  });
+  return unwrapAecData(raw);
+}

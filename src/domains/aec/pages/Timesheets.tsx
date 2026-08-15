@@ -3,6 +3,12 @@ import { CheckCheck } from "lucide-react";
 import { Button } from "@/common/components/ui/button";
 import { Input } from "@/common/components/ui/input";
 import { Label } from "@/common/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/common/components/ui/dialog";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { MetricStrip } from "@/domains/aec/components/MetricStrip";
 import { TimesheetApprovalGrid } from "@/domains/aec/components/TimesheetApprovalGrid";
@@ -13,6 +19,8 @@ import {
 } from "@/domains/aec/components/PipelineUi";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { formatWeekLabel, mondayOf } from "@/domains/aec/api/timesheetsMappers";
+import { aecGetTimesheet } from "@/common/api/aecTimesheets";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 import { toast } from "sonner";
 
 export default function Timesheets() {
@@ -27,9 +35,13 @@ export default function Timesheets() {
     bulkApproveTimesheets,
     timesheetsLoading,
     timesheetsError,
+    activeTwinId,
   } = useAecApp();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     void refreshTimesheets();
@@ -41,6 +53,22 @@ export default function Timesheets() {
   );
 
   const weekLabel = formatWeekLabel(timesheetWeekStart);
+
+  const openDetail = async (id: string) => {
+    if (!activeTwinId || !isApiTwinId(activeTwinId)) return;
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setDetail(null);
+    try {
+      const raw = await aecGetTimesheet(activeTwinId, id);
+      setDetail(raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load timesheet");
+      setDetailOpen(false);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const approve = async (id: string) => {
     const row = timesheetSubmissions.find((r) => r.id === id);
@@ -174,8 +202,40 @@ export default function Timesheets() {
           onToggleAll={toggleAll}
           onApprove={(id) => void approve(id)}
           onReject={(id) => void reject(id)}
+          onDetail={(id) => void openDetail(id)}
         />
       )}
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Timesheet detail</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : detail ? (
+            <dl className="grid gap-3 text-sm">
+              {(
+                [
+                  ["Employee", detail.employee ?? detail.resourceName],
+                  ["Entity", detail.entityCode ?? detail.entity],
+                  ["Week", detail.weekStart ?? detail.week],
+                  ["Status", detail.statusLabel ?? detail.status],
+                  ["Total hours", detail.totalHours],
+                  ["Billable hours", detail.billableHours],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 border-b pb-2">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="text-right font-medium">{String(value ?? "—")}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">No detail available.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
