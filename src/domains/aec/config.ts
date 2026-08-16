@@ -26,7 +26,6 @@ import {
   Banknote,
   Plus,
   CircleDot,
-  Gem,
 } from "lucide-react";
 import type { DomainConfig } from "@/domains/types";
 import { aecLoginConfig } from "./login";
@@ -131,14 +130,6 @@ export const aecConfig: DomainConfig = {
       parentPath: "/projects",
     },
     {
-      title: "Resource Management",
-      path: "/resources/shared-allocation",
-      icon: Gem,
-      group: "Resource Planning",
-      badgeType: "new",
-      badge: "New",
-    },
-    {
       title: "Resources",
       path: "/resources/planning",
       icon: CircleDot,
@@ -153,12 +144,6 @@ export const aecConfig: DomainConfig = {
       parentPath: "/resources/planning",
     },
     {
-      title: "Resource Planning",
-      path: "/resources/planning",
-      icon: Clock,
-      group: "Resource Planning",
-    },
-    {
       title: "Skills Matrix",
       path: "/resources/skills",
       icon: Award,
@@ -169,16 +154,12 @@ export const aecConfig: DomainConfig = {
       path: "/org-chart",
       icon: Network,
       group: "Resource Planning",
-      badgeType: "new",
-      badge: "New",
     },
     {
       title: "Rate Cards",
       path: "/resources/rate-cards",
       icon: CreditCard,
       group: "Resource Planning",
-      badgeType: "new",
-      badge: "New",
     },
     {
       title: "Shared Allocation",
@@ -191,8 +172,6 @@ export const aecConfig: DomainConfig = {
       path: "/leave",
       icon: CalendarOff,
       group: "Resource Planning",
-      badgeType: "new",
-      badge: "New",
     },
     {
       title: "Timesheets",
@@ -221,8 +200,6 @@ export const aecConfig: DomainConfig = {
       path: "/payroll",
       icon: Banknote,
       group: "Payroll Analytics",
-      badgeType: "new",
-      badge: "New",
     },
     {
       title: "Accounting",

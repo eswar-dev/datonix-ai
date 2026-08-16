@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, Database, Plus, RefreshCw } from "lucide-react";
 import { cn } from "@/common/lib/utils";
-import { Button } from "@/common/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,6 +12,13 @@ import {
 } from "@/common/components/ui/table";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { StatusBadge } from "@/domains/aec/components/StatusBadge";
+import {
+  AecButton,
+  AecLivePill,
+  AecPanel,
+  AecProgress,
+  AecTag,
+} from "@/domains/aec/components/primitives";
 import { dataFlowStages } from "@/domains/aec/data/connectors";
 import {
   loadStoredDatasources,
@@ -23,6 +28,8 @@ import {
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 import { toast } from "sonner";
+
+const stageClasses = ["aec-flow-source", "aec-flow-connector", "aec-flow-module"];
 
 export default function DataIngestion() {
   const { twinDetail, activeTwinId, loadTwinDetail, twinDetailLoading } = useAecApp();
@@ -41,9 +48,7 @@ export default function DataIngestion() {
 
   const connectors = useMemo(() => {
     const twinConnectors = twinDetail?.connectors ?? [];
-    if (twinConnectors.length > 0) {
-      return mergeConnectors(twinConnectors, stored);
-    }
+    if (twinConnectors.length > 0) return mergeConnectors(twinConnectors, stored);
     return stored;
   }, [twinDetail?.connectors, stored]);
 
@@ -54,15 +59,14 @@ export default function DataIngestion() {
     if (sources.length === 0) return dataFlowStages;
     return [
       { id: "sources", title: "Source Systems", items: sources },
-      { id: "connectors", title: "Connectors", items: conns },
+      { id: "connectors", title: "Connector Layer", items: conns },
       { id: "modules", title: "Datonix Modules", items: modules },
     ];
   }, [connectors]);
 
   const handleSync = useCallback(
     (id: string) => {
-      const updated = syncDatasourceNow(activeTwinId, id);
-      setStored(updated);
+      setStored(syncDatasourceNow(activeTwinId, id));
       toast.success("Sync completed");
     },
     [activeTwinId],
@@ -76,131 +80,163 @@ export default function DataIngestion() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <AecPageHeader
         title="Data Ingestion"
-        subtitle="Source systems, connectors, and Datonix module mappings for the enterprise twin."
-        breadcrumb={[
-          { label: "Intelligence", href: "/enterprise-twin" },
-          { label: "Data Ingestion" },
-        ]}
+        subtitle="Source systems → Generated connectors → Datonix modules"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {syncing && (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-1.5 text-sm">
-                <RefreshCw className="h-4 w-4 animate-spin text-accent" />
-                <span className="text-muted-foreground">Syncing</span>
-                <StatusBadge status="Live" />
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin text-[color:var(--page-accent)]" />
+                <AecLivePill label="Syncing" />
               </div>
             )}
-            <Button variant="outline" size="sm" onClick={handleSyncAll} disabled={syncing}>
-              <RefreshCw className={cn("mr-1 h-4 w-4", syncing && "animate-spin")} />
+            <AecButton variant="outline" size="sm" onClick={handleSyncAll} disabled={syncing}>
+              <RefreshCw className={cn("h-3.5 w-3.5", syncing && "animate-spin")} />
               Sync All
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/data-ingestion/add">
-                <Plus className="mr-1 h-4 w-4" />
+            </AecButton>
+            <Link to="/data-ingestion/add">
+              <AecButton size="sm">
+                <Plus className="h-3.5 w-3.5" />
                 Add Datasource
-              </Link>
-            </Button>
+              </AecButton>
+            </Link>
           </div>
         }
       />
 
       {twinDetailLoading && isApiTwinId(activeTwinId ?? "") && (
-        <p className="text-sm text-muted-foreground">Loading twin connectors…</p>
+        <p className="text-[11.5px] text-[color:var(--page-muted)]">Loading twin connectors…</p>
       )}
 
-      <Card className="rounded-card">
-        <CardHeader>
-          <CardTitle className="text-base">Data Flow</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Source Systems → Connectors → Datonix Modules
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {flowStages.map((stage, stageIdx) => (
-              <div key={stage.id} className="flex flex-1 items-center gap-4">
-                <div className="flex-1 rounded-lg border bg-card p-4">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {stage.title}
-                  </p>
-                  <ul className="space-y-2">
-                    {stage.items.map((item) => (
-                      <li
-                        key={item}
-                        className="rounded-md bg-muted/50 px-3 py-2 text-sm font-medium"
-                      >
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+      <AecPanel
+        title="Data Flow Map"
+        icon={<Database className="h-3.5 w-3.5 text-[color:var(--page-blue)]" />}
+        actions={syncing ? <AecLivePill label="Syncing" /> : null}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+          {flowStages.map((stage, stageIdx) => (
+            <div key={stage.id} className="flex flex-1 items-center gap-3">
+              <div className="flex-1">
+                <p className="mb-2 text-[9.5px] font-bold uppercase tracking-wide text-[color:var(--page-muted)]">
+                  {stage.title}
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {stage.items.map((item) => (
+                    <div
+                      key={item}
+                      className={cn(
+                        "rounded-md border px-2.5 py-2 text-center text-[11.5px] font-semibold",
+                        stageClasses[stageIdx] ?? stageClasses[0],
+                      )}
+                    >
+                      {item}
+                    </div>
+                  ))}
                 </div>
-                {stageIdx < flowStages.length - 1 && (
-                  <ArrowRight className="hidden h-5 w-5 shrink-0 text-muted-foreground lg:block" />
-                )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              {stageIdx < flowStages.length - 1 && (
+                <ArrowRight className="hidden h-5 w-5 shrink-0 text-[color:var(--page-dim)] lg:block" />
+              )}
+            </div>
+          ))}
+        </div>
+      </AecPanel>
 
-      <Card className="rounded-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Connected Datasources</CardTitle>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/data-ingestion/add">+ Add Datasource</Link>
-          </Button>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
+      <AecPanel
+        title="Connected Datasources"
+        actions={
+          <Link to="/data-ingestion/add">
+            <AecButton variant="outline" size="sm">
+              + Add Datasource
+            </AecButton>
+          </Link>
+        }
+      >
+        <div className="tw overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Source System</TableHead>
-                <TableHead>Connector</TableHead>
-                <TableHead>Target Module</TableHead>
-                <TableHead>Entities</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Coverage</TableHead>
-                <TableHead>Last Sync</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-[color:var(--page-border)] hover:bg-transparent">
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Source
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Connector
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Target Module
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Entities
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Coverage
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Last Sync
+                </TableHead>
+                <TableHead className="text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Status
+                </TableHead>
+                <TableHead className="text-right text-[9.5px] uppercase tracking-wide text-[color:var(--page-muted)]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {connectors.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                <TableRow className="border-[color:var(--page-border)]">
+                  <TableCell colSpan={8} className="py-10 text-center text-[color:var(--page-muted)]">
                     No datasources configured.{" "}
-                    <Link to="/data-ingestion/add" className="font-medium text-accent hover:underline">
+                    <Link
+                      to="/data-ingestion/add"
+                      className="font-medium text-[color:var(--page-accent)] hover:underline"
+                    >
                       Add your first datasource
                     </Link>
                   </TableCell>
                 </TableRow>
               ) : (
-                connectors.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.source}</TableCell>
-                    <TableCell>{c.connector}</TableCell>
-                    <TableCell>{c.targetModule}</TableCell>
-                    <TableCell className="text-muted-foreground">{c.entities}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={c.status} />
-                    </TableCell>
-                    <TableCell>{c.coverage}</TableCell>
-                    <TableCell className="text-muted-foreground">{c.lastSync}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleSync(c.id)}>
-                        Sync now
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                connectors.map((c) => {
+                  const pct = parseInt(c.coverage, 10) || 0;
+                  return (
+                    <TableRow
+                      key={c.id}
+                      className="border-[color:var(--page-border)] hover:bg-[color:var(--page-row-hover)]"
+                    >
+                      <TableCell className="font-semibold text-[color:var(--page-text)]">
+                        {c.source}
+                      </TableCell>
+                      <TableCell>
+                        <AecTag variant="purple">{c.connector}</AecTag>
+                      </TableCell>
+                      <TableCell className="text-[color:var(--page-text)]">{c.targetModule}</TableCell>
+                      <TableCell className="text-[color:var(--page-muted)]">{c.entities}</TableCell>
+                      <TableCell>
+                        <div className="w-20">
+                          <AecProgress value={pct} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-[10.5px] text-[color:var(--page-muted)]">
+                        {c.lastSync}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={c.status} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <AecButton variant="outline" size="xs" onClick={() => handleSync(c.id)}>
+                          Sync
+                        </AecButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </AecPanel>
     </div>
   );
 }

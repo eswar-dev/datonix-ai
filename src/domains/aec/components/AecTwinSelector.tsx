@@ -22,9 +22,9 @@ export function AecTwinSelector() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5 border-accent/20 bg-accent/5 px-2 sm:gap-2 sm:px-2.5"
+          className="h-8 gap-1.5 border-[color:var(--shell-brand)]/20 bg-[color:var(--shell-brand)]/8 px-2.5 text-xs font-semibold text-[color:var(--shell-text)] sm:gap-2"
         >
-          <GitBranchPlus className="h-3.5 w-3.5 shrink-0 text-accent" />
+          <GitBranchPlus className="h-3.5 w-3.5 shrink-0 text-[color:var(--shell-brand)]" />
           <span className="max-w-[100px] truncate text-xs font-medium sm:max-w-[140px]">{activeTwin.name}</span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </Button>

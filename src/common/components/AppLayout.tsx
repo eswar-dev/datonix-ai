@@ -5,11 +5,11 @@ import { SidebarStateProvider, useSidebarState } from "@/common/hooks/use-sideba
 import { ViewModeProvider } from "@/common/contexts/ViewModeContext";
 import { useDomain } from "@/common/contexts/DomainContext";
 import { AecAppProvider } from "@/domains/aec/context/AecAppContext";
+import { AecLayout } from "@/domains/aec/components/layout/AecLayout";
 
-function LayoutInner() {
+function LegacyLayoutInner() {
   const { collapsed } = useSidebarState();
-  const domain = useDomain();
-  const content = (
+  return (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
       <div
@@ -23,12 +23,20 @@ function LayoutInner() {
       </div>
     </div>
   );
+}
+
+function LayoutInner() {
+  const domain = useDomain();
 
   if (domain.id === "aec") {
-    return <AecAppProvider>{content}</AecAppProvider>;
+    return (
+      <AecAppProvider>
+        <AecLayout />
+      </AecAppProvider>
+    );
   }
 
-  return content;
+  return <LegacyLayoutInner />;
 }
 
 export function AppLayout() {

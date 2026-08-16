@@ -4,27 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/common/contexts/AuthContext";
 import { useDomain } from "@/common/contexts/DomainContext";
 import { LoginHeroPanel } from "@/common/components/LoginHeroPanel";
-
-function LoginLogo({ tagline, accent, accentMuted }: { tagline: string; accent: string; accentMuted: string }) {
-  return (
-    <svg viewBox="0 0 240 52" width="260" height="56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <polygon points="22,26 34,8 58,8 70,26 58,44 34,44" stroke={accentMuted} strokeWidth="2.5" fill="none" />
-      <circle cx="46" cy="26" r="7" fill={accent} />
-      <circle cx="60" cy="22" r="5.2" fill={accent} />
-      <circle cx="46" cy="14" r="4.8" fill={accent} />
-      <circle cx="33" cy="22" r="4.3" fill={accent} />
-      <circle cx="46" cy="37" r="4.3" fill={accent} />
-      <circle cx="59" cy="35" r="2.6" fill={accent} />
-      <circle cx="34" cy="15" r="2" fill={accent} />
-      <text x="82" y="33" fontFamily="'Arial Black', Arial, sans-serif" fontWeight="900" fontSize="28" fill={accent}>
-        Datonix
-      </text>
-      <text x="82" y="46" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="5.5" fill="#7a9ab5" letterSpacing="0.8">
-        {tagline}
-      </text>
-    </svg>
-  );
-}
+import { DatonixLogo } from "@/common/components/DatonixLogo";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -99,7 +79,7 @@ export default function Login() {
             className="mb-12 rounded-2xl px-6 py-5"
             style={{ background: theme.panelHeaderBackground, border: `1px solid ${theme.border}` }}
           >
-            <LoginLogo tagline={domain.tagline} accent={theme.accent} accentMuted={theme.accentMuted} />
+            <DatonixLogo tagline={domain.tagline} size="lg" />
           </div>
 
           <span
