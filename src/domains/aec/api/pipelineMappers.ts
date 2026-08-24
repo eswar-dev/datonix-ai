@@ -9,6 +9,7 @@ import type {
 } from "@/domains/aec/data/projects";
 import type { Milestone, WbsPhase, WbsProject } from "@/domains/aec/data/wbs";
 import type { TwinEntity } from "@/domains/aec/data/meridian";
+import { normalizeEntityRequestBody } from "./entityPayload";
 
 function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
@@ -230,7 +231,7 @@ export function mapRecommendations(raw: unknown): StaffRecommendation[] {
 }
 
 export function draftToCreatePayload(draft: ProjectDraft): Record<string, unknown> {
-  const payload: Record<string, unknown> = {
+  return normalizeEntityRequestBody({
     name: draft.name,
     client: draft.client,
     entity: draft.entity,
@@ -240,9 +241,8 @@ export function draftToCreatePayload(draft: ProjectDraft): Record<string, unknow
     budget: draft.budget,
     startDate: draft.startDate || null,
     endDate: draft.endDate || null,
-  };
-  if (draft.projectManagerId) payload.projectManagerId = draft.projectManagerId;
-  return payload;
+    ...(draft.projectManagerId ? { projectManagerId: draft.projectManagerId } : {}),
+  });
 }
 
 export interface ProfitabilityView {

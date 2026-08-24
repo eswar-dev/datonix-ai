@@ -1,5 +1,4 @@
 import { cn } from "@/common/lib/utils";
-import { Card } from "@/common/components/ui/card";
 import { Building2, HardHat, User } from "lucide-react";
 import type { ResourceType } from "@/domains/aec/data/orgChart";
 
@@ -26,13 +25,25 @@ export function ResourceTypeSelector({
             key={opt.type}
             type="button"
             onClick={() => onChange(opt.type)}
-            className={cn("text-left", selected && "ring-2 ring-accent ring-offset-2 rounded-card")}
+            aria-pressed={selected}
+            className={cn(
+              "relative h-full rounded-[9px] border p-4 text-left transition-colors",
+              selected
+                ? "border-[color:var(--page-accent)] bg-[color:var(--page-accent)]/8"
+                : "border-[color:var(--page-border)] bg-[color:var(--page-card)] hover:border-[color:var(--page-muted)]/50 hover:bg-[color:var(--page-row-hover)]",
+            )}
           >
-            <Card className={cn("rounded-card p-4 h-full", selected && "border-accent bg-accent/5")}>
-              <Icon className={cn("mb-2 h-5 w-5", selected ? "text-accent" : "text-muted-foreground")} />
-              <p className="font-medium text-sm">{opt.label}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{opt.description}</p>
-            </Card>
+            {selected && (
+              <span className="absolute inset-x-0 top-0 h-0.5 rounded-t-[9px] bg-[color:var(--page-accent)]" />
+            )}
+            <Icon
+              className={cn(
+                "mb-2 h-5 w-5",
+                selected ? "text-[color:var(--page-accent)]" : "text-[color:var(--page-muted)]",
+              )}
+            />
+            <p className="text-sm font-semibold text-[color:var(--page-text)]">{opt.label}</p>
+            <p className="mt-1 text-xs text-[color:var(--page-muted)]">{opt.description}</p>
           </button>
         );
       })}

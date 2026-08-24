@@ -1,5 +1,6 @@
 import type { TwinEntity } from "@/domains/aec/data/meridian";
 import type { ResourceType } from "@/domains/aec/data/orgChart";
+import { normalizeEntityRequestBody } from "./entityPayload";
 import type {
   CrossEntityAllocation,
   ResourceRecord,
@@ -221,7 +222,7 @@ export function draftToCreateResourcePayload(input: {
   billRate?: number;
   contractExpiry?: string;
 }): Record<string, unknown> {
-  return {
+  return normalizeEntityRequestBody({
     name: input.name,
     type: input.type,
     entity: input.entity,
@@ -230,7 +231,7 @@ export function draftToCreateResourcePayload(input: {
     ...(input.costRate != null ? { costRate: input.costRate } : {}),
     ...(input.billRate != null ? { billRate: input.billRate } : {}),
     ...(input.contractExpiry ? { contractExpiry: input.contractExpiry } : {}),
-  };
+  });
 }
 
 export interface SkillOverviewCategory {

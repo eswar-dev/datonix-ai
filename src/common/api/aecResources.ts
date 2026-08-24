@@ -1,5 +1,6 @@
 import { apiJson, type ApiInit } from "./client";
 import { unwrapAecData } from "./aecPipeline";
+import { normalizeEntityRequestBody } from "@/domains/aec/api/entityPayload";
 
 function twinBase(twinId: string) {
   return `/api/v1/aec/twins/${twinId}`;
@@ -39,10 +40,11 @@ export async function aecCreateResource(
   body: Record<string, unknown>,
   init: ApiInit = {}
 ) {
+  const payload = normalizeEntityRequestBody(body);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/resources`, {
     ...init,
     method: "POST",
-    ...jsonInit(body),
+    ...jsonInit(payload),
   });
   return unwrapAecData(raw);
 }
@@ -103,10 +105,11 @@ export async function aecUpdateResource(
   body: Record<string, unknown>,
   init: ApiInit = {}
 ) {
+  const payload = normalizeEntityRequestBody(body);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/resources/${resourceId}`, {
     ...init,
     method: "PATCH",
-    ...jsonInit(body),
+    ...jsonInit(payload),
   });
   return unwrapAecData(raw);
 }
