@@ -64,7 +64,7 @@ export default function CustomerInquiries() {
     clientName: "",
     projectName: "",
     projectType: "Commercial",
-    entityId: "",
+    entity: "",
     receivedDate: new Date().toISOString().slice(0, 10),
     estimatedValue: "",
     contactName: "",
@@ -136,7 +136,7 @@ export default function CustomerInquiries() {
       }
     }
     navigate(
-      `/projects/create?client=${encodeURIComponent(inquiry.client)}&entity=${encodeURIComponent(inquiry.entity)}&value=${inquiry.valueGbp}&name=${encodeURIComponent(inquiry.projectName)}&inquiryId=${inquiry.id}${inquiry.entityId ? `&entityId=${inquiry.entityId}` : ""}`
+      `/projects/create?client=${encodeURIComponent(inquiry.client)}&entity=${encodeURIComponent(inquiry.entity)}&value=${inquiry.valueGbp}&name=${encodeURIComponent(inquiry.projectName)}&inquiryId=${inquiry.id}`
     );
   };
 
@@ -160,8 +160,8 @@ export default function CustomerInquiries() {
   };
 
   const handleCreate = async () => {
-    const entityId = createForm.entityId || activeTwin.entities[0]?.id;
-    if (!createForm.clientName.trim() || !createForm.projectName.trim() || !entityId) {
+    const entity = createForm.entity || activeTwin.entities[0]?.code;
+    if (!createForm.clientName.trim() || !createForm.projectName.trim() || !entity) {
       toast.error("Client, project name, and entity are required");
       return;
     }
@@ -171,7 +171,7 @@ export default function CustomerInquiries() {
         clientName: createForm.clientName.trim(),
         projectName: createForm.projectName.trim(),
         projectType: createForm.projectType,
-        entityId,
+        entity,
         receivedDate: createForm.receivedDate,
         currency: "GBP",
         stage: "inquiry",
@@ -183,7 +183,7 @@ export default function CustomerInquiries() {
         clientName: "",
         projectName: "",
         projectType: "Commercial",
-        entityId: "",
+        entity: "",
         receivedDate: new Date().toISOString().slice(0, 10),
         estimatedValue: "",
         contactName: "",
@@ -257,15 +257,15 @@ export default function CustomerInquiries() {
             <div className="space-y-2">
               <Label>Entity</Label>
               <Select
-                value={createForm.entityId || activeTwin.entities[0]?.id || ""}
-                onValueChange={(v) => setCreateForm((f) => ({ ...f, entityId: v }))}
+                value={createForm.entity || activeTwin.entities[0]?.code || ""}
+                onValueChange={(v) => setCreateForm((f) => ({ ...f, entity: v }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select entity" />
                 </SelectTrigger>
                 <SelectContent>
                   {activeTwin.entities.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
+                    <SelectItem key={e.id} value={e.code}>
                       {e.code} — {e.name}
                     </SelectItem>
                   ))}

@@ -54,7 +54,6 @@ export function ProjectForm({
                   const match = entities.find((e) => e.code === v);
                   onChange({
                     entity: v,
-                    entityId: match?.id,
                     currency: match?.currency || draft.currency,
                   });
                 }}

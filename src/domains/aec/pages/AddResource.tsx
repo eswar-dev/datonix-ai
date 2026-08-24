@@ -25,7 +25,7 @@ export default function AddResource() {
   const { createResource, activeTwin, activeTwinId, loadTwinDetail, resourcesError } = useAecApp();
   const [type, setType] = useState<ResourceType>("IN-HOUSE");
   const [name, setName] = useState("");
-  const [entityId, setEntityId] = useState(activeTwin.entities[0]?.id ?? "");
+  const [entity, setEntity] = useState(activeTwin.entities[0]?.code ?? "");
   const [designation, setDesignation] = useState("");
   const [department, setDepartment] = useState("");
   const [costRate, setCostRate] = useState("");
@@ -40,10 +40,10 @@ export default function AddResource() {
   }, [activeTwinId, activeTwin.entities.length, loadTwinDetail]);
 
   useEffect(() => {
-    if (!entityId && activeTwin.entities[0]?.id) {
-      setEntityId(activeTwin.entities[0].id);
+    if (!entity && activeTwin.entities[0]?.code) {
+      setEntity(activeTwin.entities[0].code);
     }
-  }, [activeTwin.entities, entityId]);
+  }, [activeTwin.entities, entity]);
 
   const showExpiryWarning = type === "CONTRACTOR" || type === "FREELANCER";
 
@@ -53,7 +53,7 @@ export default function AddResource() {
       toast.error("Please enter name and designation");
       return;
     }
-    if (!entityId) {
+    if (!entity) {
       toast.error("Select an entity");
       return;
     }
@@ -62,7 +62,7 @@ export default function AddResource() {
       await createResource({
         name: name.trim(),
         type,
-        entityId,
+        entity,
         designation: designation.trim(),
         department: department.trim() || "General",
         ...(costRate ? { costRate: Number(costRate) } : {}),
@@ -117,11 +117,11 @@ export default function AddResource() {
             </div>
             <div className="space-y-2">
               <Label>Entity</Label>
-              <Select value={entityId || undefined} onValueChange={setEntityId}>
+              <Select value={entity || undefined} onValueChange={setEntity}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Select entity" /></SelectTrigger>
                 <SelectContent>
                   {activeTwin.entities.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.code} — {e.name}</SelectItem>
+                    <SelectItem key={e.id} value={e.code}>{e.code} — {e.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

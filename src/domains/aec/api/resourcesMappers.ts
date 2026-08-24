@@ -214,7 +214,7 @@ export function mapRateCards(raw: unknown, twinEntities: TwinEntity[] = []): Rat
 export function draftToCreateResourcePayload(input: {
   name: string;
   type: ResourceType;
-  entityId: string;
+  entity: string;
   designation: string;
   department: string;
   costRate?: number;
@@ -224,7 +224,7 @@ export function draftToCreateResourcePayload(input: {
   return {
     name: input.name,
     type: input.type,
-    entityId: input.entityId,
+    entity: input.entity,
     designation: input.designation,
     department: input.department,
     ...(input.costRate != null ? { costRate: input.costRate } : {}),

@@ -338,7 +338,7 @@ interface AecAppContextValue {
   updateInquiryStage: (inquiryId: string, stage: string) => Promise<void>;
   createInquiry: (input: {
     clientName: string;
-    entityId: string;
+    entity: string;
     projectName: string;
     projectType: string;
     currency?: string;
@@ -368,7 +368,7 @@ interface AecAppContextValue {
   createResource: (input: {
     name: string;
     type: ResourceType;
-    entityId: string;
+    entity: string;
     designation: string;
     department: string;
     costRate?: number;
@@ -864,7 +864,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       toast.error("Select a live Enterprise Twin before creating a project");
       throw new Error("No API twin selected");
     }
-    if (!draft.entity && !draft.entityId) {
+    if (!draft.entity) {
       toast.error("Select an entity/organization for the project");
       throw new Error("Entity required");
     }
@@ -970,7 +970,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
   const createInquiry = useCallback(
     async (input: {
       clientName: string;
-      entityId: string;
+      entity: string;
       projectName: string;
       projectType: string;
       currency?: string;
@@ -985,7 +985,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       }
       const body: Record<string, unknown> = {
         clientName: input.clientName,
-        entityId: input.entityId,
+        entity: input.entity,
         projectName: input.projectName,
         projectType: input.projectType,
         currency: input.currency ?? "GBP",
@@ -1694,7 +1694,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
     async (input: {
       name: string;
       type: ResourceType;
-      entityId: string;
+      entity: string;
       designation: string;
       department: string;
       costRate?: number;

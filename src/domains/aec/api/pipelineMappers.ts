@@ -241,7 +241,6 @@ export function draftToCreatePayload(draft: ProjectDraft): Record<string, unknow
     startDate: draft.startDate || null,
     endDate: draft.endDate || null,
   };
-  if (draft.entityId) payload.entityId = draft.entityId;
   if (draft.projectManagerId) payload.projectManagerId = draft.projectManagerId;
   return payload;
 }

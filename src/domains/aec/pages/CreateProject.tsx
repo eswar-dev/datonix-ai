@@ -37,20 +37,16 @@ export default function CreateProject() {
   useEffect(() => {
     const client = searchParams.get("client");
     const entity = searchParams.get("entity");
-    const entityId = searchParams.get("entityId");
     const value = searchParams.get("value");
     const name = searchParams.get("name");
 
-    if (client || entity || value || name || entityId) {
-      const match = activeTwin.entities.find(
-        (e) => e.code === entity || e.id === entityId
-      );
+    if (client || entity || value || name) {
+      const match = activeTwin.entities.find((e) => e.code === entity);
       updateDraft({
         ...(name && { name: decodeURIComponent(name) }),
         ...(client && { client: decodeURIComponent(client) }),
         ...(entity && { entity: decodeURIComponent(entity) }),
-        ...(entityId && { entityId }),
-        ...(match && { entity: match.code, entityId: match.id, currency: match.currency }),
+        ...(match && { entity: match.code, currency: match.currency }),
         ...(value && { budget: Number(value) }),
       });
     }
@@ -64,7 +60,7 @@ export default function CreateProject() {
     setRecsLoading(true);
     const q: Record<string, string> = {};
     if (projectDraft.type) q.projectType = projectDraft.type;
-    if (projectDraft.entity) q.entityId = projectDraft.entity;
+    if (projectDraft.entity) q.entity = projectDraft.entity;
     void aecProjectRecommendations(activeTwinId, q)
       .then((raw) => setRecommendations(mapRecommendations(raw)))
       .catch(() => setRecommendations([]))
@@ -76,7 +72,7 @@ export default function CreateProject() {
       toast.error("Please enter project name and client");
       return;
     }
-    if (!projectDraft.entity && !projectDraft.entityId) {
+    if (!projectDraft.entity) {
       toast.error("Please select an entity");
       return;
     }
