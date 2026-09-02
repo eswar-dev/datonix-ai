@@ -39,7 +39,7 @@ export function AecTopBar() {
     <>
       <header className="flex h-[52px] shrink-0 items-center gap-2.5 border-b border-[color:var(--shell-sidebar-border)] bg-[color:var(--shell-topbar)] px-4">
         <Link to={isAdminRoute ? "/admin" : "/enterprise-twin"} className="mr-1 shrink-0">
-          <DatonixLogo tagline={`${domain.label} Intelligence`} size="sm" />
+          <DatonixLogo tagline={`${domain.label} Enterprise Ops`} size="sm" />
         </Link>
 
         {!isAdminRoute && <AecTwinSelector />}

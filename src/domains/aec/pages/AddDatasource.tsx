@@ -172,7 +172,7 @@ export default function AddDatasource() {
         title="Add Datasource"
         subtitle="Connect a source system and map it to Datonix modules"
         breadcrumb={[
-          { label: "Intelligence", href: "/enterprise-twin" },
+          { label: "Enterprise Ops", href: "/enterprise-twin" },
           { label: "Data Ingestion", href: "/data-ingestion" },
           { label: "Add Datasource" },
         ]}

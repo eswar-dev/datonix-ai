@@ -5,6 +5,7 @@ import { Button } from "@/common/components/ui/button";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { ProjectForm } from "@/domains/aec/components/ProjectForm";
 import { PipelineErrorBanner } from "@/domains/aec/components/PipelineUi";
+import { TwinEntitiesBanner } from "@/domains/aec/components/TwinEntitiesBanner";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { aecProjectRecommendations } from "@/common/api/aecPipeline";
 import { mapRecommendations } from "@/domains/aec/api/pipelineMappers";
@@ -94,7 +95,7 @@ export default function CreateProject() {
         title="Create Project"
         subtitle="Set up a new project with billing, budget, and AI-recommended team."
         breadcrumb={[
-          { label: "Pipeline", href: "/customer-inquiries" },
+          { label: "Project Pipeline", href: "/projects" },
           { label: "Create Project" },
         ]}
         actions={
@@ -107,6 +108,7 @@ export default function CreateProject() {
       />
 
       <PipelineErrorBanner message={pipelineError ?? ""} />
+      <TwinEntitiesBanner entities={activeTwin.entities} twinLabel={activeTwin.name} />
 
       <ProjectForm
         draft={projectDraft}

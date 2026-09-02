@@ -147,7 +147,7 @@ export default function ProjectProfitability() {
           title="Project Profitability"
           subtitle="No projects available for this twin."
           breadcrumb={[
-            { label: "Pipeline", href: "/customer-inquiries" },
+            { label: "Project Pipeline", href: "/customer-inquiries" },
             { label: "Project Profitability" },
           ]}
         />
@@ -163,7 +163,7 @@ export default function ProjectProfitability() {
           title="Project Profitability"
           subtitle="Loading projects…"
           breadcrumb={[
-            { label: "Pipeline", href: "/customer-inquiries" },
+            { label: "Project Pipeline", href: "/customer-inquiries" },
             { label: "Project Profitability" },
           ]}
         />
@@ -178,7 +178,7 @@ export default function ProjectProfitability() {
         title="Project Profitability"
         subtitle="P&L analysis, cost composition, and margin health across the portfolio."
         breadcrumb={[
-          { label: "Pipeline", href: "/customer-inquiries" },
+          { label: "Project Pipeline", href: "/customer-inquiries" },
           { label: "Project Profitability" },
         ]}
       />

@@ -33,7 +33,7 @@ export default function MultiTwinManager() {
         title="Multi-Twin Manager"
         subtitle="Manage multiple enterprise twins across groups and geographies."
         breadcrumb={[
-          { label: "Intelligence", href: "/enterprise-twin" },
+          { label: "Enterprise Ops", href: "/enterprise-twin" },
           { label: "Multi-Twin Manager" },
         ]}
         actions={

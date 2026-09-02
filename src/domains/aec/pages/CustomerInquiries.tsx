@@ -26,6 +26,7 @@ import {
   PipelineErrorBanner,
   PipelineLoadingBanner,
 } from "@/domains/aec/components/PipelineUi";
+import { TwinEntitiesBanner } from "@/domains/aec/components/TwinEntitiesBanner";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import type { Inquiry, InquiryEntity, InquiryStage } from "@/domains/aec/data/inquiries";
 import { toast } from "sonner";
@@ -213,7 +214,7 @@ export default function CustomerInquiries() {
         title="Customer Inquiries"
         subtitle="Pipeline opportunities, proposal generation, and project conversion."
         breadcrumb={[
-          { label: "Pipeline", href: "/customer-inquiries" },
+          { label: "Project Pipeline", href: "/customer-inquiries" },
           { label: "Customer Inquiries" },
         ]}
         actions={
@@ -226,6 +227,7 @@ export default function CustomerInquiries() {
 
       {pipelineLoading && <PipelineLoadingBanner label="Syncing inquiries from API…" />}
       <PipelineErrorBanner message={pipelineError ?? ""} />
+      <TwinEntitiesBanner entities={activeTwin.entities} twinLabel={activeTwin.name} />
 
       {showCreate && (
         <Card className="rounded-card">

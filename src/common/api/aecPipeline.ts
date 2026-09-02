@@ -1,5 +1,6 @@
 import { apiJson, type ApiInit } from "./client";
-import { normalizeEntityRequestBody } from "@/domains/aec/api/entityPayload";
+import { normalizeEntityRequestBody, normalizeEntityUpdateBody } from "@/domains/aec/api/entityPayload";
+import type { TwinEntity } from "@/domains/aec/data/meridian";
 
 function twinBase(twinId: string) {
   return `/api/v1/aec/twins/${twinId}`;
@@ -45,9 +46,10 @@ export async function aecInquiryMetrics(twinId: string, init: ApiInit = {}) {
 export async function aecCreateInquiry(
   twinId: string,
   body: Record<string, unknown>,
-  init: ApiInit = {}
+  init: ApiInit = {},
+  twinEntities: TwinEntity[] = []
 ) {
-  const payload = normalizeEntityRequestBody(body);
+  const payload = normalizeEntityRequestBody(body, twinEntities);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/inquiries`, {
     ...init,
     method: "POST",
@@ -150,9 +152,10 @@ export async function aecListProjects(
 export async function aecCreateProject(
   twinId: string,
   body: Record<string, unknown>,
-  init: ApiInit = {}
+  init: ApiInit = {},
+  twinEntities: TwinEntity[] = []
 ) {
-  const payload = normalizeEntityRequestBody(body);
+  const payload = normalizeEntityRequestBody(body, twinEntities);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/projects`, {
     ...init,
     method: "POST",
@@ -165,9 +168,10 @@ export async function aecUpdateProject(
   twinId: string,
   projectId: string,
   body: Record<string, unknown>,
-  init: ApiInit = {}
+  init: ApiInit = {},
+  twinEntities: TwinEntity[] = []
 ) {
-  const payload = normalizeEntityRequestBody(body);
+  const payload = normalizeEntityUpdateBody(body, twinEntities);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/projects/${projectId}`, {
     ...init,
     method: "PATCH",

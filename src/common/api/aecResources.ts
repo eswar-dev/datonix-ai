@@ -1,6 +1,7 @@
 import { apiJson, type ApiInit } from "./client";
 import { unwrapAecData } from "./aecPipeline";
 import { normalizeEntityRequestBody } from "@/domains/aec/api/entityPayload";
+import type { TwinEntity } from "@/domains/aec/data/meridian";
 
 function twinBase(twinId: string) {
   return `/api/v1/aec/twins/${twinId}`;
@@ -38,9 +39,10 @@ export async function aecResourceSummary(twinId: string, init: ApiInit = {}) {
 export async function aecCreateResource(
   twinId: string,
   body: Record<string, unknown>,
-  init: ApiInit = {}
+  init: ApiInit = {},
+  twinEntities: TwinEntity[] = []
 ) {
-  const payload = normalizeEntityRequestBody(body);
+  const payload = normalizeEntityRequestBody(body, twinEntities);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/resources`, {
     ...init,
     method: "POST",
@@ -103,9 +105,10 @@ export async function aecUpdateResource(
   twinId: string,
   resourceId: string,
   body: Record<string, unknown>,
-  init: ApiInit = {}
+  init: ApiInit = {},
+  twinEntities: TwinEntity[] = []
 ) {
-  const payload = normalizeEntityRequestBody(body);
+  const payload = normalizeEntityRequestBody(body, twinEntities);
   const raw = await apiJson<unknown>(`${twinBase(twinId)}/resources/${resourceId}`, {
     ...init,
     method: "PATCH",

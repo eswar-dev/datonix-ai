@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 
 const routeNames: Record<string, string> = {
   "/enterprise-twin": "Enterprise Twin",
+  "/compliance": "Compliance Layer",
   "/multi-twin": "Multi-Twin Manager",
   "/data-ingestion": "Data Ingestion",
   "/data-ingestion/add": "Add Datasource",
@@ -29,7 +30,7 @@ const routeNames: Record<string, string> = {
   "/dashboard/executive": "Executive Dashboard",
   "/dashboard": "My Dashboard",
   "/reports": "Reports",
-  "/ai-agents": "AI Agent Governance",
+  "/ai-agents": "Decision Intelligence",
   "/admin": "Administration",
   "/admin/tenants": "Tenants",
   "/admin/organizations": "Organizations",

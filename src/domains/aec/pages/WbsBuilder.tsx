@@ -87,7 +87,7 @@ export default function WbsBuilder() {
           title="WBS Builder"
           subtitle="No projects available."
           breadcrumb={[
-            { label: "Pipeline", href: "/projects" },
+            { label: "Project Pipeline", href: "/projects" },
             { label: "WBS Builder" },
           ]}
         />
@@ -109,7 +109,7 @@ export default function WbsBuilder() {
         title="WBS Builder"
         subtitle={`${displayName} — work breakdown structure, phases, and milestones.`}
         breadcrumb={[
-          { label: "Pipeline", href: "/projects" },
+          { label: "Project Pipeline", href: "/projects" },
           { label: "WBS Builder" },
         ]}
         actions={

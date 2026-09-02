@@ -38,8 +38,19 @@ interface Role {
 const adminModules = ["Tenants", "Organizations", "User Roles", "Users", "User Sessions"];
 const adminActions = ["Read", "Create", "Write", "Delete"];
 
-/** Main app nav in AppSidebar (excluding Administration). */
-const appModules = ["Data Sources", "Dashboard", "Datonix AI", "Reports", "Decision Intelligence"];
+/** AEC app modules for RBAC (matches sidebar groups in domains/aec/config.ts). */
+const appModules = [
+  "Enterprise Ops",
+  "Compliance Layer",
+  "Project Pipeline",
+  "Resource Planning and Scheduling",
+  "Time & Expenses",
+  "Payroll Analytics",
+  "Accounting",
+  "Dashboard",
+  "Reports",
+  "Decision Intelligence",
+];
 
 function permKey(module: string, action: string) {
   const m = module.toLowerCase().replace(/ /g, "_");

@@ -21,38 +21,9 @@ import { AgentList } from "@/domains/aec/components/AgentList";
 import { StatusBadge } from "@/domains/aec/components/StatusBadge";
 import { useAecTwin } from "@/domains/aec/context/AecTwinContext";
 import { buildEntityTree } from "@/domains/aec/data/meridian";
+import { mapComplianceLayerView, type ComplianceRuleView } from "@/domains/aec/api/complianceMappers";
 import { aecCompliance } from "@/common/api/aecPipeline";
 import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
-
-type ComplianceRuleView = {
-  id: string;
-  region: string;
-  requirement: string;
-  description: string;
-  status: string;
-};
-
-function mapComplianceLayer(raw: unknown): ComplianceRuleView[] {
-  const root = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const jurisdictions = Array.isArray(root.jurisdictions) ? root.jurisdictions : [];
-  const rows: ComplianceRuleView[] = [];
-  for (const j of jurisdictions) {
-    const ju = j && typeof j === "object" ? (j as Record<string, unknown>) : {};
-    const region = String(ju.label ?? ju.code ?? "—");
-    const rules = Array.isArray(ju.rules) ? ju.rules : [];
-    for (const rule of rules) {
-      const r = rule && typeof rule === "object" ? (rule as Record<string, unknown>) : {};
-      rows.push({
-        id: String(r.id ?? `${region}-${r.code}`),
-        region,
-        requirement: String(r.title ?? r.code ?? "Rule"),
-        description: String(r.description ?? ""),
-        status: String(r.status ?? "active"),
-      });
-    }
-  }
-  return rows;
-}
 
 export default function EnterpriseTwin() {
   const {
@@ -80,7 +51,7 @@ export default function EnterpriseTwin() {
       return;
     }
     void aecCompliance(activeTwinId)
-      .then((raw) => setComplianceRows(mapComplianceLayer(raw)))
+      .then((raw) => setComplianceRows(mapComplianceLayerView(raw).rules))
       .catch(() => setComplianceRows([]));
   }, [activeTwinId]);
 
@@ -91,13 +62,21 @@ export default function EnterpriseTwin() {
   const showContent =
     Boolean(activeTwin.id) && twinGenerated && !isGenerating && !twinsLoading && !detailBusy;
 
-  const fallbackCompliance =
+  const fallbackCompliance: ComplianceRuleView[] =
     twinDetail?.compliance.map((item, i) => ({
       id: `twin-${i}`,
+      code: item.requirement.replace(/\s+/g, "_").toUpperCase(),
       region: item.region,
       requirement: item.requirement,
       description: "",
       status: item.status,
+      entityCode: "",
+      entityName: "",
+      jurisdiction: item.region,
+      autoApply: /active|live/i.test(item.status),
+      moduleKey: "compliance_layer",
+      moduleLabel: "Compliance Layer",
+      enforcement: "Monitored by compliance layer",
     })) ?? [];
   const complianceDisplay = complianceRows.length > 0 ? complianceRows : fallbackCompliance;
 
@@ -107,7 +86,7 @@ export default function EnterpriseTwin() {
         title="Enterprise Twin"
         subtitle="Four-layer digital twin — organizational, resource, financial, and operational intelligence."
         breadcrumb={[
-          { label: "Intelligence", href: "/enterprise-twin" },
+          { label: "Enterprise Ops", href: "/enterprise-twin" },
           { label: "Enterprise Twin" },
         ]}
         actions={
@@ -262,27 +241,32 @@ export default function EnterpriseTwin() {
               </Card>
 
               <Card className="rounded-card">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-base">Compliance</CardTitle>
+                  <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                    <Link to="/compliance">Open Compliance Layer →</Link>
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {complianceDisplay.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No compliance items on this twin.</p>
                   ) : (
                     complianceDisplay.map((item) => (
-                      <div
+                      <Link
                         key={item.id}
-                        className="flex items-center justify-between rounded-lg border px-3 py-2"
+                        to={`/compliance?rule=${encodeURIComponent(item.code)}`}
+                        className="flex items-center justify-between rounded-lg border px-3 py-2 transition-colors hover:bg-muted/50"
                       >
                         <div>
                           <p className="text-sm font-medium">{item.requirement}</p>
                           <p className="text-xs text-muted-foreground">
-                            {item.region}
+                            {item.jurisdiction}
+                            {item.entityCode ? ` · ${item.entityCode}` : ""}
                             {item.description ? ` · ${item.description}` : ""}
                           </p>
                         </div>
                         <StatusBadge status={item.status} />
-                      </div>
+                      </Link>
                     ))
                   )}
                 </CardContent>

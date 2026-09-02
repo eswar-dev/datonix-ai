@@ -868,10 +868,14 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       toast.error("Select an entity/organization for the project");
       throw new Error("Entity required");
     }
+    if (!twinEntities.length) {
+      toast.error("Publish the Enterprise Twin first — no entities available for projects");
+      throw new Error("No entities available");
+    }
 
     try {
       const created = mapProject(
-        await aecCreateProject(twinId, draftToCreatePayload(draft)),
+        await aecCreateProject(twinId, draftToCreatePayload(draft, twinEntities), {}, twinEntities),
         twinEntities
       );
       patchWorkspace((prev) => ({
@@ -983,6 +987,10 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       if (!twinId || !isApiTwinId(twinId)) {
         throw new Error("Select a live Enterprise Twin first");
       }
+      if (!twinEntities.length) {
+        toast.error("Publish the Enterprise Twin first — no entities available for inquiries");
+        throw new Error("No entities available");
+      }
       const body: Record<string, unknown> = {
         clientName: input.clientName,
         entity: input.entity,
@@ -994,7 +1002,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       };
       if (input.estimatedValue != null) body.value = input.estimatedValue;
       if (input.contactName) body.contactName = input.contactName;
-      const created = mapInquiry(await aecCreateInquiry(twinId, body), twinEntities);
+      const created = mapInquiry(await aecCreateInquiry(twinId, body, {}, twinEntities), twinEntities);
       await refreshPipeline();
       return created;
     },
@@ -1025,7 +1033,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       const twinId = activeTwinId;
       if (!twinId || !isApiTwinId(twinId)) return;
       try {
-        const updated = mapProject(await aecUpdateProject(twinId, projectId, body), twinEntities);
+        const updated = mapProject(await aecUpdateProject(twinId, projectId, body, {}, twinEntities), twinEntities);
         patchWorkspace((prev) => ({
           ...prev,
           projects: prev.projects.map((p) => (p.id === projectId ? updated : p)),
@@ -1705,8 +1713,12 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       if (!twinId || !isApiTwinId(twinId)) {
         throw new Error("Select a live Enterprise Twin first");
       }
+      if (!twinEntities.length) {
+        toast.error("Publish the Enterprise Twin first — no entities available for resources");
+        throw new Error("No entities available");
+      }
       const created = mapResource(
-        await aecCreateResource(twinId, draftToCreateResourcePayload(input)),
+        await aecCreateResource(twinId, draftToCreateResourcePayload(input, twinEntities), {}, twinEntities),
         twinEntities
       );
       patchWorkspace((prev) => ({
@@ -1728,7 +1740,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       if (!twinId || !isApiTwinId(twinId)) {
         throw new Error("Select a live Enterprise Twin first");
       }
-      const updated = mapResource(await aecUpdateResource(twinId, resourceId, body), twinEntities);
+      const updated = mapResource(await aecUpdateResource(twinId, resourceId, body, {}, twinEntities), twinEntities);
       patchWorkspace((prev) => ({
         ...prev,
         resources: prev.resources.map((r) =>

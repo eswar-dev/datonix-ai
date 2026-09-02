@@ -72,7 +72,7 @@ export default function ProjectPortfolio() {
         title="Project Portfolio"
         subtitle={`${projects.length} project${projects.length === 1 ? "" : "s"} across ${entityCount} entit${entityCount === 1 ? "y" : "ies"}.`}
         breadcrumb={[
-          { label: "Pipeline", href: "/customer-inquiries" },
+          { label: "Project Pipeline", href: "/customer-inquiries" },
           { label: "Project Portfolio" },
         ]}
         actions={

@@ -230,19 +230,25 @@ export function mapRecommendations(raw: unknown): StaffRecommendation[] {
   return out;
 }
 
-export function draftToCreatePayload(draft: ProjectDraft): Record<string, unknown> {
-  return normalizeEntityRequestBody({
-    name: draft.name,
-    client: draft.client,
-    entity: draft.entity,
-    type: draft.type,
-    billingType: draft.billingType,
-    currency: draft.currency,
-    budget: draft.budget,
-    startDate: draft.startDate || null,
-    endDate: draft.endDate || null,
-    ...(draft.projectManagerId ? { projectManagerId: draft.projectManagerId } : {}),
-  });
+export function draftToCreatePayload(
+  draft: ProjectDraft,
+  twinEntities: TwinEntity[] = []
+): Record<string, unknown> {
+  return normalizeEntityRequestBody(
+    {
+      name: draft.name,
+      client: draft.client,
+      entity: draft.entity,
+      type: draft.type,
+      billingType: draft.billingType,
+      currency: draft.currency,
+      budget: draft.budget,
+      startDate: draft.startDate || null,
+      endDate: draft.endDate || null,
+      ...(draft.projectManagerId ? { projectManagerId: draft.projectManagerId } : {}),
+    },
+    twinEntities
+  );
 }
 
 export interface ProfitabilityView {

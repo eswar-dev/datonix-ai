@@ -212,26 +212,32 @@ export function mapRateCards(raw: unknown, twinEntities: TwinEntity[] = []): Rat
   });
 }
 
-export function draftToCreateResourcePayload(input: {
-  name: string;
-  type: ResourceType;
-  entity: string;
-  designation: string;
-  department: string;
-  costRate?: number;
-  billRate?: number;
-  contractExpiry?: string;
-}): Record<string, unknown> {
-  return normalizeEntityRequestBody({
-    name: input.name,
-    type: input.type,
-    entity: input.entity,
-    designation: input.designation,
-    department: input.department,
-    ...(input.costRate != null ? { costRate: input.costRate } : {}),
-    ...(input.billRate != null ? { billRate: input.billRate } : {}),
-    ...(input.contractExpiry ? { contractExpiry: input.contractExpiry } : {}),
-  });
+export function draftToCreateResourcePayload(
+  input: {
+    name: string;
+    type: ResourceType;
+    entity: string;
+    designation: string;
+    department: string;
+    costRate?: number;
+    billRate?: number;
+    contractExpiry?: string;
+  },
+  twinEntities: TwinEntity[] = []
+): Record<string, unknown> {
+  return normalizeEntityRequestBody(
+    {
+      name: input.name,
+      type: input.type,
+      entity: input.entity,
+      designation: input.designation,
+      department: input.department,
+      ...(input.costRate != null ? { costRate: input.costRate } : {}),
+      ...(input.billRate != null ? { billRate: input.billRate } : {}),
+      ...(input.contractExpiry ? { contractExpiry: input.contractExpiry } : {}),
+    },
+    twinEntities
+  );
 }
 
 export interface SkillOverviewCategory {

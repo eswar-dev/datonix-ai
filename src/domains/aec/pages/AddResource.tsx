@@ -15,6 +15,7 @@ import {
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { ResourceTypeSelector } from "@/domains/aec/components/ResourceTypeSelector";
 import { PipelineErrorBanner } from "@/domains/aec/components/PipelineUi";
+import { TwinEntitiesBanner } from "@/domains/aec/components/TwinEntitiesBanner";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
 import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 import type { ResourceType } from "@/domains/aec/data/orgChart";
@@ -90,6 +91,7 @@ export default function AddResource() {
       />
 
       <PipelineErrorBanner message={resourcesError ?? ""} />
+      <TwinEntitiesBanner entities={activeTwin.entities} twinLabel={activeTwin.name} />
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
         <div>

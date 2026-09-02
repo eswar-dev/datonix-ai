@@ -47,9 +47,12 @@ export default function AiAgentGovernance() {
   return (
     <div className="space-y-6">
       <AecPageHeader
-        title="AI Agent Governance"
+        title="Decision Intelligence"
         subtitle={`${agents.length} agents from Enterprise Twin · audit trail from reports/agent-audit`}
-        breadcrumb={[{ label: "AI Agent Governance" }]}
+        breadcrumb={[
+          { label: "Decision Intelligence", href: "/ai-agents" },
+          { label: "Agent Governance" },
+        ]}
       />
 
       {twinDetailLoading && <PipelineLoadingBanner label="Loading twin agents…" />}
