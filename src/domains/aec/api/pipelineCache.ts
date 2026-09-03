@@ -90,3 +90,12 @@ export function cacheProfitability(twinId: string, projectId: string, data: unkn
     profitabilityByProjectId: { ...prev.profitabilityByProjectId, [projectId]: data },
   });
 }
+
+export function clearPipelineCache(twinId: string) {
+  if (typeof localStorage === "undefined" || !twinId) return;
+  try {
+    localStorage.removeItem(key(twinId));
+  } catch {
+    /* ignore */
+  }
+}

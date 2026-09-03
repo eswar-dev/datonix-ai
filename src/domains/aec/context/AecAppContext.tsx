@@ -14,6 +14,7 @@ import {
   adminTenants,
   twinGenerate,
   twinGet,
+  twinDelete,
   twinLayers,
   twinList,
   twinSummary,
@@ -113,6 +114,7 @@ import {
   isApiTwinId,
   loadPipelineCache,
   savePipelineCache,
+  clearPipelineCache,
 } from "@/domains/aec/api/pipelineCache";
 import {
   draftToCreatePayload,
@@ -307,6 +309,7 @@ interface AecAppContextValue {
   twinDetailLoading: boolean;
   twinError: string | null;
   generateTwin: (prompt?: string) => Promise<void>;
+  deleteTwin: (twinId: string) => Promise<boolean>;
   switchTwin: (twinId: string) => void;
   refreshTwins: () => Promise<void>;
   loadTwinDetail: (id: string) => Promise<EnterpriseTwinSummary | null>;
@@ -713,6 +716,36 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       }
     },
     [resolveTenantId, twins.length, loadTwinDetail]
+  );
+
+  const deleteTwin = useCallback(
+    async (twinId: string) => {
+      if (!isApiTwinId(twinId)) {
+        toast.error("This twin cannot be deleted");
+        return false;
+      }
+      try {
+        await twinDelete(twinId);
+        clearPipelineCache(twinId);
+        setWorkspaces((all) => {
+          const next = { ...all };
+          delete next[twinId];
+          return next;
+        });
+        if (activeTwinId === twinId) {
+          setTwinDetail(null);
+        }
+        await refreshTwins();
+        toast.success("Enterprise Twin deleted");
+        return true;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to delete twin";
+        setTwinError(message);
+        toast.error(message);
+        return false;
+      }
+    },
+    [activeTwinId, refreshTwins]
   );
 
   const switchTwin = useCallback(
@@ -2287,6 +2320,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       twinDetailLoading,
       twinError,
       generateTwin,
+      deleteTwin,
       switchTwin,
       refreshTwins,
       loadTwinDetail,
@@ -2431,6 +2465,7 @@ export function AecAppProvider({ children }: { children: ReactNode }) {
       twinDetailLoading,
       twinError,
       generateTwin,
+      deleteTwin,
       switchTwin,
       refreshTwins,
       loadTwinDetail,
@@ -2581,6 +2616,7 @@ export function useAecTwin() {
     twinDetailLoading: app.twinDetailLoading,
     twinError: app.twinError,
     generateTwin: app.generateTwin,
+    deleteTwin: app.deleteTwin,
     switchTwin: app.switchTwin,
     refreshTwins: app.refreshTwins,
     loadTwinDetail: app.loadTwinDetail,

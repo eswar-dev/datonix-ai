@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { GitBranchPlus, Loader2, Plus } from "lucide-react";
+import { GitBranchPlus, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/common/components/ui/alert-dialog";
 import { Button } from "@/common/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/ui/card";
 import {
@@ -12,12 +22,24 @@ import {
 import { Textarea } from "@/common/components/ui/textarea";
 import { AecPageHeader } from "@/domains/aec/components/AecPageHeader";
 import { StatusBadge } from "@/domains/aec/components/StatusBadge";
+import { isApiTwinId } from "@/domains/aec/api/pipelineCache";
 import { DEFAULT_TWIN_PROMPT, useAecTwin } from "@/domains/aec/context/AecTwinContext";
+import type { EnterpriseTwinSummary } from "@/domains/aec/api/twinMappers";
 
 export default function MultiTwinManager() {
-  const { activeTwinId, twins, twinsLoading, switchTwin, generateTwin, isGenerating } = useAecTwin();
+  const {
+    activeTwinId,
+    twins,
+    twinsLoading,
+    switchTwin,
+    generateTwin,
+    deleteTwin,
+    isGenerating,
+  } = useAecTwin();
   const [createOpen, setCreateOpen] = useState(false);
   const [newPrompt, setNewPrompt] = useState("");
+  const [twinToDelete, setTwinToDelete] = useState<EnterpriseTwinSummary | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleCreate = async () => {
     const prompt = newPrompt.trim();
@@ -25,6 +47,14 @@ export default function MultiTwinManager() {
     setCreateOpen(false);
     await generateTwin(prompt);
     setNewPrompt("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!twinToDelete) return;
+    setDeletingId(twinToDelete.id);
+    const ok = await deleteTwin(twinToDelete.id);
+    setDeletingId(null);
+    if (ok) setTwinToDelete(null);
   };
 
   return (
@@ -54,6 +84,9 @@ export default function MultiTwinManager() {
       <div className="grid gap-4 md:grid-cols-2">
         {twins.map((twin) => {
           const isActive = twin.id === activeTwinId;
+          const canDelete = isApiTwinId(twin.id);
+          const isDeleting = deletingId === twin.id;
+
           return (
             <Card
               key={twin.id}
@@ -61,11 +94,30 @@ export default function MultiTwinManager() {
             >
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <GitBranchPlus className="h-5 w-5 text-accent" />
-                    <CardTitle className="text-base">{twin.name}</CardTitle>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <GitBranchPlus className="h-5 w-5 shrink-0 text-accent" />
+                    <CardTitle className="truncate text-base">{twin.name}</CardTitle>
                   </div>
-                  <StatusBadge status={isActive ? "Live" : twin.status} />
+                  <div className="flex shrink-0 items-center gap-1">
+                    <StatusBadge status={isActive ? "Live" : twin.status} />
+                    {canDelete && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        disabled={isDeleting || isGenerating}
+                        onClick={() => setTwinToDelete(twin)}
+                        aria-label={`Delete ${twin.name}`}
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm text-muted-foreground">{twin.description}</p>
               </CardHeader>
@@ -139,6 +191,36 @@ export default function MultiTwinManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={Boolean(twinToDelete)} onOpenChange={(open) => !open && setTwinToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Enterprise Twin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {twinToDelete ? (
+                <>
+                  This will permanently delete <strong>{twinToDelete.name}</strong> and all
+                  published organizations, compliance rules, and twin-scoped data linked to it.
+                  This action cannot be undone.
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(deletingId)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={Boolean(deletingId)}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleConfirmDelete();
+              }}
+            >
+              {deletingId ? "Deleting…" : "Delete Twin"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

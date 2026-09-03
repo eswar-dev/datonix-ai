@@ -526,7 +526,7 @@ export async function twinGet(twinId: string, init: ApiInit = {}) {
 }
 
 export async function twinDelete(twinId: string, init: ApiInit = {}) {
-  return apiJson<unknown>(`/api/twin/${twinId}`, { ...init, method: "DELETE" });
+  return apiJson<unknown>(`/api/v1/aec/twins/${twinId}`, { ...init, method: "DELETE" });
 }
 
 export async function twinRegenerate(
