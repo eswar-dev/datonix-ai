@@ -6,6 +6,7 @@ import { ViewModeProvider } from "@/common/contexts/ViewModeContext";
 import { useDomain } from "@/common/contexts/DomainContext";
 import { AecAppProvider } from "@/domains/aec/context/AecAppContext";
 import { AecLayout } from "@/domains/aec/components/layout/AecLayout";
+import { ManufacturingSiteProvider } from "@/domains/manufacturing/context/ManufacturingSiteContext";
 
 function LegacyLayoutInner() {
   const { collapsed } = useSidebarState();
@@ -33,6 +34,14 @@ function LayoutInner() {
       <AecAppProvider>
         <AecLayout />
       </AecAppProvider>
+    );
+  }
+
+  if (domain.id === "manufacturing") {
+    return (
+      <ManufacturingSiteProvider>
+        <AecLayout />
+      </ManufacturingSiteProvider>
     );
   }
 

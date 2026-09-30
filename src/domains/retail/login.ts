@@ -10,9 +10,4 @@ export const retailLoginConfig: DomainLoginConfig = {
   heroAlt: "Retail operations leader with store analytics dashboards",
   highlights: ["Shrink & loss prevention", "Inventory & dead stock", "Regional store performance"],
   theme: DATONIX_LOGIN_THEME,
-  demoAccounts: [
-    { label: "Head of Retail Ops", email: "james@urbanretail.com", password: "datonix2026" },
-    { label: "Store Manager", email: "sophie@urbanretail.com", password: "datonix2026" },
-    { label: "Regional Director", email: "linda@urbanretail.com", password: "datonix2026" },
-  ],
 };

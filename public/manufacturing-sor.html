@@ -1,0 +1,1912 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══ SHELL VARS (AEC-exact) ══ */
+:root{--shell-topbar:#152030;--shell-sidebar:#1a2a3a;--shell-border:rgba(255,255,255,.06);--shell-brand:#0099ff;--shell-brand-muted:#89d8f8;--shell-nav-text:#8aaec8;--shell-nav-label:#5a7a95;--shell-nav-active:#2a4a6a;--shell-nav-hover:rgba(255,255,255,.05);--shell-text:#e8eaf0;--shell-muted:#7a9ab5;--shell-input-bg:#141929;--shell-input-border:#1e2840;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--sw:220px;--hh:52px;--teal:#00C4A7;--amber:#F5A623;}
+/* ══ PAGE CONTENT VARS (AEC light) ══ */
+.mfg-theme{--bg:#f1f5f9;--card:#fff;--card2:#f8fafc;--border:#e2e8f0;--accent:#0099ff;--teal:#00a88f;--amber:#d97706;--blue:#2563eb;--purple:#7c3aed;--text:#1e293b;--muted:#64748b;--dim:#94a3b8;--success:#16a34a;--warning:#d97706;--danger:#dc2626;background:var(--bg);color:var(--text);}
+/* ══ BASE ══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--shell-sidebar);color:var(--shell-text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* ══ TOP BAR ══ */
+.top-bar{height:var(--hh);background:var(--shell-topbar);border-bottom:1px solid var(--shell-border);display:flex;align-items:center;padding:0 16px 0 0;gap:10px;flex-shrink:0;z-index:100}
+.logo-area{width:var(--sw);display:flex;align-items:center;gap:9px;padding:0 14px;border-right:1px solid var(--shell-border);height:100%;flex-shrink:0}
+.logo-mark{width:27px;height:27px;background:linear-gradient(135deg,var(--shell-brand),var(--shell-brand-muted));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{font-size:14px;font-weight:700;letter-spacing:-.3px;color:var(--shell-text)}.logo-text span{color:var(--shell-brand)}
+.logo-sub{font-size:8.5px;color:var(--shell-muted);letter-spacing:1.5px;text-transform:uppercase}
+.search-bar{flex:1;display:flex;align-items:center;gap:8px;background:var(--shell-input-bg);border:1px solid var(--shell-input-border);border-radius:6px;padding:0 12px;height:32px;max-width:420px}
+.search-bar input{background:none;border:none;outline:none;color:var(--shell-text);font-size:12.5px;font-family:var(--font);flex:1}
+.search-bar input::placeholder{color:var(--shell-muted)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.btn-icon{width:30px;height:30px;background:var(--shell-input-bg);border:1px solid var(--shell-input-border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--shell-muted);font-size:13px;position:relative;transition:border-color .2s}
+.btn-icon:hover{border-color:var(--shell-brand);color:var(--shell-text)}
+.badge{position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--shell-brand);border-radius:50%;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.avatar{width:29px;height:29px;background:linear-gradient(135deg,var(--shell-brand),var(--shell-brand-muted));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;color:#fff}
+.user-name{font-size:11.5px;font-weight:600;color:var(--shell-text)}.user-role{font-size:10px;color:var(--shell-muted)}
+.sor-badge{display:flex;align-items:center;gap:4px;padding:3px 7px;background:rgba(0,153,255,.12);border:1px solid rgba(0,153,255,.25);border-radius:4px;font-size:9px;font-weight:700;color:var(--shell-brand-muted);letter-spacing:.5px}
+.twin-switch{display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(0,153,255,.08);border:1px solid rgba(0,153,255,.2);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--shell-text)}
+.twin-switch .t-dot{width:6px;height:6px;border-radius:50%;background:var(--shell-brand);animation:pulse 2s infinite}
+.live-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(40,199,111,.1);border:1px solid rgba(40,199,111,.2);color:#28C76F}
+.live-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:#28C76F;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ══ LAYOUT ══ */
+.layout{display:flex;flex:1;overflow:hidden}
+/* ══ SIDEBAR ══ */
+.sidebar{width:var(--sw);background:var(--shell-sidebar);border-right:1px solid var(--shell-border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;transition:width .2s}
+.sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.sidebar.collapsed{width:52px}
+.nav-section{padding:10px 0 2px}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--shell-nav-label);padding:0 14px 5px;white-space:nowrap;overflow:hidden}
+.sidebar.collapsed .nav-label{display:none}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;position:relative}
+.nav-item:hover{background:var(--shell-nav-hover)}
+.nav-item.active{background:var(--shell-nav-active);border-left-color:var(--shell-brand)}
+.nav-item.active .nav-icon{color:var(--shell-brand)}
+.nav-icon{width:15px;height:15px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--shell-nav-label);flex-shrink:0}
+.nav-text{font-size:11.5px;font-weight:500;color:var(--shell-nav-text);white-space:nowrap;overflow:hidden}
+.nav-item.active .nav-text{color:var(--shell-text);font-weight:600}
+.sidebar.collapsed .nav-text{display:none}
+.nav-chip{margin-left:auto;padding:1px 5px;border-radius:10px;font-size:8.5px;font-weight:700}
+.sidebar.collapsed .nav-chip{display:none}
+.chip-red,.chip-brand{background:var(--shell-brand);color:#fff}
+.chip-teal{background:var(--teal);color:#0a1a2a}.chip-amber{background:var(--amber);color:#0a1a2a}.chip-dim{background:rgba(255,255,255,.12);color:var(--shell-muted)}
+.nav-sub .nav-item{padding:4px 14px 4px 28px;font-size:11px}
+.sidebar.collapsed .nav-sub{display:none}
+.sidebar-bottom{margin-top:auto;padding:10px 12px;border-top:1px solid var(--shell-border)}
+.sidebar.collapsed .entity-switcher{display:none}
+.entity-switcher{background:rgba(0,153,255,.06);border:1px solid rgba(0,153,255,.18);border-radius:7px;padding:7px 9px;cursor:pointer}
+.entity-switcher .label{font-size:8.5px;color:var(--shell-brand);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.entity-switcher .entity-name{font-size:11px;font-weight:600;color:var(--shell-text)}
+.entity-switcher .entity-sub{font-size:9px;color:var(--shell-muted)}
+.twin-dot{width:6px;height:6px;border-radius:50%;background:var(--shell-brand);box-shadow:0 0 6px var(--shell-brand);animation:pulse 2s infinite;display:inline-block;margin-right:4px}
+.sidebar-collapse-btn{display:flex;align-items:center;justify-content:center;height:36px;cursor:pointer;background:none;border:none;border-top:1px solid var(--shell-border);color:var(--shell-muted);font-size:16px;transition:color .15s;width:100%}
+.sidebar-collapse-btn:hover{color:var(--shell-text)}
+/* ══ CONTENT WRAPPER ══ */
+.mfg-theme{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.main::-webkit-scrollbar{width:4px}.main::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+.breadcrumb{display:flex;align-items:center;gap:6px;padding:8px 22px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:#fff;flex-shrink:0;position:sticky;top:0;z-index:10}
+.breadcrumb .sep{color:var(--dim)}.breadcrumb .current{color:var(--text);font-weight:500}
+.content{padding:20px;flex:1}
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#007acc}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-teal{background:var(--teal);color:#fff}.btn-purple{background:var(--purple);color:#fff}
+.btn-sm{padding:4px 9px;font-size:10.5px}.btn-xs{padding:2px 7px;font-size:10px}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.page-title{font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--text)}
+.page-subtitle{font-size:11.5px;color:var(--muted);margin-top:3px}
+/* ══ TAGS ══ */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-teal{background:rgba(0,168,143,.12);color:var(--teal)}.tag-red{background:rgba(0,153,255,.12);color:var(--accent)}.tag-blue{background:rgba(37,99,235,.1);color:var(--blue)}.tag-amber{background:rgba(217,119,6,.12);color:var(--amber)}.tag-success{background:rgba(22,163,74,.1);color:var(--success)}.tag-dim{background:rgba(148,163,184,.18);color:var(--muted)}.tag-purple{background:rgba(124,58,237,.1);color:var(--purple)}.tag-danger{background:rgba(220,38,38,.1);color:var(--danger)}
+/* ══ STAT CARDS ══ */
+.stats-row{display:grid;gap:10px;margin-bottom:16px}
+.s4{grid-template-columns:repeat(4,1fr)}.s3{grid-template-columns:repeat(3,1fr)}.s2{grid-template-columns:repeat(2,1fr)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:13px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc-red::before{background:linear-gradient(90deg,var(--accent),transparent)}.sc-teal::before{background:linear-gradient(90deg,var(--teal),transparent)}.sc-blue::before{background:linear-gradient(90deg,var(--blue),transparent)}.sc-amber::before{background:linear-gradient(90deg,var(--amber),transparent)}.sc-purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.stat-label{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px;margin-bottom:5px}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:var(--text)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.up{color:var(--success)}.down{color:var(--danger)}
+/* ══ GRIDS ══ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}.g31{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px}.g13{display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:16px}.gcol{display:flex;flex-direction:column;gap:14px}.mb16{margin-bottom:16px}
+/* ══ PANELS ══ */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap;background:#fafbfd}
+.panel-title{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--text)}
+.pi{color:var(--accent)}.pi-teal{color:var(--teal)}.pi-amber{color:var(--amber)}.pi-blue{color:var(--blue)}.pi-purple{color:var(--purple)}.panel-body{padding:12px}
+/* ══ TABLES ══ */
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{padding:6px 11px;text-align:left;font-size:9.5px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border);background:#f8fafc}
+tbody tr{border-bottom:1px solid rgba(0,0,0,.04);transition:background .1s}
+tbody tr:hover{background:rgba(0,0,0,.02)}
+tbody tr:last-child{border-bottom:none}
+td{padding:8px 11px;color:var(--text)}
+.tw{overflow-x:auto}.tw::-webkit-scrollbar{height:3px}.tw::-webkit-scrollbar-thumb{background:var(--border)}
+/* ══ PROGRESS ══ */
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}.prog-fill{height:100%;border-radius:2px}.prog-lbl{display:flex;justify-content:space-between;margin-bottom:3px;font-size:10.5px}
+/* ══ FORMS ══ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}.form-full{grid-column:1/-1}.form-group{display:flex;flex-direction:column;gap:4px}.form-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.3px;text-transform:uppercase}
+.form-input,.form-select,.form-textarea{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 9px;color:var(--text);font-size:12px;font-family:var(--font);outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:65px}.form-section{margin-bottom:18px}
+.form-section-title{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:5px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border)}
+/* ══ PAGES & TABS ══ */
+.page{display:none}.page.active{display:block}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.tab{padding:6px 13px;font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--text)}.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.tab-tag{font-family:var(--mono);font-size:9px;color:var(--dim);border:1px solid var(--border);padding:1px 4px;border-radius:3px}
+.tab.active .tab-tag{color:var(--accent);border-color:rgba(0,153,255,.35)}.hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+/* ══ SKILL CELLS ══ */
+.skill-cell{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;cursor:default}
+.sk-5{background:rgba(0,168,143,.85);color:#fff}.sk-4{background:rgba(0,168,143,.55);color:#fff}.sk-3{background:rgba(37,99,235,.5);color:#fff}.sk-2{background:rgba(217,119,6,.45);color:#fff}.sk-1{background:rgba(220,38,38,.4);color:#fff}.sk-0{background:rgba(148,163,184,.2);color:var(--dim)}
+/* ══ MILESTONE / APPROVAL ══ */
+.ms{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05)}.ms:last-child{border-bottom:none}.ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}.ms-done{background:var(--teal)}.ms-active{background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pulse 2s infinite}.ms-pend{background:var(--border);border:1px solid var(--dim)}
+.appr-chain{display:flex;flex-direction:column}.appr-step{display:flex;align-items:center;gap:10px;padding:7px 0}.appr-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}.appr-done{background:var(--teal);color:#fff}.appr-curr{background:var(--accent);color:#fff;animation:pulse 2s infinite}.appr-pend{background:var(--border);color:var(--muted)}.appr-line{width:1px;height:14px;background:var(--border);margin-left:11px}
+/* ══ INSIGHT CARDS ══ */
+.insight-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:11px;transition:border-color .2s;cursor:pointer}.insight-card:hover{border-color:rgba(0,153,255,.3)}
+.ins-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}.dot-on{background:var(--teal);box-shadow:0 0 6px var(--teal);animation:pulse 2s infinite}.dot-warn{background:var(--warning)}.dot-off{background:var(--dim)}
+/* ══ FLOW RAIL ══ */
+.flow-rail{display:flex;overflow-x:auto;gap:0;padding-bottom:8px;margin-bottom:4px}.flow-node{flex:0 0 auto;width:112px;text-align:center;padding:10px 6px 8px;cursor:pointer;border-bottom:3px solid var(--border);position:relative}.flow-node .fn-num{font-family:var(--mono);font-size:9.5px;color:var(--dim)}.flow-node .fn-name{font-weight:600;font-size:10.5px;margin-top:5px;line-height:1.25;color:var(--muted)}.flow-node.active{border-bottom-color:var(--accent)}.flow-node.active .fn-name{color:var(--text)}
+.flow-detail{margin-top:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px}.flow-detail .fd-title{font-weight:700;font-size:13px;margin-bottom:3px;color:var(--text)}.flow-detail .fd-meta{font-family:var(--mono);font-size:10.5px;color:var(--accent);margin-bottom:7px}.flow-detail .fd-desc{font-size:11.5px;color:var(--muted);line-height:1.55}
+/* ══ ASSETS / SITE PILLS ══ */
+.asset-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:13px;display:flex;flex-direction:column;gap:6px}.asset-title{font-weight:700;font-size:12.5px;color:var(--text)}.asset-spec{font-family:var(--mono);font-size:10.5px;color:var(--amber)}.asset-desc{font-size:11px;color:var(--muted);line-height:1.55}
+.site-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted)}.site-pill.active{border-color:var(--accent);color:var(--text);background:rgba(0,153,255,.07)}.site-pill .sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.shared-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:8px;font-size:9.5px;font-weight:700;background:rgba(124,58,237,.1);color:var(--purple);border:1px solid rgba(124,58,237,.25)}
+.disclaimer{background:#fffbeb;border-left:2px solid var(--amber);padding:9px 12px;border-radius:0 6px 6px 0;font-size:11px;color:var(--muted);margin-top:14px}
+/* ══ KPI CARDS ══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:13px}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}.kpi-label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase}.kpi-val{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--text)}.kpi-target{font-size:10px;color:var(--dim);margin-top:2px}
+.kpi-delta{font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:5px}.kpi-delta.up{color:var(--success);background:rgba(22,163,74,.1)}.kpi-delta.down{color:var(--danger);background:rgba(220,38,38,.1)}
+/* ══ AGENT CARDS ══ */
+.agent-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:13px;display:flex;flex-direction:column;gap:8px}.agent-top{display:flex;justify-content:space-between;align-items:flex-start}.agent-name{font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:7px;color:var(--text)}.agent-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}.agent-desc{font-size:11px;color:var(--muted);line-height:1.55}.agent-stat-row{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);padding-top:7px;border-top:1px solid var(--border)}
+/* ══ BAR CHART / SPARKLINE ══ */
+.bc-wrap{display:flex;align-items:flex-end;gap:8px;height:140px;padding:10px 4px}.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}.bc-bar{width:100%;border-radius:4px 4px 0 0;min-height:3px}.bc-lbl{font-size:9px;color:var(--muted);text-align:center}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:24px}.spk{flex:1;border-radius:2px 2px 0 0;opacity:.65}
+/* ══ ROLE CHIPS ══ */
+.role-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}.role-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .15s}.role-chip.active{border-color:var(--accent);color:var(--text);background:rgba(0,153,255,.07)}.role-chip .rc-icon{font-size:13px}
+.scope-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;align-items:center}.scope-row .scope-lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-right:2px}
+/* ══ DECISION TRIGGERS ══ */
+.decision-trigger{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:8px;padding:14px 16px;margin-bottom:12px}.decision-trigger.critical{border-left-color:var(--danger)}.decision-trigger.warning{border-left-color:var(--amber)}.decision-trigger.info{border-left-color:var(--teal)}
+.dt-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;gap:10px}.dt-title{font-size:13.5px;font-weight:700;margin-bottom:3px;color:var(--text)}.dt-category{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.dt-box{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:9px 11px}.dt-box-label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:5px}.dt-box-content{font-size:11.5px;line-height:1.55;color:var(--text)}
+.dt-rec{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.22);border-left:3px solid var(--purple);border-radius:0 6px 6px 0;padding:9px 11px;margin-bottom:8px}.dt-rec-label{font-size:9.5px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.dt-roi{background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.2);border-left:3px solid var(--success);border-radius:0 6px 6px 0;padding:9px 11px;font-size:11.5px;color:var(--text)}
+.dt-fix-compare{display:flex;gap:8px;margin-bottom:8px}.dt-fix-box{flex:1;padding:8px 10px;border-radius:6px;font-size:11px}.dt-fix-trad{background:rgba(217,119,6,.07);border:1px solid rgba(217,119,6,.22)}.dt-fix-ai{background:rgba(0,168,143,.07);border:1px solid rgba(0,168,143,.22)}.dt-fix-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+/* ══ DOMAIN / TWIN CARDS ══ */
+.domain-filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}.domain-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.domain-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px 14px;text-align:center;cursor:pointer;transition:border-color .2s}.domain-card:hover{border-color:var(--accent);background:rgba(0,153,255,.04)}.domain-card .domain-icon{font-size:26px;margin-bottom:9px}.domain-card .domain-name{font-size:12.5px;font-weight:700;margin-bottom:6px;color:var(--text)}.domain-card .domain-kpis{font-size:10.5px;color:var(--muted);line-height:1.5}.domain-card .domain-count{margin-top:8px}
+.twin-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:14px;cursor:pointer;transition:border-color .2s}.twin-card:hover{border-color:var(--accent)}.twin-card.active-twin{border-color:var(--teal);background:rgba(0,168,143,.03)}
+/* ══ INV / MAINT ROWS ══ */
+.inv-row{display:grid;grid-template-columns:2fr 1fr 1.4fr 1fr .9fr;gap:10px;align-items:center;padding:9px 8px;border-bottom:1px solid rgba(0,0,0,.05);font-size:11.5px}.inv-row.head{font-family:var(--mono);font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:#f8fafc}.inv-name{font-weight:600}.inv-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}.inv-bar-fill{height:100%}
+.maint-row{display:grid;grid-template-columns:1.6fr 1fr 1.3fr 1.6fr;gap:10px;align-items:center;padding:9px 8px;border-bottom:1px solid rgba(0,0,0,.05);font-size:11.5px}.maint-row.head{font-family:var(--mono);font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:#f8fafc}
+/* ══ CONNECTOR FLOW ══ */
+.connector-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}.cf-box{padding:5px 9px;border-radius:6px;font-size:11px;font-weight:600;text-align:center;min-width:90px}.cf-source{background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.25);color:var(--blue)}.cf-conn{background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.25);color:var(--purple)}.cf-target{background:rgba(0,168,143,.07);border:1px solid rgba(0,168,143,.25);color:var(--teal)}.cf-arrow{color:var(--dim);font-size:14px;flex-shrink:0}.cf-label{font-size:9.5px;color:var(--muted);margin-top:2px;text-align:center}
+/* ══ ORG / RESOURCE / ENTITY ══ */
+.org-tree{padding:4px 0}.org-node-wrap{margin-bottom:2px}.org-node{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;transition:background .1s;border:1px solid transparent}.org-node:hover{border-color:rgba(0,168,143,.2);background:rgba(0,168,143,.03)}.org-node.on-selected{border-color:var(--teal);background:rgba(0,168,143,.05)}.org-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;background:rgba(0,153,255,.12);color:var(--accent)}.org-name{font-size:12px;font-weight:600;color:var(--text)}.org-role{font-size:10px;color:var(--muted)}.org-children{padding-left:20px;border-left:1px solid var(--border);margin-left:14px;margin-top:2px}.org-expand{margin-left:auto;color:var(--dim);font-size:11px;transition:transform .2s}.org-expand.open{transform:rotate(90deg)}
+.res-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s;cursor:pointer}.res-card:hover{border-color:rgba(0,168,143,.3)}
+.entity-node{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .15s;margin-bottom:4px}.entity-node:hover{border-color:rgba(0,168,143,.25);background:rgba(0,168,143,.04)}.entity-node.root{background:rgba(0,153,255,.05);border-color:rgba(0,153,255,.2)}.entity-node.child{margin-left:22px;border-color:var(--border);background:var(--card2)}.en-icon{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}.en-name{font-size:12px;font-weight:600;color:var(--text)}.en-sub{font-size:9.5px;color:var(--muted)}.en-meta{margin-left:auto;text-align:right}.en-meta .v{font-size:11.5px;font-weight:700;color:var(--text)}.en-meta .l{font-size:9px;color:var(--muted)}
+.fx-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.05)}.fx-row:last-child{border-bottom:none}.fx-flag{font-size:15px;width:22px;text-align:center}.fx-pair{font-size:11.5px;font-weight:600;font-family:var(--mono);flex:1;color:var(--text)}.fx-rate{font-size:12.5px;font-weight:700;font-family:var(--mono);color:var(--text)}
+.wbs-node{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:6px;cursor:pointer;transition:background .1s;border-left:2px solid transparent}.wbs-node:hover{background:rgba(0,0,0,.02)}.wbs-l1{border-left-color:var(--accent);font-weight:600;font-size:12px}.wbs-l2{padding-left:22px;border-left-color:var(--blue);font-size:11.5px}.wbs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* ══ MOBILE ══ */
+.hamburger{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:17px;color:var(--shell-text);cursor:pointer;flex-shrink:0;margin-left:10px}
+.sidebar-backdrop{display:none}
+/* ══ RESPONSIVE ══ */
+@media(max-width:1100px){.domain-grid{grid-template-columns:repeat(2,1fr)}.s4,.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g31,.g13{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.dt-grid,.dt-fix-compare{grid-template-columns:1fr}}
+@media(max-width:880px){.hamburger{display:flex}.logo-area{width:auto;border-right:none;padding:0 4px 0 0}.logo-sub,.twin-switch,.search-bar{display:none}.top-bar{padding-right:8px;gap:6px}.top-right{gap:6px}.user-name,.user-role{display:none}body{overflow:visible;height:auto;min-height:100vh}.layout{overflow:visible}.sidebar{position:fixed;top:var(--hh);left:-260px;bottom:0;height:auto;z-index:300;box-shadow:2px 0 30px rgba(0,0,0,.25);transition:left .22s ease;width:250px}.sidebar.open{left:0}.sidebar-backdrop.open{display:block;position:fixed;inset:0;top:var(--hh);background:rgba(0,0,0,.45);z-index:250}.mfg-theme{overflow-y:visible;width:100%}.main{overflow-y:visible}.content{padding:14px}}
+@media(max-width:640px){.s4,.kpi-grid,.g3,.g2,.g31,.g13,.dt-grid{grid-template-columns:1fr}.dt-fix-compare{flex-direction:column}}
+@media(max-width:480px){.sor-badge{display:none}.kpi-val{font-size:19px}.page-title{font-size:19px}.btn{padding:6px 10px;font-size:11px}}
+</style>
+</head>
+<body>
+<header class="top-bar">
+  <div class="hamburger" onclick="toggleSidebar()">☰</div>
+  <div class="logo-area">
+    <div class="logo-mark">D</div>
+    <div>
+      <div class="logo-text">Dato<span>nix</span></div>
+      <div class="logo-sub">Manufacturing Intelligence</div>
+    </div>
+  </div>
+  <div class="twin-switch" onclick="nav(null,'twins')">
+    <div class="t-dot"></div>
+    <span id="activeTwinLabel">Riverside Fabrication Group</span>
+    <span style="color:var(--dim);font-size:10px">▼</span>
+  </div>
+  <div class="search-bar">
+    <span style="color:var(--dim)">⌕</span>
+    <input type="text" placeholder="Search sites, work orders, resources…" />
+    <span style="color:var(--dim);font-size:9.5px;font-family:var(--mono)">⌘K</span>
+  </div>
+  <div class="top-right">
+    <div class="sor-badge">SOR + INTELLIGENCE</div>
+    <span class="live-pill">Live</span>
+    <div class="btn-icon">🔔<span class="badge">6</span></div>
+    <div class="btn-icon" onclick="nav(null,'admin')">⚙</div>
+    <div class="avatar">JW</div>
+    <div><div class="user-name">James Whitfield</div><div class="user-role">Group Operations Director</div></div>
+  </div>
+</header>
+
+<div class="layout">
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<nav class="sidebar">
+  <div class="nav-section">
+    <div class="nav-label">Intelligence</div>
+    <div class="nav-item active" onclick="nav(this,'twin')">
+      <div class="nav-icon">⬡</div><div class="nav-text">Enterprise Twin</div><div class="nav-chip chip-teal">Live</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'twins')">
+      <div class="nav-icon">⬡</div><div class="nav-text">Multi-Twin Manager</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'sitetwin')">
+      <div class="nav-icon">◧</div><div class="nav-text">Site Digital Twin</div><div class="nav-chip chip-red">3 sites</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'connectors')">
+      <div class="nav-icon">⇄</div><div class="nav-text">Connector Mapping</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Decision Intelligence</div>
+    <div class="nav-item" onclick="nav(this,'decisions')">
+      <div class="nav-icon">◆</div><div class="nav-text">Role-Based Decisions</div><div class="nav-chip chip-teal">8 roles</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'failure-modes')">
+      <div class="nav-icon">⚠</div><div class="nav-text">Failure Modes Library</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'supplychain')">
+      <div class="nav-icon">📦</div><div class="nav-text">Supply Chain</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'siteops')">
+      <div class="nav-icon">⚙</div><div class="nav-text">Site Operations</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Organisation</div>
+    <div class="nav-item" onclick="nav(this,'org')">
+      <div class="nav-icon">⛙</div><div class="nav-text">Org Hierarchy</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'inquiries')">
+      <div class="nav-icon">✉</div><div class="nav-text">Customer Inquiries</div><div class="nav-chip chip-red">4</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <div class="nav-item" onclick="nav(this,'worklifecycle')">
+      <div class="nav-icon">◫</div><div class="nav-text">Work Order Lifecycle</div>
+    </div>
+    <div class="nav-sub">
+      <div class="nav-item" onclick="nav(this,'create-wo')"><div class="nav-icon">+</div><div class="nav-text">Create Work Order</div></div>
+      <div class="nav-item" onclick="nav(this,'routing')"><div class="nav-icon">⊞</div><div class="nav-text">Routing Builder</div></div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">People & Resources</div>
+    <div class="nav-item" onclick="nav(this,'resources')">
+      <div class="nav-icon">◉</div><div class="nav-text">Resource Management</div>
+    </div>
+    <div class="nav-sub">
+      <div class="nav-item" onclick="nav(this,'add-resource')"><div class="nav-icon">+</div><div class="nav-text">Add Resource</div></div>
+      <div class="nav-item" onclick="nav(this,'skill-matrix')"><div class="nav-icon">◈</div><div class="nav-text">Skill Matrix</div></div>
+      <div class="nav-item" onclick="nav(this,'shared-alloc')"><div class="nav-icon">⇄</div><div class="nav-text">Shared Allocation</div></div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'timesheets')">
+      <div class="nav-icon">◷</div><div class="nav-text">Shift & Timesheets</div><div class="nav-chip chip-amber">5</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Finance</div>
+    <div class="nav-item" onclick="nav(this,'billing')">
+      <div class="nav-icon">⊞</div><div class="nav-text">Billing & Accounting</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'fx')">
+      <div class="nav-icon">₿</div><div class="nav-text">Currency Intelligence</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Intelligence Hub</div>
+    <div class="nav-item" onclick="nav(this,'exec')">
+      <div class="nav-icon">▦</div><div class="nav-text">Executive Dashboard</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'agents')">
+      <div class="nav-icon">✦</div><div class="nav-text">AI Agent Governance</div><div class="nav-chip chip-amber">3</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'reports')">
+      <div class="nav-icon">▤</div><div class="nav-text">Reports</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item" onclick="nav(this,'admin')">
+      <div class="nav-icon">◎</div><div class="nav-text">Administration</div>
+    </div>
+    <div class="nav-item" onclick="nav(this,'compliance')">
+      <div class="nav-icon">⚖</div><div class="nav-text">Compliance Layer</div>
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="entity-switcher">
+      <div class="label"><span class="twin-dot"></span>Active Site</div>
+      <div class="entity-name">Birmingham (UK)</div>
+      <div class="entity-sub">Riverside Fabrication Group · GBP</div>
+    </div>
+  </div>
+  <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" id="collapseBtn">‹</button>
+</nav>
+<div class="mfg-theme">
+<main class="main" id="mainContent">
+<!-- ═══════ ENTERPRISE TWIN ═══════ -->
+<div class="page active" id="page-twin">
+  <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span class="current">Enterprise Twin</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Enterprise Twin</div><div class="page-subtitle">Generate, inspect and manage your AI-powered multi-site manufacturing twin</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="nav(null,'connectors')">⇄ Connector Mapping</button>
+        <button class="btn btn-primary" onclick="nav(null,'twin-summary')">⬡ View Twin Summary</button>
+      </div>
+    </div>
+
+    <div class="prompt-box" style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal);margin-bottom:7px;display:flex;align-items:center;gap:5px">⬡ Enterprise Twin Generator</div>
+      <textarea class="form-textarea" style="min-height:60px">Riverside Fabrication Group is a multi-site discrete manufacturing group with 3 plants: Birmingham (UK, 34 staff, GBP, precision machining & assembly), Katowice (Poland, 22 staff, EUR, welded structures & sub-assembly), and Coventry (UK, 14 staff, GBP, finishing & logistics hub). Maintenance technicians and select suppliers are shared across sites. Group reporting currency is GBP.</textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;gap:10px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--muted)">Describe your site network — Datonix generates a per-site digital twin, org hierarchy, KPI framework, skill matrix and compliance rules automatically, then co-links shared resources and suppliers across sites.</span>
+        <button class="btn btn-teal" onclick="nav(null,'twin-summary')">⬡ Generate Twin →</button>
+      </div>
+    </div>
+
+    <div class="g31">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi">⬡</span> Multi-Site Structure</div><span class="tag tag-teal">Live</span></div>
+        <div class="panel-body">
+          <div class="entity-node root"><div class="en-icon" style="background:rgba(0,153,255,.15)">🏛</div><div><div class="en-name">Riverside Fabrication Group</div><div class="en-sub">Parent Holding · UK · GBP Reporting</div></div><div class="en-meta"><div class="v">70 staff</div><div class="l">Total</div></div></div>
+          <div style="padding-left:14px;border-left:1px solid var(--border);margin-left:14px">
+            <div class="entity-node child"><div class="en-icon" style="background:rgba(61,142,240,.12)">🏭</div><div><div class="en-name">Birmingham Site</div><div class="en-sub">Precision Machining & Assembly · UK · GBP</div></div><div class="en-meta"><div class="v">34</div><div class="l" style="color:var(--teal)">Live</div></div></div>
+            <div class="entity-node child"><div class="en-icon" style="background:rgba(0,196,167,.1)">⚙</div><div><div class="en-name">Katowice Site</div><div class="en-sub">Welded Structures & Sub-Assembly · Poland (EU) · EUR</div></div><div class="en-meta"><div class="v">22</div><div class="l" style="color:var(--teal)">Active</div></div></div>
+            <div class="entity-node child"><div class="en-icon" style="background:rgba(245,166,35,.1)">🚚</div><div><div class="en-name">Coventry Site</div><div class="en-sub">Finishing, Assembly & Logistics Hub · UK · GBP</div></div><div class="en-meta"><div class="v">14</div><div class="l">Configuring</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="gcol">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⊕</span> Shared Governance</div></div>
+          <div class="panel-body" style="font-size:11.5px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span>Shared Maintenance Technicians</span><span class="tag tag-success">Enabled</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span>Shared Supplier Base</span><span class="tag tag-success">Enabled</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span>Shared Skill Matrix</span><span class="tag tag-success">Enabled</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0"><span>Parent P&L Roll-up</span><span class="tag tag-teal">GBP</span></div>
+          </div>
+        </div>
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-amber pi">⚖</span> Compliance</div></div>
+          <div class="panel-body" style="font-size:11.5px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">UK VAT 20%</span><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Poland VAT 23%</span><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">ISO 9001 (Group)</span><span class="tag tag-teal">Certified</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TWIN SUMMARY ═══════ -->
+<div class="page" id="page-twin-summary">
+  <div class="breadcrumb"><span>Enterprise Twin</span><span class="sep">›</span><span class="current">Twin Summary — Riverside Fabrication Group</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">⬡ Twin Summary — Riverside Fabrication Group</div>
+        <div class="page-subtitle">AI-generated organisational interpretation · 70 staff · 3 sites · 2 jurisdictions</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="live-pill">Generated</span>
+        <button class="btn btn-outline" onclick="nav(null,'twin')">← Back</button>
+        <button class="btn btn-primary">Export Twin</button>
+      </div>
+    </div>
+
+    <div class="stats-row s4">
+      <div class="stat-card sc-red"><div class="stat-label">Sites</div><div class="stat-value">3</div><div class="stat-sub">+ 1 parent group</div></div>
+      <div class="stat-card sc-teal"><div class="stat-label">Digital Twin Modules / Site</div><div class="stat-value">10</div></div>
+      <div class="stat-card sc-blue"><div class="stat-label">Source Systems</div><div class="stat-value">5</div></div>
+      <div class="stat-card sc-purple"><div class="stat-label">AI Agents Generated</div><div class="stat-value">6</div></div>
+    </div>
+
+    <div class="g2 mb16">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi">⛙</span> Organisation Structure</div><button class="btn btn-outline btn-sm" onclick="nav(null,'org')">Full View →</button></div>
+        <div class="panel-body">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--muted)">Identified Hierarchy</div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 7px;background:rgba(0,153,255,.06);border-radius:6px;border:1px solid rgba(0,153,255,.15)"><span style="font-size:11px;font-weight:700">👔 Group Ops Director</span><span style="margin-left:auto;font-size:10px;color:var(--muted)">1 person</span></div>
+            <div style="padding-left:16px;border-left:1px solid var(--border);margin-left:12px">
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 7px;background:rgba(61,142,240,.06);border-radius:6px;border:1px solid rgba(61,142,240,.15);margin-bottom:3px"><span style="font-size:11px;font-weight:600">📊 Site Managers</span><span style="margin-left:auto;font-size:10px;color:var(--muted)">3 people</span></div>
+              <div style="padding-left:16px;border-left:1px solid var(--border);margin-left:12px">
+                <div style="display:flex;align-items:center;gap:8px;padding:5px 7px;background:rgba(0,196,167,.06);border-radius:6px;border:1px solid rgba(0,196,167,.15);margin-bottom:3px"><span style="font-size:11px;font-weight:600">🗂 Shift & Production Leads</span><span style="margin-left:auto;font-size:10px;color:var(--muted)">8 people</span></div>
+                <div style="padding-left:16px;border-left:1px solid var(--border);margin-left:12px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 7px;background:rgba(139,92,246,.06);border-radius:6px;border:1px solid rgba(139,92,246,.15)"><span style="font-size:11px;font-weight:600">👷 Operators & Technicians</span><span style="margin-left:auto;font-size:10px;color:var(--muted)">58 people</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-teal pi">◧</span> Site Digital Twin Coverage</div><button class="btn btn-outline btn-sm" onclick="nav(null,'sitetwin')">Open Twins →</button></div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px"><span style="font-weight:600">Birmingham</span><span style="color:var(--muted)">10 / 10 modules</span></div>
+              <div class="prog-bar" style="height:6px"><div class="prog-fill" style="width:100%;background:var(--teal)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px"><span style="font-weight:600">Katowice</span><span style="color:var(--muted)">8 / 10 modules</span></div>
+              <div class="prog-bar" style="height:6px"><div class="prog-fill" style="width:80%;background:var(--amber)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px"><span style="font-weight:600">Coventry</span><span style="color:var(--muted)">6 / 10 modules</span></div>
+              <div class="prog-bar" style="height:6px"><div class="prog-fill" style="width:60%;background:var(--blue)"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10.5px;color:var(--muted)">Modules: Overview, Workforce, Production Line, Machinery, Digital Systems, Inventory, Financials, Supply Chain, Maintenance, Product Lifecycle.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g2 mb16">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⇄</span> Generated Connector Mappings</div><button class="btn btn-outline btn-sm" onclick="nav(null,'connectors')">Full View →</button></div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="connector-flow">
+              <div><div class="cf-box cf-source">E2 MFG</div><div class="cf-label">Birmingham ERP</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-conn">ERP Connector</div><div class="cf-label">Connector</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-target">AR / AP / GL</div><div class="cf-label">Datonix Module</div></div>
+              <span class="tag tag-success" style="margin-left:auto">Live</span>
+            </div>
+            <div class="connector-flow">
+              <div><div class="cf-box cf-source">Ridder iQ</div><div class="cf-label">Katowice ERP</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-conn">ERP Connector</div><div class="cf-label">Connector</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-target">Production & Resources</div><div class="cf-label">Datonix Module</div></div>
+              <span class="tag tag-amber" style="margin-left:auto">Pending</span>
+            </div>
+            <div class="connector-flow">
+              <div><div class="cf-box cf-source">Deacom</div><div class="cf-label">Coventry ERP</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-conn">ERP Connector</div><div class="cf-label">Connector</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-target">Inventory & Logistics</div><div class="cf-label">Datonix Module</div></div>
+              <span class="tag tag-dim" style="margin-left:auto">Not Connected</span>
+            </div>
+            <div class="connector-flow">
+              <div><div class="cf-box cf-source">MES / APS</div><div class="cf-label">All Sites</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-conn">Shop-Floor Connector</div><div class="cf-label">Connector</div></div>
+              <div class="cf-arrow">→</div>
+              <div><div class="cf-box cf-target">Quality / SPC</div><div class="cf-label">Datonix Module</div></div>
+              <span class="tag tag-success" style="margin-left:auto">Live</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-amber pi">▦</span> Generated KPI Framework</div></div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:7px;font-size:11.5px">
+            <div style="padding:7px 9px;background:var(--card2);border-radius:6px;border:1px solid var(--border)">
+              <div style="font-weight:600;margin-bottom:4px">🏭 Operational KPIs</div>
+              <div style="color:var(--muted);font-size:10.5px">OTIF, OEE, Right First Time, Capacity Utilisation</div>
+            </div>
+            <div style="padding:7px 9px;background:var(--card2);border-radius:6px;border:1px solid var(--border)">
+              <div style="font-weight:600;margin-bottom:4px">💰 Financial KPIs</div>
+              <div style="color:var(--muted);font-size:10.5px">Cost of Poor Quality, Revenue, Gross Margin</div>
+            </div>
+            <div style="padding:7px 9px;background:var(--card2);border-radius:6px;border:1px solid var(--border)">
+              <div style="font-weight:600;margin-bottom:4px">👥 People KPIs</div>
+              <div style="color:var(--muted);font-size:10.5px">Utilisation %, Skill Coverage, Overtime Hours</div>
+            </div>
+            <div style="padding:7px 9px;background:var(--card2);border-radius:6px;border:1px solid var(--border)">
+              <div style="font-weight:600;margin-bottom:4px">🤖 Agent KPIs</div>
+              <div style="color:var(--muted);font-size:10.5px">Alerts Raised, Actions Approved, Decision Accuracy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-purple pi">✦</span> Generated AI Agents</div><button class="btn btn-outline btn-sm" onclick="nav(null,'agents')">Manage →</button></div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border)"><div class="ins-dot dot-on"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">Schedule Risk Sentinel</div><div style="font-size:10px;color:var(--muted)">Monitors OTIF slip across all 3 sites</div></div><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border)"><div class="ins-dot dot-on"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">COPQ Erosion Monitor</div><div style="font-size:10px;color:var(--muted)">Detects scrap/rework cost drift</div></div><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border)"><div class="ins-dot dot-on"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">Resource Overload Agent</div><div style="font-size:10px;color:var(--muted)">Flags over-allocated shared technicians</div></div><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border)"><div class="ins-dot dot-on"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">Downtime Prediction Agent</div><div style="font-size:10px;color:var(--muted)">Flags bearing/vibration failure risk pre-breakdown</div></div><span class="tag tag-success">Active</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border);opacity:.5"><div class="ins-dot dot-off"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">FX Risk Monitor</div><div style="font-size:10px;color:var(--muted)">GBP/EUR threshold alerts</div></div><span class="tag tag-dim">Inactive</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--card2);border-radius:7px;border:1px solid var(--border);opacity:.5"><div class="ins-dot dot-off"></div><div style="flex:1"><div style="font-size:11.5px;font-weight:600">Skill Gap Predictor</div><div style="font-size:10px;color:var(--muted)">Hiring forecasting from order pipeline</div></div><span class="tag tag-dim">Inactive</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-teal pi">◈</span> Generated Skill Categories</div><button class="btn btn-outline btn-sm" onclick="nav(null,'skill-matrix')">Full Matrix →</button></div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:8px 10px;background:rgba(0,153,255,.06);border:1px solid rgba(0,153,255,.2);border-radius:7px">
+              <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:5px">Machining & Production (Birmingham)</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px"><span class="tag tag-dim">CNC Setter</span><span class="tag tag-dim">CNC Operator</span><span class="tag tag-dim">Quality Inspector</span><span class="tag tag-dim">Production Planner</span></div>
+            </div>
+            <div style="padding:8px 10px;background:rgba(61,142,240,.06);border:1px solid rgba(61,142,240,.2);border-radius:7px">
+              <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:5px">Welding & Fabrication (Katowice)</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px"><span class="tag tag-dim">Welder (MIG/TIG)</span><span class="tag tag-dim">Fabricator</span><span class="tag tag-dim">NDT Inspector</span></div>
+            </div>
+            <div style="padding:8px 10px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:7px">
+              <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:5px">Finishing & Logistics (Coventry)</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px"><span class="tag tag-dim">Paint Technician</span><span class="tag tag-dim">Warehouse Operative</span><span class="tag tag-dim">Logistics Coordinator</span></div>
+            </div>
+            <div style="padding:8px 10px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:7px">
+              <div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:5px"><span class="shared-badge">⇄ Shared</span> Maintenance (Cross-Site)</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px"><span class="tag tag-dim">Maintenance Technician</span><span class="tag tag-dim">Controls Engineer</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══════ MULTI-TWIN MANAGER ═══════ -->
+<div class="page" id="page-twins">
+  <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span class="current">Multi-Twin Manager</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Multi-Twin Manager</div><div class="page-subtitle">Create, switch and manage Enterprise Twins across accounts</div></div>
+      <button class="btn btn-primary" onclick="nav(null,'twin')">+ Create New Twin</button>
+    </div>
+    <div class="g3">
+      <div class="twin-card active-twin" onclick="switchTwin('Riverside Fabrication Group',this)">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+          <div style="width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#FF6B4A);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px">🏛</div>
+          <div><div style="font-size:13px;font-weight:700">Riverside Fabrication Group</div><div style="font-size:10px;color:var(--muted)">Discrete Mfg · UK · Poland</div></div>
+          <span class="tag tag-teal" style="margin-left:auto">Active</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">3</div><div style="font-size:9.5px;color:var(--muted)">Sites</div></div>
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">70</div><div style="font-size:9.5px;color:var(--muted)">Staff</div></div>
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">19</div><div style="font-size:9.5px;color:var(--muted)">Work Orders</div></div>
+        </div>
+        <button class="btn btn-teal btn-sm" style="width:100%">Currently Active Twin</button>
+      </div>
+      <div class="twin-card" onclick="switchTwin('Nordic Metalworks',this)">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+          <div style="width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px">🌐</div>
+          <div><div style="font-size:13px;font-weight:700">Nordic Metalworks</div><div style="font-size:10px;color:var(--muted)">Sheet Metal · Finland · SEK/EUR</div></div>
+          <span class="tag tag-dim" style="margin-left:auto">Inactive</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">2</div><div style="font-size:9.5px;color:var(--muted)">Sites</div></div>
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">41</div><div style="font-size:9.5px;color:var(--muted)">Staff</div></div>
+          <div style="text-align:center;padding:6px;background:var(--card2);border-radius:6px"><div style="font-size:15px;font-weight:700">12</div><div style="font-size:9.5px;color:var(--muted)">Work Orders</div></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%">Switch to this Twin</button>
+      </div>
+      <div class="twin-card" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer" onclick="nav(null,'twin')">
+        <div style="font-size:28px;margin-bottom:8px;color:var(--dim)">+</div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--muted)">Create New Enterprise Twin</div>
+        <div style="font-size:10.5px;color:var(--dim);margin-top:3px">Generate from prompt</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══════ SITE DIGITAL TWIN ═══════ -->
+<div class="page" id="page-sitetwin">
+  <div class="breadcrumb"><span>Enterprise Twin</span><span class="sep">›</span><span class="current" id="stwBreadcrumb">Site Digital Twin — Birmingham</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Site Digital Twin</div>
+        <div class="page-subtitle">Per-site, 10-module twin built on the Datonix digital-twin methodology — co-linked where sites share resources or suppliers</div>
+      </div>
+      <button class="btn btn-primary" onclick="nav(null,'twin-summary')">⬡ Twin Summary</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="sitePillRow"></div>
+
+    <div class="tabs" id="stwTabs"></div>
+
+    <div id="stwPanels">
+      <!-- 01 OVERVIEW -->
+      <section id="stw-overview" class="page active">
+        <div class="g2">
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">◈</span> Site Profile</div></div>
+            <div class="panel-body" id="stwOverviewProfile" style="font-size:12px;color:var(--muted);line-height:1.7"></div>
+          </div>
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-teal pi">◫</span> Capabilities</div></div>
+            <div class="panel-body"><ul id="stwOverviewCaps" style="list-style:none;font-size:11.5px;display:flex;flex-direction:column;gap:0"></ul></div>
+          </div>
+        </div>
+        <div class="stats-row s4" id="stwOverviewStats"></div>
+      </section>
+
+      <!-- 02 WORKFORCE -->
+      <section id="stw-workforce" class="page">
+        <div class="g2">
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-blue pi">📈</span> Headcount Trend</div></div>
+            <div class="panel-body"><div class="sparkline" id="stwWorkforceSpark" style="height:70px;gap:8px"></div></div>
+          </div>
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-amber pi">◷</span> Shift Pattern</div></div>
+            <div class="panel-body"><div style="display:flex;flex-direction:column;gap:8px" id="stwShifts"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 PRODUCTION LINE -->
+      <section id="stw-production" class="page">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">◫</span> Production Flow</div></div>
+          <div class="panel-body">
+            <div class="flow-rail" id="stwFlowRail"></div>
+            <div class="flow-detail" id="stwFlowDetail"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 MACHINERY -->
+      <section id="stw-machinery" class="page">
+        <div class="g3" id="stwAssetGrid"></div>
+      </section>
+
+      <!-- 05 DIGITAL SYSTEMS -->
+      <section id="stw-systems" class="page">
+        <div class="g2">
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⇄</span> Stack</div></div>
+            <div class="panel-body"><ul id="stwSystemsList" style="list-style:none;font-size:11.5px;display:flex;flex-direction:column;gap:0"></ul></div>
+          </div>
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-purple pi">✦</span> Where The Pain Point Is</div></div>
+            <div class="panel-body" id="stwSystemsPain" style="font-size:12px;color:var(--muted);line-height:1.7"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 INVENTORY -->
+      <section id="stw-inventory" class="page">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">◧</span> Inventory Console</div><span class="tag tag-dim">Illustrative</span></div>
+          <div class="panel-body">
+            <div class="inv-row head"><div>Material Group</div><div>Category</div><div>Stock vs. Safety Level</div><div>Lead Time</div><div>Status</div></div>
+            <div id="stwInvBody"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 FINANCIALS -->
+      <section id="stw-financials" class="page">
+        <div class="g2">
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-teal pi">▤</span> Site Revenue Proxy</div></div>
+            <div class="panel-body" id="stwFinChart"></div>
+          </div>
+          <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-amber pi">◈</span> Group Context</div></div>
+            <div class="panel-body"><ul id="stwFinList" style="list-style:none;font-size:11.5px;display:flex;flex-direction:column;gap:0"></ul></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 08 SUPPLY CHAIN -->
+      <section id="stw-supplychain" class="page">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⇄</span> Supply Chain Flow</div></div>
+          <div class="panel-body">
+            <div class="flow-rail" id="stwScRail"></div>
+            <div class="flow-detail" id="stwScDetail"></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:14px"><div class="panel-header"><div class="panel-title"><span class="pi-purple pi">⇄</span> Suppliers</div></div>
+          <div class="panel-body"><div style="display:flex;flex-direction:column;gap:9px" id="stwSuppliers"></div></div>
+        </div>
+      </section>
+
+      <!-- 09 FACTORY MAINTENANCE -->
+      <section id="stw-maintenance" class="page">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-amber pi">🔧</span> Maintenance Cadence by Production Stage</div></div>
+          <div class="panel-body">
+            <div class="maint-row head"><div>Asset</div><div>Type</div><div>Cadence</div><div>Protects Stage</div></div>
+            <div id="stwMaintBody"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 PRODUCT LIFECYCLE -->
+      <section id="stw-lifecycle" class="page">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">◫</span> Lifecycle Stages</div></div>
+          <div class="panel-body">
+            <div class="flow-rail" id="stwLcRail"></div>
+            <div class="flow-detail" id="stwLcDetail"></div>
+          </div>
+        </div>
+        <div class="g3" style="margin-top:14px" id="stwLcGrid"></div>
+      </section>
+    </div>
+
+    <div class="disclaimer" id="stwDisclaimer">Site twins are built from the Datonix digital-twin methodology: confirmed facts, sourced estimates, and figures clearly marked illustrative — never presented as verified internal data unless confirmed on site.</div>
+  </div>
+</div>
+<!-- ═══════ CONNECTOR MAPPING ═══════ -->
+<div class="page" id="page-connectors">
+  <div class="breadcrumb"><span>Enterprise Twin</span><span class="sep">›</span><span class="current">Connector Mapping</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Connector Mapping</div><div class="page-subtitle">Site ERP/MES/APS/PLM/IoT → Generated connectors → Datonix modules</div></div>
+      <button class="btn btn-primary">+ Add Source</button>
+    </div>
+    <div class="panel mb16">
+      <div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⇄</span> Data Flow Map</div><span class="live-pill">Syncing</span></div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:stretch;gap:0">
+          <div style="width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Source Systems</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.3);background:rgba(61,142,240,.07);font-size:11.5px;font-weight:600;text-align:center">E2 MFG (BHX)</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.3);background:rgba(61,142,240,.07);font-size:11.5px;font-weight:600;text-align:center">Ridder iQ (KTW)</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.2);background:rgba(61,142,240,.04);font-size:11.5px;font-weight:600;text-align:center;opacity:.5">Deacom (COV)</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.3);background:rgba(61,142,240,.07);font-size:11.5px;font-weight:600;text-align:center">MES / APS (All)</div>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);flex-direction:column;gap:4px">
+            <div style="font-size:20px">→</div><div style="font-size:9px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase">Connectors</div>
+          </div>
+          <div style="width:160px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Connector Layer</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.07);font-size:11.5px;font-weight:600;text-align:center">ERP Connector</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.07);font-size:11.5px;font-weight:600;text-align:center">ERP Connector</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.2);background:rgba(139,92,246,.04);font-size:11.5px;font-weight:600;text-align:center;opacity:.5">ERP Connector</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.07);font-size:11.5px;font-weight:600;text-align:center">Shop-Floor Connector</div>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);flex-direction:column;gap:4px">
+            <div style="font-size:20px">→</div><div style="font-size:9px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase">Target Modules</div>
+          </div>
+          <div style="width:160px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Datonix Modules</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(0,196,167,.3);background:rgba(0,196,167,.07);font-size:11.5px;font-weight:600;text-align:center">AR / AP / GL</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(0,196,167,.3);background:rgba(0,196,167,.07);font-size:11.5px;font-weight:600;text-align:center">Production & Resources</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(0,196,167,.2);background:rgba(0,196,167,.04);font-size:11.5px;font-weight:600;text-align:center;opacity:.5">Inventory & Logistics</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(0,196,167,.3);background:rgba(0,196,167,.07);font-size:11.5px;font-weight:600;text-align:center">Quality / SPC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="pi">⊞</span> Mapping Status</div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Source System</th><th>Connector</th><th>Target Module</th><th>Sites</th><th>Data Coverage</th><th>Last Sync</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600">E2 MFG</td><td><span class="tag tag-purple">ERP Connector</span></td><td>AR / AP / GL</td><td>BHX</td><td><div class="prog-bar" style="width:80px;height:5px"><div class="prog-fill" style="width:96%;background:var(--teal)"></div></div></td><td style="font-size:10.5px;color:var(--muted)">2 min ago</td><td><span class="tag tag-success">Live</span></td></tr>
+          <tr><td style="font-weight:600">Ridder iQ</td><td><span class="tag tag-purple">ERP Connector</span></td><td>Production & Resources</td><td>KTW</td><td><div class="prog-bar" style="width:80px;height:5px"><div class="prog-fill" style="width:74%;background:var(--amber)"></div></div></td><td style="font-size:10.5px;color:var(--muted)">1 hr ago</td><td><span class="tag tag-amber">Partial</span></td></tr>
+          <tr><td style="font-weight:600;opacity:.5">Deacom</td><td><span class="tag tag-dim">Not Connected</span></td><td>Inventory & Logistics</td><td>COV</td><td>—</td><td>—</td><td><button class="btn btn-outline btn-xs">Connect</button></td></tr>
+          <tr><td style="font-weight:600">MES / APS</td><td><span class="tag tag-purple">Shop-Floor Connector</span></td><td>Quality / SPC</td><td>All</td><td><div class="prog-bar" style="width:80px;height:5px"><div class="prog-fill" style="width:88%;background:var(--teal)"></div></div></td><td style="font-size:10.5px;color:var(--muted)">1 hr ago</td><td><span class="tag tag-success">Live</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ROLE-BASED DECISIONS ═══════ -->
+<div class="page" id="page-decisions">
+  <div class="breadcrumb"><span>Decision Intelligence</span><span class="sep">›</span><span class="current">Role-Based Decisions</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Role-Based Decision Intelligence</div><div class="page-subtitle">What each leader should know, decide and do next — at group level or drilled into a single site</div></div>
+    </div>
+    <div class="disclaimer">Illustrative demo data. KPIs, triggers and financial impacts shown are for product-demonstration purposes.</div>
+    <div class="tabs" id="decisionsViewTabs" style="margin-top:16px">
+      <div class="tab active" onclick="setDecisionsView(event,'role')">By Role</div>
+      <div class="tab" onclick="setDecisionsView(event,'domain')">By Domain</div>
+    </div>
+
+    <div id="decisionsByRole">
+      <div class="role-chip-row" id="roleChipRow"></div>
+      <div class="scope-row"><span class="scope-lbl">Scope</span><div id="decisionScopeRow" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
+      <div id="decisionRoleIntro" class="page-subtitle" style="margin:-6px 0 14px"></div>
+      <h4 style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Key KPIs</h4>
+      <div class="kpi-grid" id="decisionKpiGrid" style="margin-bottom:20px"></div>
+      <h4 style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Active Decision Triggers</h4>
+      <div id="decisionTriggerList"></div>
+    </div>
+
+    <div id="decisionsByDomain" style="display:none">
+      <div class="page-subtitle" style="margin-bottom:14px">The decision domains Datonix Manufacturing monitors across the group — click a domain to open its full failure-mode library.</div>
+      <div class="domain-grid" id="domainOverviewGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ FAILURE MODES LIBRARY ═══════ -->
+<div class="page" id="page-failure-modes">
+  <div class="breadcrumb"><span>Decision Intelligence</span><span class="sep">›</span><span class="current">Failure Modes Library</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Failure Modes Library</div><div class="page-subtitle">Every known failure mode across the group, organised by decision domain — root cause, traditional fix vs AI-enhanced fix, and quantified impact</div></div>
+    </div>
+    <div class="stats-row s4">
+      <div class="stat-card"><div class="stat-label">Failure Modes Tracked</div><div class="stat-value" id="fmCount">—</div></div>
+      <div class="stat-card"><div class="stat-label">Domains Covered</div><div class="stat-value" id="fmDomainCount">—</div></div>
+      <div class="stat-card"><div class="stat-label">Total Margin at Risk</div><div class="stat-value" style="color:var(--danger)" id="fmMarginAtRisk">£630K</div></div>
+      <div class="stat-card"><div class="stat-label">AI-Enhanced Recovery</div><div class="stat-value" style="color:var(--success)" id="fmAiRecovery">£388K</div></div>
+    </div>
+    <div class="domain-filter-row" id="fmDomainRow"></div>
+    <div id="fmList"></div>
+  </div>
+</div>
+
+<!-- ═══════ SUPPLY CHAIN ═══════ -->
+<div class="page" id="page-supplychain">
+  <div class="breadcrumb"><span>Decision Intelligence</span><span class="sep">›</span><span class="current">Supply Chain</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Supply Chain — Group View</div><div class="page-subtitle">Forecast accuracy, supplier performance and lead-time risk across Birmingham, Katowice and Coventry</div></div>
+    </div>
+    <div class="stats-row s4">
+      <div class="stat-card"><div class="stat-label">Forecast Accuracy (MAPE)</div><div class="stat-value">18%</div><div class="stat-sub">Target 12%</div></div>
+      <div class="stat-card"><div class="stat-label">Group Supplier OTIF</div><div class="stat-value">94%</div><div class="stat-sub">3 suppliers below 90%</div></div>
+      <div class="stat-card"><div class="stat-label">Lead-Time Variance</div><div class="stat-value" style="color:var(--danger)">±5.2d</div><div class="stat-sub">2 suppliers: ±7–9 days</div></div>
+      <div class="stat-card"><div class="stat-label">Inventory Turns (Annual)</div><div class="stat-value">6.2×</div><div class="stat-sub up">▲ Improving</div></div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header"><div class="panel-title"><span class="pi-blue pi">⇄</span> Group Supply Chain Flow</div><span class="tag tag-purple">Cross-site</span></div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap">
+          <div style="width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Tier 2</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.3);background:rgba(61,142,240,.07);font-size:11px;font-weight:600;text-align:center">UK/EU Steel Mills</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(61,142,240,.3);background:rgba(61,142,240,.07);font-size:11px;font-weight:600;text-align:center">Aluminium Smelters</div>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);flex-direction:column;gap:4px;min-width:40px"><div style="font-size:18px">→</div></div>
+          <div style="width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Tier 1</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.07);font-size:11px;font-weight:600;text-align:center">Ashbourne Steel Stockholders</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.07);font-size:11px;font-weight:600;text-align:center">Hutmen Regional Supply</div>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);flex-direction:column;gap:4px;min-width:40px"><div style="font-size:18px">→</div></div>
+          <div style="width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Sites</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(0,196,167,.3);background:rgba(0,196,167,.07);font-size:11px;font-weight:600;text-align:center">Birmingham · Katowice · Coventry</div>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);flex-direction:column;gap:4px;min-width:40px"><div style="font-size:18px">→</div></div>
+          <div style="width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Customers</div>
+            <div style="padding:8px 10px;border-radius:7px;border:1px solid rgba(245,166,35,.3);background:rgba(245,166,35,.07);font-size:11px;font-weight:600;text-align:center">Rail, Hydraulics &amp; EU Industrial OEMs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header"><div class="panel-title"><span class="pi-amber pi">◈</span> Supplier Scorecard — All Sites</div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Supplier</th><th>Category</th><th>Site</th><th>OTIF</th><th>Lead-Time Variance</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600">Ashbourne Steel Stockholders</td><td>Steel sheet &amp; bar</td><td><span class="tag tag-blue">Birmingham</span></td><td style="font-weight:700;color:var(--success)">96%</td><td>±2 days</td><td><span class="tag tag-success">Good</span></td></tr>
+          <tr><td style="font-weight:600">Meridian Coatings Supply</td><td>Powder coat media</td><td><span class="tag tag-blue">Birmingham</span></td><td style="font-weight:700;color:var(--amber)">88%</td><td>±4 days</td><td><span class="tag tag-amber">Watch</span></td></tr>
+          <tr><td style="font-weight:600">Hutmen Regional Supply</td><td>Steel &amp; consumables</td><td><span class="tag tag-amber">Katowice</span></td><td style="font-weight:700;color:var(--danger)">81%</td><td>±8 days</td><td><span class="tag tag-danger">Under Review</span></td></tr>
+          <tr><td style="font-weight:600;opacity:.6">Coventry Onboarding (TBD)</td><td>Steel &amp; consumables</td><td><span class="tag tag-purple">Coventry</span></td><td>—</td><td>—</td><td><span class="tag tag-dim">Onboarding</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <h4 style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Supply Chain Decision Triggers</h4>
+    <div id="scTriggerList"></div>
+  </div>
+</div>
+
+<!-- ═══════ SITE OPERATIONS ═══════ -->
+<div class="page" id="page-siteops">
+  <div class="breadcrumb"><span>Decision Intelligence</span><span class="sep">›</span><span class="current">Site Operations</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Site Operations</div><div class="page-subtitle">Live operational cockpit for a single site — production, quality and maintenance in one view</div></div>
+    </div>
+    <div class="site-pill-row" id="siteOpsPillRow" style="display:flex;gap:8px;margin-bottom:16px"></div>
+    <div class="kpi-grid" id="siteOpsKpiGrid" style="margin-bottom:18px"></div>
+    <div class="g3" style="margin-bottom:4px">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi">⚙</span> Production Line</div></div>
+        <div class="panel-body" id="siteOpsProduction"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-teal pi">✅</span> Quality Snapshot</div></div>
+        <div class="panel-body" id="siteOpsQuality"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-amber pi">🔧</span> Maintenance Snapshot</div></div>
+        <div class="panel-body" id="siteOpsMaintenance"></div>
+      </div>
+    </div>
+    <h4 style="font-size:12.5px;font-weight:700;margin:18px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Site Decision Triggers</h4>
+    <div id="siteOpsTriggerList"></div>
+  </div>
+</div>
+
+<!-- ═══════ ORG HIERARCHY ═══════ -->
+<div class="page" id="page-org">
+  <div class="breadcrumb"><span>Organisation</span><span class="sep">›</span><span class="current">Org Hierarchy</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Organisation Hierarchy</div><div class="page-subtitle">Reporting lines, shift teams, approval chains across all sites</div></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-outline">Team View</button>
+        <button class="btn btn-outline">User View</button>
+        <button class="btn btn-primary">+ Add Member</button>
+      </div>
+    </div>
+    <div class="g13">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi">⛙</span> Hierarchy Tree</div><span class="tag tag-blue">Group-wide</span></div>
+        <div class="panel-body org-tree" id="orgTree"></div>
+      </div>
+      <div class="panel" id="orgDetailPanel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-teal pi">◎</span> Selected Member</div></div>
+        <div class="panel-body" id="orgDetail">
+          <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">Select a team member to view details</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ RESOURCE MANAGEMENT ═══════ -->
+<div class="page" id="page-resources">
+  <div class="breadcrumb"><span>People &amp; Resources</span><span class="sep">›</span><span class="current">Resource Management</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Resource Management</div><div class="page-subtitle">70 people across Birmingham, Katowice and Coventry — skills, allocation and utilisation</div></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-outline">Export</button>
+        <button class="btn btn-primary" onclick="nav(event,'page-add-resource')">+ Add Resource</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Headcount</div><div class="stat-value">70</div><div class="stat-sub">3 sites</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Utilisation</div><div class="stat-value">87%</div><div class="stat-sub up">▲ 3pts vs last month</div></div>
+      <div class="stat-card"><div class="stat-label">Shared Resources</div><div class="stat-value">4</div><div class="stat-sub">Cross-site specialists</div></div>
+      <div class="stat-card"><div class="stat-label">Open Requisitions</div><div class="stat-value">3</div><div class="stat-sub">CNC Setter × 2, QA × 1</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="pi">☷</span> Team Directory</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm">All Sites</button>
+          <button class="btn btn-outline btn-sm">Shared Only</button>
+        </div>
+      </div>
+      <div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Marcus Klein</div><div style="font-size:11px;color:var(--muted)">Senior Maintenance Technician</div></div>
+            <span class="shared-badge">⇄ Shared</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-blue">Birmingham</span><span class="tag tag-amber">Katowice</span></div>
+          <div class="sparkline">
+            <div class="spk" style="height:60%;background:var(--teal)"></div><div class="spk" style="height:75%;background:var(--teal)"></div><div class="spk" style="height:82%;background:var(--teal)"></div><div class="spk" style="height:70%;background:var(--teal)"></div><div class="spk" style="height:91%;background:var(--teal)"></div><div class="spk" style="height:88%;background:var(--teal)"></div><div class="spk" style="height:95%;background:var(--teal)"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted)">95% utilised this week · CNC + robotics certified</div>
+        </div>
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Aleksandra Nowak</div><div style="font-size:11px;color:var(--muted)">Quality Inspector, Lead</div></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-amber">Katowice</span></div>
+          <div class="sparkline"><div class="spk" style="height:50%;background:var(--blue)"></div><div class="spk" style="height:65%;background:var(--blue)"></div><div class="spk" style="height:72%;background:var(--blue)"></div><div class="spk" style="height:68%;background:var(--blue)"></div><div class="spk" style="height:80%;background:var(--blue)"></div><div class="spk" style="height:77%;background:var(--blue)"></div><div class="spk" style="height:84%;background:var(--blue)"></div></div>
+          <div style="font-size:10px;color:var(--muted)">84% utilised this week · SPC + ISO 9001 lead auditor</div>
+        </div>
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Denise Okafor</div><div style="font-size:11px;color:var(--muted)">CNC Setter/Operator</div></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-blue">Birmingham</span></div>
+          <div class="sparkline"><div class="spk" style="height:70%;background:var(--teal)"></div><div class="spk" style="height:85%;background:var(--teal)"></div><div class="spk" style="height:90%;background:var(--teal)"></div><div class="spk" style="height:78%;background:var(--teal)"></div><div class="spk" style="height:92%;background:var(--teal)"></div><div class="spk" style="height:88%;background:var(--teal)"></div><div class="spk" style="height:94%;background:var(--teal)"></div></div>
+          <div style="font-size:10px;color:var(--muted)">94% utilised this week · 5-axis machining centre</div>
+        </div>
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Tomasz Wiśniewski</div><div style="font-size:11px;color:var(--muted)">Welding Technician</div></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-amber">Katowice</span></div>
+          <div class="sparkline"><div class="spk" style="height:55%;background:var(--blue)"></div><div class="spk" style="height:60%;background:var(--blue)"></div><div class="spk" style="height:68%;background:var(--blue)"></div><div class="spk" style="height:71%;background:var(--blue)"></div><div class="spk" style="height:65%;background:var(--blue)"></div><div class="spk" style="height:74%;background:var(--blue)"></div><div class="spk" style="height:79%;background:var(--blue)"></div></div>
+          <div style="font-size:10px;color:var(--muted)">79% utilised this week · MIG/TIG certified</div>
+        </div>
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Priya Chandran</div><div style="font-size:11px;color:var(--muted)">Supply Chain Analyst</div></div>
+            <span class="shared-badge">⇄ Shared</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-blue">Birmingham</span><span class="tag tag-purple">Coventry</span></div>
+          <div class="sparkline"><div class="spk" style="height:45%;background:var(--purple)"></div><div class="spk" style="height:52%;background:var(--purple)"></div><div class="spk" style="height:58%;background:var(--purple)"></div><div class="spk" style="height:63%;background:var(--purple)"></div><div class="spk" style="height:60%;background:var(--purple)"></div><div class="spk" style="height:67%;background:var(--purple)"></div><div class="spk" style="height:71%;background:var(--purple)"></div></div>
+          <div style="font-size:10px;color:var(--muted)">71% utilised this week · Group-level buying support</div>
+        </div>
+        <div class="res-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-weight:700;font-size:13px">Liam O'Sullivan</div><div style="font-size:11px;color:var(--muted)">Paint Technician</div></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-blue">Birmingham</span></div>
+          <div class="sparkline"><div class="spk" style="height:60%;background:var(--teal)"></div><div class="spk" style="height:58%;background:var(--teal)"></div><div class="spk" style="height:64%;background:var(--teal)"></div><div class="spk" style="height:70%;background:var(--teal)"></div><div class="spk" style="height:68%;background:var(--teal)"></div><div class="spk" style="height:73%;background:var(--teal)"></div><div class="spk" style="height:76%;background:var(--teal)"></div></div>
+          <div style="font-size:10px;color:var(--muted)">76% utilised this week · Powder coat line</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ADD RESOURCE ═══════ -->
+<div class="page" id="page-add-resource">
+  <div class="breadcrumb"><span>People &amp; Resources</span><span class="sep">›</span><span class="current">Add Resource</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">Add Resource</div><div class="page-subtitle">Register a new team member and assign site, skills and allocation</div></div></div>
+    <div class="panel"><div class="panel-body">
+      <div class="form-section"><div class="form-section-title">Identity</div>
+        <div class="form-grid-3">
+          <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" placeholder="e.g. Sofia Marchetti"></div>
+          <div class="form-group"><label class="form-label">Role / Title</label><input class="form-input" placeholder="e.g. Quality Inspector"></div>
+          <div class="form-group"><label class="form-label">Employee ID</label><input class="form-input" placeholder="Auto-generated"></div>
+        </div>
+      </div>
+      <div class="form-section"><div class="form-section-title">Assignment</div>
+        <div class="form-grid-3">
+          <div class="form-group"><label class="form-label">Primary Site</label><select class="form-select"><option>Birmingham (UK)</option><option>Katowice (Poland)</option><option>Coventry (UK)</option></select></div>
+          <div class="form-group"><label class="form-label">Shared With</label><select class="form-select"><option>None</option><option>Birmingham</option><option>Katowice</option><option>Coventry</option></select></div>
+          <div class="form-group"><label class="form-label">Shift Pattern</label><select class="form-select"><option>Days (06:00–14:00)</option><option>Lates (14:00–22:00)</option><option>Continental (4-on-4-off)</option></select></div>
+        </div>
+      </div>
+      <div class="form-section"><div class="form-section-title">Skills &amp; Certifications</div>
+        <div class="form-group form-full"><label class="form-label">Skills (comma separated)</label><textarea class="form-textarea" placeholder="e.g. CNC 5-axis, ISO 9001 auditing, MIG/TIG welding"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn btn-outline">Cancel</button><button class="btn btn-primary">Save Resource</button></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════ SKILL MATRIX ═══════ -->
+<div class="page" id="page-skill-matrix">
+  <div class="breadcrumb"><span>People &amp; Resources</span><span class="sep">›</span><span class="current">Skill Matrix</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">Skill Matrix</div><div class="page-subtitle">Certified competency levels across the group — 0 (none) to 5 (train-the-trainer)</div></div>
+      <div class="tag tag-purple">Cross-site view</div>
+    </div>
+    <div class="panel"><div class="panel-body">
+      <div class="tw"><table>
+        <thead><tr><th>Name</th><th>Site</th><th>CNC Machining</th><th>Welding</th><th>Quality / SPC</th><th>Robotics</th><th>Paint Line</th><th>Maintenance</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600">Marcus Klein <span class="shared-badge" style="margin-left:6px">⇄ Shared</span></td><td><span class="tag tag-blue">BHX</span> <span class="tag tag-amber">KTW</span></td><td><span class="skill-cell sk-3">3</span></td><td><span class="skill-cell sk-2">2</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-5">5</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-5">5</span></td></tr>
+          <tr><td style="font-weight:600">Denise Okafor</td><td><span class="tag tag-blue">BHX</span></td><td><span class="skill-cell sk-5">5</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-2">2</span></td><td><span class="skill-cell sk-3">3</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-1">1</span></td></tr>
+          <tr><td style="font-weight:600">Aleksandra Nowak</td><td><span class="tag tag-amber">KTW</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-5">5</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td></tr>
+          <tr><td style="font-weight:600">Tomasz Wiśniewski</td><td><span class="tag tag-amber">KTW</span></td><td><span class="skill-cell sk-2">2</span></td><td><span class="skill-cell sk-5">5</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-2">2</span></td></tr>
+          <tr><td style="font-weight:600">Liam O'Sullivan</td><td><span class="tag tag-blue">BHX</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-2">2</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-5">5</span></td><td><span class="skill-cell sk-0">0</span></td></tr>
+          <tr><td style="font-weight:600">Priya Chandran <span class="shared-badge" style="margin-left:6px">⇄ Shared</span></td><td><span class="tag tag-blue">BHX</span> <span class="tag tag-purple">COV</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-1">1</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td><td><span class="skill-cell sk-0">0</span></td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════ SHARED ALLOCATION ═══════ -->
+<div class="page" id="page-shared-alloc">
+  <div class="breadcrumb"><span>People &amp; Resources</span><span class="sep">›</span><span class="current">Shared Allocation</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">Shared Allocation</div><div class="page-subtitle">Specialists co-linked across sites in the Multi-Twin structure — time split and scheduling conflicts</div></div></div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="pi-purple pi">⇄</span> Marcus Klein — Senior Maintenance Technician</div><span class="shared-badge">⇄ Shared</span></div>
+      <div class="panel-body">
+        <div style="display:flex;gap:16px;margin-bottom:14px">
+          <div style="flex:1"><div style="font-size:10.5px;color:var(--muted);margin-bottom:5px">Birmingham allocation</div><div class="prog-bar"><div class="prog-fill" style="width:60%;background:var(--blue)"></div></div><div style="font-size:10.5px;color:var(--muted);margin-top:3px">60% · Mon–Wed, plus on-call weekends</div></div>
+          <div style="flex:1"><div style="font-size:10.5px;color:var(--muted);margin-bottom:5px">Katowice allocation</div><div class="prog-bar"><div class="prog-fill" style="width:40%;background:var(--amber)"></div></div><div style="font-size:10.5px;color:var(--muted);margin-top:3px">40% · Thu–Fri, remote diagnostics support</div></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.6">Covers the CNC and robotics cell breakdowns at both sites — Katowice has no in-house robotics-certified technician, so Marcus's Thursday/Friday visits are scheduled around the two sites' preventive maintenance windows to avoid overlap. Flagged by the Resource Overload Agent when a Birmingham breakdown and a Katowice PM slot land in the same week.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="pi-purple pi">⇄</span> Priya Chandran — Supply Chain Analyst</div><span class="shared-badge">⇄ Shared</span></div>
+      <div class="panel-body">
+        <div style="display:flex;gap:16px;margin-bottom:14px">
+          <div style="flex:1"><div style="font-size:10.5px;color:var(--muted);margin-bottom:5px">Birmingham allocation</div><div class="prog-bar"><div class="prog-fill" style="width:55%;background:var(--blue)"></div></div><div style="font-size:10.5px;color:var(--muted);margin-top:3px">55% · Group buying, steel &amp; aluminium contracts</div></div>
+          <div style="flex:1"><div style="font-size:10.5px;color:var(--muted);margin-bottom:5px">Coventry allocation</div><div class="prog-bar"><div class="prog-fill" style="width:45%;background:var(--purple)"></div></div><div style="font-size:10.5px;color:var(--muted);margin-top:3px">45% · New-site supplier onboarding</div></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.6">Runs group-level supplier negotiations from Birmingham while onboarding Coventry's supplier base as the newest site ramps up — a group role rather than a single-site one, so the group-wide steel and aluminium framework agreements sit under her.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ EXECUTIVE DASHBOARD ═══════ -->
+<div class="page" id="page-exec">
+  <div class="breadcrumb"><span>Intelligence Hub</span><span class="sep">›</span><span class="current">Executive Dashboard</span></div>
+  <div class="content">
+    <div class="page-header">
+      <div><div class="page-title">Executive Dashboard</div><div class="page-subtitle">Group-wide performance — Riverside Fabrication Group, all 3 sites</div></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-outline btn-sm">This Month</button>
+        <button class="btn btn-outline">Export Board Pack</button>
+      </div>
+    </div>
+    <div class="disclaimer">Illustrative demo data. Figures shown are for product-demonstration purposes and do not represent a real client.</div>
+    <div class="kpi-grid" style="margin-top:14px">
+      <div class="kpi-card"><div class="kpi-top"><span class="kpi-label">OTIF</span><span class="kpi-delta up">▲ 4.2pts</span></div><div class="kpi-val">91.4%</div><div class="kpi-target">Target 95% · On-Time-In-Full</div></div>
+      <div class="kpi-card"><div class="kpi-top"><span class="kpi-label">OEE</span><span class="kpi-delta up">▲ 2.1pts</span></div><div class="kpi-val">76.8%</div><div class="kpi-target">Target 85% · Overall Equipment Effectiveness</div></div>
+      <div class="kpi-card"><div class="kpi-top"><span class="kpi-label">RFT</span><span class="kpi-delta down">▼ 1.3pts</span></div><div class="kpi-val">94.2%</div><div class="kpi-target">Target 98% · Right-First-Time</div></div>
+      <div class="kpi-card"><div class="kpi-top"><span class="kpi-label">COPQ</span><span class="kpi-delta up">▲ 0.6pts</span></div><div class="kpi-val">£184k</div><div class="kpi-target">Target &lt;£120k · Cost of Poor Quality, MTD</div></div>
+    </div>
+    <div class="g2" style="margin-top:14px">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi">⬈</span> OTIF Trend by Site</div><span class="tag tag-dim">Rolling 8 weeks</span></div>
+        <div class="panel-body"><div class="bc-wrap">
+          <div class="bc-col"><div class="bc-bar" style="height:70%;background:var(--teal)"></div><div class="bc-lbl">W1</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:74%;background:var(--teal)"></div><div class="bc-lbl">W2</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:68%;background:var(--teal)"></div><div class="bc-lbl">W3</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:79%;background:var(--teal)"></div><div class="bc-lbl">W4</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:81%;background:var(--teal)"></div><div class="bc-lbl">W5</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:85%;background:var(--teal)"></div><div class="bc-lbl">W6</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:88%;background:var(--teal)"></div><div class="bc-lbl">W7</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:91%;background:var(--teal)"></div><div class="bc-lbl">W8</div></div>
+        </div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><span class="pi-amber pi">◫</span> Site Contribution — COPQ</div><span class="tag tag-dim">MTD, £k</span></div>
+        <div class="panel-body"><div class="bc-wrap">
+          <div class="bc-col"><div class="bc-bar" style="height:88%;background:var(--blue)"></div><div class="bc-lbl">Birmingham<br>£108k</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:50%;background:var(--amber)"></div><div class="bc-lbl">Katowice<br>£61k</div></div>
+          <div class="bc-col"><div class="bc-bar" style="height:14%;background:var(--purple)"></div><div class="bc-lbl">Coventry<br>£15k</div></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-header"><div class="panel-title"><span class="pi-teal pi">⚙</span> Root-Cause: Traditional vs AI-Enhanced Response</div><span class="tag tag-success">£412k annualised benefit</span></div>
+      <div class="panel-body">
+        <div class="g3">
+          <div class="insight-card">
+            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Unplanned CNC Downtime — Birmingham Cell 3</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px">Spindle bearing wear detected 11 days before failure by vibration sensors already on the machine, but the signal sat unreviewed in the MES historian.</div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,153,255,.06);border:1px solid rgba(0,153,255,.2)"><div style="font-size:9.5px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:3px">Traditional</div><div style="font-size:11px;color:var(--muted)">Reactive repair after failure: 14hr downtime, £22k</div></div>
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,196,167,.06);border:1px solid rgba(0,196,167,.2)"><div style="font-size:9.5px;color:var(--teal);font-weight:700;text-transform:uppercase;margin-bottom:3px">AI-Enhanced</div><div style="font-size:11px;color:var(--muted)">Flagged &amp; scheduled at next PM window: 1.5hr, £2.4k</div></div>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px">RFT Slippage — Katowice Weld Cell</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px">Porosity defects traced to a batch of shielding gas with drifted flow-rate calibration, not operator technique as first assumed.</div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,153,255,.06);border:1px solid rgba(0,153,255,.2)"><div style="font-size:9.5px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:3px">Traditional</div><div style="font-size:11px;color:var(--muted)">Retraining programme launched: 3 weeks, no root-cause fix</div></div>
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,196,167,.06);border:1px solid rgba(0,196,167,.2)"><div style="font-size:9.5px;color:var(--teal);font-weight:700;text-transform:uppercase;margin-bottom:3px">AI-Enhanced</div><div style="font-size:11px;color:var(--muted)">Gas-flow correlation surfaced: recalibrated same shift</div></div>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px">FX Exposure — EUR/GBP Steel Contracts</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px">Katowice's steel purchases in EUR were not hedged against the Birmingham GBP price book, compressing group margin during rate moves.</div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,153,255,.06);border:1px solid rgba(0,153,255,.2)"><div style="font-size:9.5px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:3px">Traditional</div><div style="font-size:11px;color:var(--muted)">Quarterly FX review: exposure spotted after the fact</div></div>
+              <div style="flex:1;padding:8px;border-radius:6px;background:rgba(0,196,167,.06);border:1px solid rgba(0,196,167,.2)"><div style="font-size:9.5px;color:var(--teal);font-weight:700;text-transform:uppercase;margin-bottom:3px">AI-Enhanced</div><div style="font-size:11px;color:var(--muted)">Daily FX Risk Monitor flags &amp; suggests forward cover</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ AI AGENT GOVERNANCE ═══════ -->
+<div class="page" id="page-agents">
+  <div class="breadcrumb"><span>Intelligence Hub</span><span class="sep">›</span><span class="current">AI Agent Governance</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">AI Agent Governance</div><div class="page-subtitle">6 agents monitoring the group — 4 active, 2 pending approval</div></div>
+      <button class="btn btn-primary">+ Configure Agent</button>
+    </div>
+    <div class="g3">
+      <div class="agent-card">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--success)"></span>Downtime Prediction Agent</div><span class="tag tag-success">Active</span></div>
+        <div class="agent-desc">Watches vibration, temperature and cycle-time sensor feeds across all CNC and press assets; flags likely failures 5–14 days ahead.</div>
+        <div class="agent-stat-row"><span>142 predictions · 92% precision</span><span>Birmingham + Katowice</span></div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--success)"></span>Schedule Risk Sentinel</div><span class="tag tag-success">Active</span></div>
+        <div class="agent-desc">Cross-references order book, material lead times and machine capacity to flag OTIF risk before it hits the shop floor.</div>
+        <div class="agent-stat-row"><span>38 risks flagged this month</span><span>All sites</span></div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--success)"></span>COPQ Erosion Monitor</div><span class="tag tag-success">Active</span></div>
+        <div class="agent-desc">Tracks scrap, rework and warranty cost against the quality budget and traces spikes back to shift, machine or supplier batch.</div>
+        <div class="agent-stat-row"><span>£71k in flagged root causes</span><span>All sites</span></div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--success)"></span>Resource Overload Agent</div><span class="tag tag-success">Active</span></div>
+        <div class="agent-desc">Watches shared-resource calendars (Marcus Klein, Priya Chandran) for overlapping commitments across sites and proposes re-sequencing.</div>
+        <div class="agent-stat-row"><span>6 conflicts pre-empted</span><span>Cross-site</span></div>
+      </div>
+      <div class="agent-card" style="opacity:.65">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--dim)"></span>FX Risk Monitor</div><span class="tag tag-dim">Pending Approval</span></div>
+        <div class="agent-desc">Would monitor EUR/GBP exposure on Katowice steel and aluminium contracts and suggest forward-cover thresholds.</div>
+        <div class="agent-stat-row"><span>Awaiting CFO sign-off</span><span>Group Finance</span></div>
+        <div style="display:flex;gap:6px"><button class="btn btn-primary btn-xs">Approve</button><button class="btn btn-outline btn-xs">Reject</button></div>
+      </div>
+      <div class="agent-card" style="opacity:.65">
+        <div class="agent-top"><div class="agent-name"><span class="agent-status-dot" style="background:var(--dim)"></span>Skill Gap Predictor</div><span class="tag tag-dim">Pending Approval</span></div>
+        <div class="agent-desc">Would compare the Skill Matrix against the 12-month order book to flag training gaps before they become bottlenecks.</div>
+        <div class="agent-stat-row"><span>Awaiting Group Ops sign-off</span><span>People &amp; Resources</span></div>
+        <div style="display:flex;gap:6px"><button class="btn btn-primary btn-xs">Approve</button><button class="btn btn-outline btn-xs">Reject</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ADMINISTRATION ═══════ -->
+<div class="page" id="page-admin">
+  <div class="breadcrumb"><span>Platform</span><span class="sep">›</span><span class="current">Administration</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">Administration</div><div class="page-subtitle">Entities, users and approval routing for the group</div></div></div>
+    <div class="tabs" id="adminTabs">
+      <div class="tab active" onclick="setTab(event,'adminTabs','admin-panels','admin-entities')">Entities</div>
+      <div class="tab" onclick="setTab(event,'adminTabs','admin-panels','admin-users')">Users &amp; Roles</div>
+      <div class="tab" onclick="setTab(event,'adminTabs','admin-panels','admin-approval')">Approval Matrix</div>
+    </div>
+    <div id="admin-panels">
+      <div class="admin-tabpanel" id="admin-entities">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">⛨</span> Legal Entities &amp; Sites</div><button class="btn btn-primary btn-sm">+ Add Entity</button></div>
+        <div class="tw"><table>
+          <thead><tr><th>Entity</th><th>Site</th><th>Country</th><th>Currency</th><th>ERP System</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">Riverside Fabrication Ltd</td><td>Birmingham</td><td>United Kingdom</td><td>GBP</td><td>E2 MFG</td><td><span class="tag tag-success">Live</span></td></tr>
+            <tr><td style="font-weight:600">Riverside Fabrication Sp. z o.o.</td><td>Katowice</td><td>Poland</td><td>PLN</td><td>Ridder iQ</td><td><span class="tag tag-success">Active</span></td></tr>
+            <tr><td style="font-weight:600">Riverside Fabrication (Coventry) Ltd</td><td>Coventry</td><td>United Kingdom</td><td>GBP</td><td>Deacom</td><td><span class="tag tag-amber">Configuring</span></td></tr>
+          </tbody>
+        </table></div></div>
+      </div>
+      <div class="admin-tabpanel" style="display:none" id="admin-users">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">☺</span> Users &amp; Roles</div><button class="btn btn-primary btn-sm">+ Invite User</button></div>
+        <div class="tw"><table>
+          <thead><tr><th>Name</th><th>Role</th><th>Site Access</th><th>Last Active</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">James Whitfield</td><td>Group Operations Director</td><td>All sites</td><td>Today, 09:14</td><td><span class="tag tag-success">Active</span></td></tr>
+            <tr><td style="font-weight:600">Aleksandra Nowak</td><td>Quality Lead</td><td>Katowice</td><td>Today, 08:02</td><td><span class="tag tag-success">Active</span></td></tr>
+            <tr><td style="font-weight:600">Priya Chandran</td><td>Supply Chain Analyst</td><td>Birmingham, Coventry</td><td>Yesterday, 17:40</td><td><span class="tag tag-success">Active</span></td></tr>
+            <tr><td style="font-weight:600;opacity:.6">Marek Kowalski</td><td>Plant Manager (Coventry)</td><td>Coventry</td><td>—</td><td><span class="tag tag-dim">Invited</span></td></tr>
+          </tbody>
+        </table></div></div>
+      </div>
+      <div class="admin-tabpanel" style="display:none" id="admin-approval">
+        <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi">✓</span> Approval Matrix</div></div>
+        <div class="tw"><table>
+          <thead><tr><th>Action</th><th>Threshold</th><th>1st Approver</th><th>2nd Approver</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">Purchase Order</td><td>&gt; £10,000</td><td>Plant Manager</td><td>Group Ops Director</td></tr>
+            <tr><td style="font-weight:600">Capital Expenditure</td><td>&gt; £25,000</td><td>Group Ops Director</td><td>CFO</td></tr>
+            <tr><td style="font-weight:600">AI Agent Activation</td><td>Any</td><td>Function Owner</td><td>Group Ops Director</td></tr>
+            <tr><td style="font-weight:600">New Supplier Onboarding</td><td>Any</td><td>Supply Chain Analyst</td><td>Plant Manager</td></tr>
+          </tbody>
+        </table></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ COMPLIANCE LAYER ═══════ -->
+<div class="page" id="page-compliance">
+  <div class="breadcrumb"><span>Platform</span><span class="sep">›</span><span class="current">Compliance Layer</span></div>
+  <div class="content">
+    <div class="page-header"><div><div class="page-title">Compliance Layer</div><div class="page-subtitle">Regulatory frameworks tracked per jurisdiction across the group</div></div></div>
+    <div class="g3">
+      <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-blue pi">🇬🇧</span> United Kingdom</div><span class="tag tag-blue">Birmingham + Coventry</span></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>VAT</span><span style="font-family:var(--mono);color:var(--muted)">20%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>UK Health &amp; Safety (HSE)</span><span class="tag tag-success">Compliant</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>EU Machinery Directive / UKCA</span><span class="tag tag-success">Compliant</span></div>
+        </div>
+      </div>
+      <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-amber pi">🇵🇱</span> Poland</div><span class="tag tag-amber">Katowice</span></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>VAT</span><span style="font-family:var(--mono);color:var(--muted)">23%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>EU Machinery Directive / CE Marking</span><span class="tag tag-success">Compliant</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>PIP (State Labour Inspectorate)</span><span class="tag tag-amber">Review due</span></div>
+        </div>
+      </div>
+      <div class="panel"><div class="panel-header"><div class="panel-title"><span class="pi-teal pi">◎</span> Group-wide</div><span class="tag tag-purple">All sites</span></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>ISO 9001:2015</span><span class="tag tag-success">Certified</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>ISO 14001</span><span class="tag tag-amber">In progress (Coventry)</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px"><span>GDPR / Data Protection</span><span class="tag tag-success">Compliant</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ LIGHTER STUB PAGES ═══════ -->
+<div class="page" id="page-inquiries">
+  <div class="breadcrumb"><span>Organisation</span><span class="sep">›</span><span class="current">Customer Inquiries</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Customer Inquiries</div><div class="page-subtitle">4 open inquiries across the group</div></div></div>
+    <div class="panel"><div class="tw"><table><thead><tr><th>Customer</th><th>Subject</th><th>Site</th><th>Raised</th><th>Status</th></tr></thead><tbody>
+      <tr><td style="font-weight:600">Ashford Rail Components</td><td>Delivery date query — PO 44192</td><td>Birmingham</td><td>2 days ago</td><td><span class="tag tag-amber">Open</span></td></tr>
+      <tr><td style="font-weight:600">Nordbau GmbH</td><td>Cert pack for batch KTW-0819</td><td>Katowice</td><td>3 days ago</td><td><span class="tag tag-amber">Open</span></td></tr>
+      <tr><td style="font-weight:600">Selwood Hydraulics</td><td>Concession request — surface finish</td><td>Birmingham</td><td>1 week ago</td><td><span class="tag tag-blue">In Review</span></td></tr>
+      <tr><td style="font-weight:600">Marchetti Automazione</td><td>New RFQ — bracket assembly</td><td>Coventry</td><td>Today</td><td><span class="tag tag-success">New</span></td></tr>
+    </tbody></table></div></div>
+  </div>
+</div>
+<div class="page" id="page-worklifecycle">
+  <div class="breadcrumb"><span>Pipeline</span><span class="sep">›</span><span class="current">Work Order Lifecycle</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Work Order Lifecycle</div><div class="page-subtitle">19 active work orders across the group, from release to dispatch</div></div><button class="btn btn-primary">+ Create Work Order</button></div>
+    <div class="panel"><div class="tw"><table><thead><tr><th>WO #</th><th>Customer</th><th>Site</th><th>Stage</th><th>Due</th><th>Status</th></tr></thead><tbody>
+      <tr><td style="font-family:var(--mono)">WO-2298</td><td>Ashford Rail</td><td>Birmingham</td><td>Machining</td><td>19 Sep</td><td><span class="tag tag-blue">On Track</span></td></tr>
+      <tr><td style="font-family:var(--mono)">WO-2301</td><td>Nordbau GmbH</td><td>Katowice</td><td>Welding</td><td>22 Sep</td><td><span class="tag tag-amber">At Risk</span></td></tr>
+      <tr><td style="font-family:var(--mono)">WO-2305</td><td>Selwood Hydraulics</td><td>Birmingham</td><td>Quality Hold</td><td>18 Sep</td><td><span class="tag tag-danger">Blocked</span></td></tr>
+      <tr><td style="font-family:var(--mono)">WO-2309</td><td>Marchetti Automazione</td><td>Coventry</td><td>Planning</td><td>30 Sep</td><td><span class="tag tag-success">New</span></td></tr>
+    </tbody></table></div></div>
+  </div>
+</div>
+<div class="page" id="page-create-wo">
+  <div class="breadcrumb"><span>Pipeline</span><span class="sep">›</span><span class="current">Create Work Order</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Create Work Order</div><div class="page-subtitle">Release a new work order to a site's production schedule</div></div></div>
+    <div class="panel"><div class="panel-body">
+      <div class="form-section"><div class="form-section-title">Order Details</div>
+        <div class="form-grid-3">
+          <div class="form-group"><label class="form-label">Customer</label><input class="form-input" placeholder="e.g. Ashford Rail Components"></div>
+          <div class="form-group"><label class="form-label">Site</label><select class="form-select"><option>Birmingham (UK)</option><option>Katowice (Poland)</option><option>Coventry (UK)</option></select></div>
+          <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" placeholder="dd/mm/yyyy"></div>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn btn-outline">Cancel</button><button class="btn btn-primary">Create Work Order</button></div>
+    </div></div>
+  </div>
+</div>
+<div class="page" id="page-routing">
+  <div class="breadcrumb"><span>Pipeline</span><span class="sep">›</span><span class="current">Routing Builder</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Routing Builder</div><div class="page-subtitle">Define the operation sequence a part follows through the shop floor</div></div></div>
+    <div class="panel"><div class="panel-body" style="color:var(--muted);font-size:12px;text-align:center;padding:30px 0">Routing templates are built per part family and reused across work orders. See Site Digital Twin → Production Line for the live flow at each site.</div></div>
+  </div>
+</div>
+<div class="page" id="page-timesheets">
+  <div class="breadcrumb"><span>People &amp; Resources</span><span class="sep">›</span><span class="current">Shift &amp; Timesheets</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Shift &amp; Timesheets</div><div class="page-subtitle">5 timesheets pending approval</div></div></div>
+    <div class="panel"><div class="tw"><table><thead><tr><th>Name</th><th>Site</th><th>Week</th><th>Hours</th><th>Status</th></tr></thead><tbody>
+      <tr><td style="font-weight:600">Denise Okafor</td><td>Birmingham</td><td>W/C 08 Sep</td><td>42.5</td><td><span class="tag tag-amber">Pending</span></td></tr>
+      <tr><td style="font-weight:600">Tomasz Wiśniewski</td><td>Katowice</td><td>W/C 08 Sep</td><td>40.0</td><td><span class="tag tag-amber">Pending</span></td></tr>
+      <tr><td style="font-weight:600">Marcus Klein</td><td>Birmingham / Katowice</td><td>W/C 08 Sep</td><td>45.0</td><td><span class="tag tag-amber">Pending</span></td></tr>
+    </tbody></table></div></div>
+  </div>
+</div>
+<div class="page" id="page-billing">
+  <div class="breadcrumb"><span>Finance</span><span class="sep">›</span><span class="current">Billing &amp; Accounting</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Billing &amp; Accounting</div><div class="page-subtitle">AR, AP, GL and payroll across three entities</div></div></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">AR Outstanding</div><div class="stat-value">£486k</div><div class="stat-sub">18 open invoices</div></div>
+      <div class="stat-card"><div class="stat-label">AP Due (30d)</div><div class="stat-value">£211k</div><div class="stat-sub">Steel, aluminium, energy</div></div>
+      <div class="stat-card"><div class="stat-label">GL Entities Reconciled</div><div class="stat-value">3/3</div><div class="stat-sub">As of yesterday close</div></div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-fx">
+  <div class="breadcrumb"><span>Finance</span><span class="sep">›</span><span class="current">Currency Intelligence</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Currency Intelligence</div><div class="page-subtitle">GBP is the group reporting currency; Katowice trades in PLN with EUR-denominated steel contracts</div></div></div>
+    <div class="panel"><div class="panel-body">
+      <div class="fx-row"><span class="fx-pair">GBP / PLN</span><span class="fx-rate">5.14</span><span style="color:var(--success);font-size:11px">▲ 0.3%</span></div>
+      <div class="fx-row"><span class="fx-pair">GBP / EUR</span><span class="fx-rate">1.19</span><span style="color:var(--danger);font-size:11px">▼ 0.2%</span></div>
+    </div></div>
+  </div>
+</div>
+<div class="page" id="page-reports">
+  <div class="breadcrumb"><span>Intelligence Hub</span><span class="sep">›</span><span class="current">Reports</span></div>
+  <div class="content"><div class="page-header"><div><div class="page-title">Reports</div><div class="page-subtitle">Scheduled and on-demand reporting</div></div></div>
+    <div class="panel"><div class="panel-body" style="color:var(--muted);font-size:12px;text-align:center;padding:30px 0">Board pack, OTIF/OEE/RFT/COPQ trend packs and site digital twin exports are generated from the Executive Dashboard and Site Digital Twin pages.</div></div>
+  </div>
+</div>
+</main>
+</div><!-- /mfg-theme -->
+</div><!-- /layout -->
+
+<script>
+function nav(el,id){
+  var full=id.indexOf('page-')===0?id:'page-'+id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  var target=document.getElementById(full);
+  if(target)target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el && el.classList && el.classList.contains('nav-item'))el.classList.add('active');
+  window.scrollTo(0,0);
+  if(full==='page-sitetwin' && !window.__stwInit){window.__stwInit=true;renderSiteTwin('birmingham');}
+  if(full==='page-decisions' && !window.__decInit){window.__decInit=true;renderDecisions('plant','group');}
+  if(full==='page-failure-modes' && !window.__fmInit){window.__fmInit=true;renderFailureModes('all');}
+  if(full==='page-supplychain' && !window.__scInit){window.__scInit=true;renderSupplyChainTriggers();}
+  if(full==='page-siteops' && !window.__soInit){window.__soInit=true;renderSiteOps('birmingham');}
+}
+function setTab(e,tabsId,panelWrapId,panelId){
+  e.preventDefault();
+  document.querySelectorAll('#'+tabsId+' .tab').forEach(t=>t.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  document.querySelectorAll('#'+panelWrapId+' .admin-tabpanel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+}
+
+/* ═══════ SITE DIGITAL TWIN DATA — one entry per site, 10 modules each ═══════ */
+var SITE_DATA={
+  birmingham:{
+    name:'Birmingham', full:'Birmingham (UK)', code:'BHX', flag:'🇬🇧', status:'Live', coverage:100,
+    overview:{
+      profile:'Riverside Fabrication\'s founding site — precision CNC machining and sheet-metal fabrication for rail, hydraulics and industrial automation customers, operating since 1987.',
+      caps:['5-axis CNC machining','Sheet-metal fabrication & forming','Powder-coat finishing','ISO 9001 quality system'],
+      stats:[['Founded','1987'],['Headcount','34'],['Floor Area','4,200 m²'],['Shifts','2 (Days / Lates)']]
+    },
+    workforce:{spark:[62,68,71,74,70,78,82],shifts:[['Days','06:00–14:00','19 staff'],['Lates','14:00–22:00','12 staff'],['Weekend On-Call','—','3 staff (rota)']]},
+    production:{steps:[
+      ['1','Goods-In & Material Check','Raw steel and aluminium stock verified against cert packs before release to the floor.'],
+      ['2','CNC Machining (Cells 1–3)','5-axis machining centres cut to tolerance; Cell 3 is the highest-utilisation asset on site.'],
+      ['3','Fabrication & Forming','Press brakes and forming stations shape sheet-metal components.'],
+      ['4','Quality Inspection','SPC sampling against the ISO 9001 control plan.'],
+      ['5','Powder Coat & Finish','Finishing line applies coating per customer spec.'],
+      ['6','Pack & Dispatch','Final pack, cert pack assembly and dispatch to carrier.']
+    ]},
+    machinery:[
+      ['CNC Cell 1','5-axis, Mazak Integrex','Primary bracket & housing machining'],
+      ['CNC Cell 2','5-axis, Mazak Integrex','Secondary/overflow capacity'],
+      ['CNC Cell 3','5-axis, DMG Mori','Highest-utilisation asset — flagged by Downtime Prediction Agent'],
+      ['Press Brake Line','3× hydraulic, 4m bed','Sheet-metal forming'],
+      ['Powder Coat Line','Automated, 2-stage cure','Finishing'],
+    ],
+    systems:[['E2 MFG','ERP / MRP','Live, 96% data coverage'],['MES / APS','Shop-floor scheduling','Live, feeds Downtime Prediction Agent']],
+    systemsPain:'Cert-pack assembly for dispatch is still a manual PDF collation step — flagged as an early automation candidate.',
+    inventory:[
+      ['Steel Sheet 3mm','Raw Material','ok','1,240 sheets'],
+      ['Aluminium Bar Stock','Raw Material','ok','860 bars'],
+      ['Cutting Tool Inserts','Consumable','low','48 units'],
+      ['Powder Coat Stock (RAL 7016)','Finishing','critical','6 kg'],
+      ['Cert Pack Stationery','Consumable','ok','—'],
+    ],
+    financials:{bars:[['Q1',88],['Q2',94],['Q3',101],['Q4 (proj.)',97]],list:[['Revenue (proxy, site allocation)','£6.1M'],['COPQ (MTD)','£108k'],['On-time Delivery','93%']]},
+    supplychain:{tiers:[['Tier 2','Steel & aluminium mills (UK/EU)'],['Tier 1','Coil & bar stockholders'],['Site','Riverside Fabrication — Birmingham'],['Customer','Rail, hydraulics & automation OEMs']],suppliers:[['Ashbourne Steel Stockholders','Steel sheet & bar','96% OTIF'],['Meridian Coatings Supply','Powder coat media','88% OTIF']]},
+    maintenance:[
+      ['CNC Cell 3','Preventive','Scheduled','22 Sep','Marcus Klein'],
+      ['Press Brake 2','Corrective','Overdue','—','Site team'],
+      ['Powder Coat Line','Preventive','Scheduled','28 Sep','Marcus Klein'],
+    ],
+    lifecycle:{steps:[
+      ['1','Dispatch','Finished parts shipped to OEM assembly lines'],
+      ['2','In-Service','Rail and hydraulics components in service, typical 15–20yr life'],
+      ['3','Warranty & Concessions','Field issues routed back through Customer Inquiries'],
+      ['4','End of Life','Scrap steel/aluminium returned to recycling stream']
+    ],grid:['Rail Components','Hydraulic Assemblies','Automation Brackets']}
+  },
+  katowice:{
+    name:'Katowice', full:'Katowice (Poland)', code:'KTW', flag:'🇵🇱', status:'Active', coverage:80,
+    overview:{
+      profile:'Opened in 2011 to serve EU customers directly from within the bloc — welding and quality-critical assembly for industrial and automotive-adjacent components.',
+      caps:['MIG/TIG welding','Assembly & sub-assembly','SPC-driven quality control','EU Machinery Directive / CE marking'],
+      stats:[['Founded','2011'],['Headcount','22'],['Floor Area','2,600 m²'],['Shifts','Continental (4-on-4-off)']]
+    },
+    workforce:{spark:[58,55,60,63,61,66,69],shifts:[['Continental A','4-on-4-off','11 staff'],['Continental B','4-on-4-off','11 staff']]},
+    production:{steps:[
+      ['1','Goods-In','Steel and EUR-denominated component stock checked in.'],
+      ['2','Welding (MIG/TIG)','Primary value-add step for the site.'],
+      ['3','Quality Inspection','SPC sampling; Aleksandra Nowak leads as ISO 9001 lead auditor.'],
+      ['4','Assembly','Sub-assembly for EU customer shipments.'],
+      ['5','Pack & Dispatch','EU-bound dispatch, customs paperwork.']
+    ]},
+    machinery:[['Weld Cell 1','MIG/TIG, robotic-assist','Primary welding capacity'],['Weld Cell 2','MIG/TIG, manual','Overflow & complex geometry'],['Assembly Bench Line','4-station','Sub-assembly']],
+    systems:[['Ridder iQ','ERP / MRP','Live, 74% data coverage — partial sync flagged'],['MES / APS','Shop-floor scheduling','Live']],
+    systemsPain:'Ridder iQ sync to the group Connector Mapping layer runs hourly rather than real-time — a contributor to the RFT slippage seen this month.',
+    inventory:[['Shielding Gas (Argon mix)','Consumable','critical','Flow-rate calibration flagged'],['Steel Sheet 3mm','Raw Material','ok','410 sheets'],['Weld Wire','Consumable','ok','—']],
+    financials:{bars:[['Q1',41],['Q2',44],['Q3',47],['Q4 (proj.)',45]],list:[['Revenue (proxy, site allocation)','£2.8M'],['COPQ (MTD)','£61k'],['On-time Delivery','89%']]},
+    supplychain:{tiers:[['Tier 2','EU steel mills'],['Tier 1','Regional stockholders'],['Site','Riverside Fabrication — Katowice'],['Customer','EU industrial OEMs']],suppliers:[['Hutmen Regional Supply','Steel & consumables','81% OTIF — under review']]},
+    maintenance:[['Weld Cell 1','Preventive','Scheduled','25 Sep','Marcus Klein (visiting)'],['Assembly Bench Line','Corrective','Completed','12 Sep','Site team']],
+    lifecycle:{steps:[['1','Dispatch','EU customer shipments'],['2','In-Service','Industrial assemblies, 10–15yr typical life'],['3','End of Life','Steel recycling per EU waste framework']],grid:['Welded Sub-Assemblies','Industrial Brackets']}
+  },
+  coventry:{
+    name:'Coventry', full:'Coventry (UK)', code:'COV', flag:'🇬🇧', status:'Configuring', coverage:60,
+    overview:{
+      profile:'The group\'s newest site, opened this year to add paint-finishing and warehousing capacity and relieve Birmingham\'s powder-coat bottleneck.',
+      caps:['Powder-coat finishing (secondary line)','Warehousing & logistics','Kitting for despatch'],
+      stats:[['Founded','2026'],['Headcount','14'],['Floor Area','3,100 m²'],['Shifts','Days only (ramping)']]
+    },
+    workforce:{spark:[10,11,12,12,13,14,14],shifts:[['Days','07:00–15:30','14 staff (ramping to 22)']]},
+    production:{steps:[['1','Goods-In','Semi-finished parts arrive from Birmingham for finishing.'],['2','Powder Coat & Finish','Secondary finishing line, commissioning.'],['3','Kitting & Pack','Kitted for direct-to-customer despatch.'],['4','Warehousing & Dispatch','Group buffer stock and despatch hub.']]},
+    machinery:[['Powder Coat Line B','Automated, commissioning','Relieves Birmingham bottleneck'],['Warehouse Racking','Automated pick-to-light','Buffer stock']],
+    systems:[['Deacom','ERP / MRP','Not yet connected — Connector Mapping shows "Connect" pending'],['MES / APS','Shop-floor scheduling','Live']],
+    systemsPain:'Deacom go-live is the critical path for full Site Digital Twin coverage — currently the lowest-coverage site at 60%.',
+    inventory:[['Buffer Stock — Mixed SKUs','Finished Goods','ok','—'],['Powder Coat Stock (RAL 9010)','Finishing','ok','22 kg']],
+    financials:{bars:[['Q1',0],['Q2',2],['Q3',9],['Q4 (proj.)',15]],list:[['Revenue (proxy, site allocation)','£0.6M'],['COPQ (MTD)','£15k'],['On-time Delivery','n/a — ramping']]},
+    supplychain:{tiers:[['Site (Birmingham)','Semi-finished parts in'],['Site','Riverside Fabrication — Coventry'],['Customer','Direct despatch + group buffer']],suppliers:[['Onboarding in progress','Priya Chandran leading supplier setup','—']]},
+    maintenance:[['Powder Coat Line B','Commissioning','In Progress','—','Vendor + site team']],
+    lifecycle:{steps:[['1','Kitting','Final kitting for customer despatch'],['2','Dispatch','Direct-to-customer and group buffer']],grid:['Finished Kits']}
+  }
+};
+var STW_TABS=[['overview','Overview'],['workforce','Workforce'],['production','Production Line'],['machinery','Machinery & Assets'],['systems','Digital Systems'],['inventory','Inventory Console'],['financials','Financials'],['supplychain','Supply Chain'],['maintenance','Factory Maintenance'],['lifecycle','Product Lifecycle']];
+var currentSite='birmingham', currentStwTab='overview';
+
+function renderSiteTwin(siteId){
+  currentSite=siteId;
+  var d=SITE_DATA[siteId];
+  document.getElementById('stwBreadcrumb').innerHTML='<span>Intelligence</span><span class="sep">›</span><span>Site Digital Twin</span><span class="sep">›</span><span class="current">'+d.full+'</span>';
+  var pillRow=document.getElementById('sitePillRow');
+  pillRow.innerHTML=Object.keys(SITE_DATA).map(function(k){
+    var s=SITE_DATA[k];
+    var dotColor=s.status==='Live'?'var(--success)':s.status==='Active'?'var(--blue)':'var(--amber)';
+    return '<span class="site-pill'+(k===siteId?' active':'')+'" onclick="renderSiteTwin(\''+k+'\')"><span class="sp-dot" style="background:'+dotColor+'"></span>'+s.flag+' '+s.name+' <span class="tag-tag" style="color:var(--dim)">'+s.coverage+'%</span></span>';
+  }).join('');
+  var tabsEl=document.getElementById('stwTabs');
+  tabsEl.innerHTML=STW_TABS.map(function(t){return '<div class="tab'+(t[0]===currentStwTab?' active':'')+'" onclick="setStwTab(event,\''+t[0]+'\')">'+t[1]+'</div>';}).join('');
+  renderStwPanel(currentStwTab);
+}
+function setStwTab(e,tab){
+  e.preventDefault();
+  currentStwTab=tab;
+  document.querySelectorAll('#stwTabs .tab').forEach(t=>t.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  renderStwPanel(tab);
+}
+function renderStwPanel(tab){
+  document.querySelectorAll('#stwPanels section').forEach(s=>s.style.display='none');
+  var sec=document.getElementById('stw-'+tab);
+  if(sec)sec.style.display='block';
+  var d=SITE_DATA[currentSite];
+  if(tab==='overview'){
+    document.getElementById('stwOverviewProfile').textContent=d.overview.profile;
+    document.getElementById('stwOverviewCaps').innerHTML=d.overview.caps.map(c=>'<span class="tag tag-teal">'+c+'</span>').join(' ');
+    document.getElementById('stwOverviewStats').innerHTML=d.overview.stats.map(s=>'<div class="stat-card"><div class="stat-label">'+s[0]+'</div><div class="stat-value" style="font-size:18px">'+s[1]+'</div></div>').join('');
+  }
+  if(tab==='workforce'){
+    document.getElementById('stwWorkforceSpark').innerHTML=d.workforce.spark.map(v=>'<div class="spk" style="height:'+v+'%;background:var(--teal)"></div>').join('');
+    document.getElementById('stwShifts').innerHTML=d.workforce.shifts.map(s=>'<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:6px 0;border-bottom:1px solid var(--border)"><span>'+s[0]+'</span><span style="color:var(--muted)">'+s[1]+'</span><span style="font-family:var(--mono)">'+s[2]+'</span></div>').join('');
+  }
+  if(tab==='production'){
+    document.getElementById('stwFlowRail').innerHTML=d.production.steps.map((s,i)=>'<div class="flow-node'+(i===0?' active':'')+'" onclick="showStwFlow(event,'+i+')"><span class="fn-num">'+s[0]+'</span><span class="fn-name">'+s[1]+'</span></div>').join('');
+    showStwFlowDetail(0);
+  }
+  if(tab==='machinery'){
+    document.getElementById('stwAssetGrid').innerHTML=d.machinery.map(m=>'<div class="asset-card"><div class="asset-title">'+m[0]+'</div><div class="asset-spec">'+m[1]+'</div><div class="asset-desc">'+m[2]+'</div></div>').join('');
+  }
+  if(tab==='systems'){
+    document.getElementById('stwSystemsList').innerHTML=d.systems.map(s=>'<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:8px 0;border-bottom:1px solid var(--border)"><div><div style="font-weight:600">'+s[0]+'</div><div style="color:var(--muted);font-size:10.5px">'+s[1]+'</div></div><div style="color:var(--muted);font-size:10.5px;text-align:right;max-width:200px">'+s[2]+'</div></div>').join('');
+    document.getElementById('stwSystemsPain').textContent=d.systemsPain;
+  }
+  if(tab==='inventory'){renderStwInv('');}
+  if(tab==='financials'){
+    var maxV=Math.max.apply(null,d.financials.bars.map(b=>b[1]))||1;
+    document.getElementById('stwFinChart').innerHTML=d.financials.bars.map(b=>'<div class="bc-col"><div class="bc-bar" style="height:'+Math.max(4,(b[1]/maxV*100))+'%;background:var(--blue)"></div><div class="bc-lbl">'+b[0]+'</div></div>').join('');
+    document.getElementById('stwFinList').innerHTML=d.financials.list.map(l=>'<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:6px 0;border-bottom:1px solid var(--border)"><span>'+l[0]+'</span><span style="font-family:var(--mono);font-weight:600">'+l[1]+'</span></div>').join('');
+  }
+  if(tab==='supplychain'){
+    document.getElementById('stwScRail').innerHTML=d.supplychain.tiers.map((t,i)=>'<div class="flow-node'+(i===0?' active':'')+'" onclick="showStwSc(event,'+i+')"><span class="fn-num">'+(i+1)+'</span><span class="fn-name">'+t[0]+'</span></div>').join('');
+    document.getElementById('stwScDetail').innerHTML='<div class="fd-title">'+d.supplychain.tiers[0][0]+'</div><div class="fd-desc">'+d.supplychain.tiers[0][1]+'</div>';
+    document.getElementById('stwSuppliers').innerHTML=d.supplychain.suppliers.map(s=>'<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-weight:600">'+s[0]+'</div><div style="color:var(--muted);font-size:10.5px">'+s[1]+'</div></div><span style="font-family:var(--mono)">'+s[2]+'</span></div>').join('');
+  }
+  if(tab==='maintenance'){
+    document.getElementById('stwMaintBody').innerHTML=d.maintenance.map(m=>{
+      var shared=(m[4]&&m[4].indexOf('Marcus')>-1)?' <span class="shared-badge">⇄ Shared</span>':'';
+      var statusTag=m[2]==='Overdue'?'tag-danger':m[2]==='Scheduled'?'tag-blue':m[2]==='In Progress'?'tag-amber':'tag-success';
+      return '<div class="maint-row"><div style="font-weight:600;flex:1">'+m[0]+'</div><div style="flex:1;color:var(--muted);font-size:11px">'+m[1]+'</div><div style="flex:1"><span class="tag '+statusTag+'">'+m[2]+'</span></div><div style="flex:1;font-size:11px;color:var(--muted)">'+m[3]+'</div><div style="flex:1;font-size:11px">'+m[4]+shared+'</div></div>';
+    }).join('');
+  }
+  if(tab==='lifecycle'){
+    document.getElementById('stwLcRail').innerHTML=d.lifecycle.steps.map((s,i)=>'<div class="flow-node'+(i===0?' active':'')+'" onclick="showStwLc(event,'+i+')"><span class="fn-num">'+s[0]+'</span><span class="fn-name">'+s[1]+'</span></div>').join('');
+    document.getElementById('stwLcDetail').innerHTML='<div class="fd-title">'+d.lifecycle.steps[0][1]+'</div><div class="fd-desc">'+d.lifecycle.steps[0][2]+'</div>';
+    document.getElementById('stwLcGrid').innerHTML=d.lifecycle.grid.map(g=>'<span class="tag tag-teal">'+g+'</span>').join(' ');
+  }
+  document.getElementById('stwDisclaimer').textContent='Illustrative demo data for '+d.full+'. Coverage: '+d.coverage+'% of the 10-module Site Digital Twin structure populated from the digital-twin-flow methodology.';
+}
+function showStwFlow(e,i){
+  e.preventDefault();
+  document.querySelectorAll('#stwFlowRail .flow-node').forEach(n=>n.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  showStwFlowDetail(i);
+}
+function showStwFlowDetail(i){
+  var d=SITE_DATA[currentSite];
+  var s=d.production.steps[i];
+  document.getElementById('stwFlowDetail').innerHTML='<div class="fd-title">'+s[1]+'</div><div class="fd-meta">Step '+s[0]+' of '+d.production.steps.length+'</div><div class="fd-desc">'+s[2]+'</div>';
+}
+function showStwSc(e,i){
+  e.preventDefault();
+  document.querySelectorAll('#stwScRail .flow-node').forEach(n=>n.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  var d=SITE_DATA[currentSite];
+  document.getElementById('stwScDetail').innerHTML='<div class="fd-title">'+d.supplychain.tiers[i][0]+'</div><div class="fd-desc">'+d.supplychain.tiers[i][1]+'</div>';
+}
+function showStwLc(e,i){
+  e.preventDefault();
+  document.querySelectorAll('#stwLcRail .flow-node').forEach(n=>n.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  var d=SITE_DATA[currentSite];
+  document.getElementById('stwLcDetail').innerHTML='<div class="fd-title">'+d.lifecycle.steps[i][1]+'</div><div class="fd-desc">'+d.lifecycle.steps[i][2]+'</div>';
+}
+function renderStwInv(query){
+  var d=SITE_DATA[currentSite];
+  var q=(query||'').toLowerCase();
+  var rows=d.inventory.filter(r=>r[0].toLowerCase().indexOf(q)>-1);
+  document.getElementById('stwInvBody').innerHTML=rows.map(r=>{
+    var cls=r[2]==='critical'?'critical':r[2]==='low'?'low':'ok';
+    var tagCls=r[2]==='critical'?'tag-danger':r[2]==='low'?'tag-amber':'tag-success';
+    return '<div class="inv-row '+cls+'"><div class="inv-name" style="flex:2">'+r[0]+'</div><div style="flex:1;color:var(--muted);font-size:11px">'+r[1]+'</div><div style="flex:1"><span class="tag '+tagCls+'">'+r[2]+'</span></div><div style="flex:1;text-align:right;font-family:var(--mono);font-size:11px">'+r[3]+'</div></div>';
+  }).join('');
+}
+
+/* ═══════ ORG HIERARCHY ═══════ */
+var ORG_TREE=[
+  {name:'James Whitfield',role:'Group Operations Director',site:'All sites',children:[
+    {name:'Site Lead — Birmingham',role:'Plant Manager',site:'Birmingham',children:[
+      {name:'Denise Okafor',role:'CNC Setter/Operator',site:'Birmingham'},
+      {name:'Liam O\'Sullivan',role:'Paint Technician',site:'Birmingham'}
+    ]},
+    {name:'Site Lead — Katowice',role:'Plant Manager',site:'Katowice',children:[
+      {name:'Aleksandra Nowak',role:'Quality Inspector, Lead',site:'Katowice'},
+      {name:'Tomasz Wiśniewski',role:'Welding Technician',site:'Katowice'}
+    ]},
+    {name:'Marek Kowalski',role:'Plant Manager (Coventry)',site:'Coventry'},
+    {name:'Marcus Klein',role:'Senior Maintenance Technician (Shared: Birmingham/Katowice)',site:'Birmingham, Katowice'},
+    {name:'Priya Chandran',role:'Supply Chain Analyst (Shared: Birmingham/Coventry)',site:'Birmingham, Coventry'}
+  ]}
+];
+function renderOrgTree(){
+  function node(n,depth){
+    var childHtml=n.children?('<div class="org-children">'+n.children.map(c=>node(c,depth+1)).join('')+'</div>'):'';
+    return '<div class="org-node-wrap"><div class="org-node" onclick="showOrgDetail(event,\''+n.name.replace(/'/g,"\\'")+'\',\''+n.role.replace(/'/g,"\\'")+'\',\''+n.site+'\')"><span class="org-av">'+n.name.split(' ').map(w=>w[0]).join('').slice(0,2)+'</span><div><div class="org-name">'+n.name+'</div><div class="org-role">'+n.role+'</div></div></div>'+childHtml+'</div>';
+  }
+  document.getElementById('orgTree').innerHTML=ORG_TREE.map(n=>node(n,0)).join('');
+}
+function showOrgDetail(e,name,role,site){
+  e.stopPropagation();
+  var shared=site.indexOf(',')>-1?'<span class="shared-badge">⇄ Shared across sites</span>':'';
+  document.getElementById('orgDetail').innerHTML='<div style="text-align:center;padding:10px 0"><div class="org-av" style="width:44px;height:44px;font-size:15px;margin:0 auto 10px">'+name.split(' ').map(w=>w[0]).join('').slice(0,2)+'</div><div style="font-weight:700;font-size:14px">'+name+'</div><div style="color:var(--muted);font-size:11.5px;margin:2px 0 8px">'+role+'</div>'+shared+'<div style="margin-top:10px;font-size:11px;color:var(--muted)">Site access: '+site+'</div></div>';
+}
+
+function switchTwin(name,el){
+  document.querySelectorAll('.twin-card').forEach(c=>c.classList.remove('active-twin'));
+  if(el)el.classList.add('active-twin');
+  document.getElementById('activeTwinLabel').textContent=name;
+  nav(null,'twin');
+  closeSidebar();
+}
+function toggleSidebarCollapse(){
+  var s=document.querySelector('.sidebar');
+  s.classList.toggle('collapsed');
+  var btn=document.getElementById('collapseBtn');
+  if(btn)btn.textContent=s.classList.contains('collapsed')?'›':'‹';
+}
+function toggleSidebar(){
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('open');
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+
+/* ═══════ ROLE-BASED DECISION INTELLIGENCE — data model ═══════ */
+var DEC_ROLES=[
+  {id:'plant',name:'Plant Manager',icon:'🏭',intro:'You oversee all site operations. Datonix surfaces emerging problems across Production, Quality, Asset Reliability and Supply Chain, and recommends which lever to pull first.'},
+  {id:'production',name:'Production Manager',icon:'📋',intro:'You execute the daily schedule and optimise line performance. Datonix flags schedule risk and changeover drift before it costs a shift.'},
+  {id:'quality',name:'Quality Manager',icon:'✅',intro:'You own conformance and process capability. Datonix predicts defect risk from setup variance, supplier quality and tool wear before parts are made.'},
+  {id:'maintenance',name:'Maintenance Manager',icon:'🔧',intro:'You keep the equipment running. Datonix predicts failures 5–14 days ahead from vibration, temperature and cycle data.'},
+  {id:'supplychain',name:'Supply Chain Manager',icon:'📦',intro:'You balance demand, inventory and supplier performance across three sites. Datonix predicts shortages 3–7 days before they hit the line.'},
+  {id:'energy',name:'Energy Manager',icon:'⚡',intro:'You manage energy spend and carbon footprint. Datonix flags abnormal consumption before it drains margin or ESG targets.'},
+  {id:'cfo',name:'CFO',icon:'💰',intro:'You translate operational problems into margin impact. Datonix shows the financial waterfall: which problem, how big, what the fix costs, and the ROI.'},
+  {id:'coo',name:'COO / Group Ops Director',icon:'📊',intro:'You steer the group. Datonix is the early-warning radar for problems that cascade into customer losses and margin erosion — at both site and group level.'}
+];
+var DEC_SCOPES=[['group','Group (All Sites)'],['birmingham','🇬🇧 Birmingham'],['katowice','🇵🇱 Katowice'],['coventry','🇬🇧 Coventry']];
+
+function kc(label,val,status,sub){return {l:label,v:val,s:status,t:sub};}
+var ROLE_KPIS={
+  plant:{group:[kc('OTIF Delivery','88%','critical','▼ 2 pts — attention needed'),kc('Right First Time','93%','warning','▼ 2 pts — trend'),kc('OEE','76%','critical','▼ 4 pts — major gap'),kc('COPQ','£184K','critical','↑ 12% YTD')],
+    birmingham:[kc('OTIF Delivery','93%','good','On target'),kc('Right First Time','96%','good','Stable'),kc('OEE','79%','warning','Cell 3 bearing risk'),kc('COPQ','£108K','warning','Highest site contribution')],
+    katowice:[kc('OTIF Delivery','89%','warning','Weld-cell RFT drag'),kc('Right First Time','89%','critical','Porosity defects'),kc('OEE','74%','warning','Continental shift pattern'),kc('COPQ','£61K','warning','↑ from gas calibration')],
+    coventry:[kc('OTIF Delivery','n/a','warning','Ramping — no baseline yet'),kc('Right First Time','n/a','warning','Commissioning'),kc('OEE','n/a','warning','Powder coat line commissioning'),kc('COPQ','£15K','good','Low volume, ramping')]},
+  production:{group:[kc('Schedule Adherence','94%','good','On track'),kc('Avg Changeover Time','42 min','warning','+18% vs SOP (36 min)'),kc('Worst-Site Line OEE','71%','critical','Downtime spike'),kc('First-Piece Yield','96%','good','Stable')],
+    birmingham:[kc('Schedule Adherence','95%','good','On track'),kc('Cell 3 Changeover','46 min','critical','+28% vs SOP'),kc('Cell 3 OEE (Live)','71%','critical','Downtime spike'),kc('First-Piece Yield','97%','good','Stable')],
+    katowice:[kc('Schedule Adherence','91%','warning','Continental shift gaps'),kc('Weld Cell Changeover','38 min','good','On SOP'),kc('Weld Cell OEE','74%','warning','Gas calibration drag'),kc('First-Piece Yield','92%','warning','Porosity related')],
+    coventry:[kc('Schedule Adherence','n/a','warning','Commissioning'),kc('Changeover Time','n/a','warning','Commissioning'),kc('Line OEE','n/a','warning','Powder coat line B ramping'),kc('First-Piece Yield','n/a','warning','Commissioning')]},
+  quality:{group:[kc('Right First Time','93%','warning','▼ 2% target miss'),kc('COPQ (Month)','£28K','critical','↑ 18% variance'),kc('Top Scrap Cause','Setup 47%','critical','Incoming 28% · Other 25%'),kc('Supplier Quality OTIF','96%','good','3 suppliers trending')],
+    birmingham:[kc('Right First Time','96%','good','Stable'),kc('COPQ (Month)','£9K','good','Within budget'),kc('Top Scrap Cause','Tooling 30%','warning','Cell 3 tool wear'),kc('Supplier OTIF','96%','good','Ashbourne Steel')],
+    katowice:[kc('Right First Time','89%','critical','Porosity defects'),kc('COPQ (Month)','£16K','critical','Gas calibration drift'),kc('Top Scrap Cause','Gas Calib. 61%','critical','Shielding gas flow-rate'),kc('Supplier OTIF','81%','critical','Hutmen Regional Supply')],
+    coventry:[kc('Right First Time','n/a','warning','Commissioning'),kc('COPQ (Month)','£3K','good','Low volume'),kc('Top Scrap Cause','n/a','warning','Commissioning'),kc('Supplier OTIF','n/a','warning','Onboarding')]},
+  maintenance:{group:[kc('MTBF','1,847 hrs','good','Improving trend'),kc('MTTR','3.2 hrs','warning','Target 2.5 hrs'),kc('Unplanned Downtime (Wk)','12.4 hrs','critical','3 unexpected failures'),kc('Maint. Cost / Unit','£8.42','warning','↑ 6% vs budget')],
+    birmingham:[kc('MTBF','1,620 hrs','warning','Cell 3 bearing risk'),kc('MTTR','3.4 hrs','warning','Target 2.5 hrs'),kc('Unplanned Downtime (Wk)','8.2 hrs','critical','Cell 3 driven'),kc('Maint. Cost / Unit','£7.90','warning','↑ vs budget')],
+    katowice:[kc('MTBF','2,100 hrs','good','Improving'),kc('MTTR','2.8 hrs','good','Near target'),kc('Unplanned Downtime (Wk)','3.1 hrs','good','Stable'),kc('Maint. Cost / Unit','£9.10','warning','Marcus Klein shared cover')],
+    coventry:[kc('MTBF','n/a','warning','Commissioning'),kc('MTTR','n/a','warning','Commissioning'),kc('Unplanned Downtime (Wk)','1.1 hrs','good','Low base — ramping'),kc('Maint. Cost / Unit','£6.40','good','Vendor-supported commissioning')]},
+  supplychain:{group:[kc('Forecast Accuracy (MAPE)','18%','warning','Target 12%'),kc('Supplier OTIF','94%','warning','3 suppliers below 90%'),kc('Lead-Time Variance','±5.2 days','critical','2 suppliers: ±7–9 days'),kc('Inventory Turns (Annual)','6.2×','good','Improving')],
+    birmingham:[kc('Forecast Accuracy','15%','warning','Close to target'),kc('Supplier OTIF','92%','warning','Meridian Coatings watch'),kc('Lead-Time Variance','±3 days','warning','Ashbourne drifting'),kc('Inventory Turns','6.8×','good','Improving')],
+    katowice:[kc('Forecast Accuracy','22%','critical','Furthest from target'),kc('Supplier OTIF','81%','critical','Hutmen Regional Supply'),kc('Lead-Time Variance','±8 days','critical','Hutmen driven'),kc('Inventory Turns','5.4×','warning','Below group average')],
+    coventry:[kc('Forecast Accuracy','n/a','warning','Onboarding'),kc('Supplier OTIF','n/a','warning','Supplier base being built'),kc('Lead-Time Variance','n/a','warning','Onboarding'),kc('Inventory Turns','n/a','warning','Onboarding')]},
+  energy:{group:[kc('Energy Cost / Unit','£2.18','warning','↑ 5% vs budget'),kc('Monthly Energy Spend','£18.4K','critical','Abnormal spike detected'),kc('Peak Demand','342 kW','warning','Demand charge 28% of bill'),kc('Carbon / Unit','2.1 kg CO₂e','warning','ESG target 1.8 by YE')],
+    birmingham:[kc('Energy Cost / Unit','£2.30','warning','Air-leak suspected'),kc('Monthly Spend','£11.2K','critical','Compressed-air spike'),kc('Peak Demand','210 kW','warning','CNC + powder coat load'),kc('Carbon / Unit','2.3 kg CO₂e','warning','Above group average')],
+    katowice:[kc('Energy Cost / Unit','£1.95','good','Efficient'),kc('Monthly Spend','£5.6K','good','Within budget'),kc('Peak Demand','98 kW','good','Stable'),kc('Carbon / Unit','1.9 kg CO₂e','good','Near ESG target')],
+    coventry:[kc('Energy Cost / Unit','n/a','warning','Commissioning'),kc('Monthly Spend','£1.6K','good','Low volume'),kc('Peak Demand','34 kW','good','Ramping'),kc('Carbon / Unit','n/a','warning','Commissioning')]},
+  cfo:{group:[kc('Gross Margin','35%','good','Stable'),kc('Cost of Poor Quality','£312K','critical','3.12% of COGS'),kc('Delivery OTIF Impact','£147K','critical','1.47% lost sales'),kc('Working Capital Tied-Up','£1.2M','warning','18 days of COGS')],
+    birmingham:[kc('Site Margin','37%','good','Above group average'),kc('COPQ','£108K','warning','Highest site contribution'),kc('OTIF Impact','£62K','warning','Cell 3 driven'),kc('Working Capital','£520K','warning','Steel stock heavy')],
+    katowice:[kc('Site Margin','29%','warning','Below target'),kc('COPQ','£61K','warning','Gas calibration'),kc('OTIF Impact','£58K','critical','Weld-cell driven'),kc('Working Capital','£310K','warning','EUR-priced steel')],
+    coventry:[kc('Site Margin','n/a','warning','Ramping — no baseline'),kc('COPQ','£15K','good','Low volume'),kc('OTIF Impact','n/a','warning','Ramping'),kc('Working Capital','£90K','good','Low, ramping')]},
+  coo:{group:[kc('Revenue (YTD)','£7.2M','warning','▼ 3% due to OTIF misses'),kc('Gross Profit Margin','35%','warning','Target 38% · COPQ drag -3pts'),kc('OEE','76%','critical','▼ 9 pts from target (85%)'),kc('Customer Churn Risk','3 at-risk','critical','Due to OTIF patterns')],
+    birmingham:[kc('Site Revenue','£6.1M','good','Group anchor site'),kc('Site Margin','37%','good','Above group average'),kc('OEE','79%','warning','Cell 3 bearing risk'),kc('Churn Risk','1 at-risk','warning','OTIF pattern')],
+    katowice:[kc('Site Revenue','£2.8M','warning','Below plan'),kc('Site Margin','29%','warning','Quality drag'),kc('OEE','74%','warning','Gas calibration drag'),kc('Churn Risk','2 at-risk','critical','Quality + OTIF pattern')],
+    coventry:[kc('Site Revenue','£0.6M','good','On ramp plan'),kc('Site Margin','n/a','warning','Ramping — no baseline'),kc('OEE','n/a','warning','Commissioning'),kc('Churn Risk','None yet','good','New site, no order history')]}
+};
+
+/* ═══════ FAILURE MODES LIBRARY — shared trigger library ═══════ */
+var TRIGGERS_LIB=[
+  {id:'t1',domain:'Production',severity:'critical',title:'Changeover Drift — Risk to Next 3 Jobs',category:'Production',site:'birmingham',roles:['plant','production'],
+    rootCause:'Changeover times on the CNC cells are trending 15–20 minutes longer than SOP; setup steps are not tracked step-by-step. The next scheduled job will finish roughly 2.5 hours late if the pattern continues.',
+    decision:'Re-sequence the job queue to defer the at-risk order, run a deep-dive changeover observation, or let Datonix re-optimise the sequence automatically?',
+    recommendation:'Datonix AI Scheduling re-sequences the next 4 jobs to minimise changeover complexity on Cell 3 while protecting OTIF for the top 3 priority orders.',
+    traditional:'Manual re-sequencing by the shift supervisor once the delay is already visible — recovers roughly 1 hour, and only reacts after the fact.',
+    ai:'Automatic re-sequencing the moment drift is detected — recovers 1.5–2 hours, pre-emptively.',
+    roi:'Revenue at risk: £147K (OTIF exposure) · AI incremental recovery: £7.7K per event'},
+  {id:'t2',domain:'Asset Reliability',severity:'critical',title:'CNC Cell 3 — Bearing Wear Prediction (8–12 Day Window)',category:'Asset Reliability',site:'birmingham',roles:['plant','maintenance'],
+    rootCause:'Vibration amplitude on the spindle bearing is trending +22% over 9 days; temperature is steady at 58°C against a 62°C alert threshold. Failure probability is 78% within 10 days without intervention.',
+    decision:'Schedule a preventive bearing replacement now (4hr planned downtime), or continue monitoring and risk an unplanned failure mid-shift?',
+    recommendation:'Schedule the replacement for the next off-peak maintenance window (Tuesday night).',
+    traditional:'React after failure — roughly 14 hours of unplanned downtime and ~£22K in lost production plus an emergency callout.',
+    ai:'Flagged 10 days ahead and scheduled at the next planned window — around 1.5 hours downtime, roughly £2.4K.',
+    roi:'Net benefit of acting: £15.6K–£17K per avoided failure'},
+  {id:'t3',domain:'Quality',severity:'warning',title:'RFT Slippage — Katowice Weld Cell',category:'Quality',site:'katowice',roles:['plant','quality'],
+    rootCause:'Porosity defects are traced to a batch of shielding gas with drifted flow-rate calibration, not operator technique as first assumed.',
+    decision:'Retrain welders on technique, or recalibrate the gas-flow equipment and add a first-piece inspection gate?',
+    recommendation:'Recalibrate gas flow the same shift the correlation is surfaced, and add automated flow-rate monitoring going forward.',
+    traditional:'A retraining programme is launched — takes 3 weeks and does not fix the root cause, so defects are likely to recur.',
+    ai:'The gas-flow correlation is surfaced automatically and recalibrated the same shift, so the defect rate falls immediately.',
+    roi:'COPQ exposure avoided: roughly £18K per month of continued drift'},
+  {id:'t4',domain:'Quality',severity:'critical',title:'Setup Error Spike — 47% of Group Scrap',category:'Quality',site:'group',roles:['quality','cfo'],
+    rootCause:'Setup procedures are not documented consistently across sites; there is no first-piece inspection gate, and the tool-seat verification step is not tracked on the shop floor.',
+    decision:'Document and certify setup SOPs across all three sites, or pilot computer-vision first-piece inspection with an AI setup assistant?',
+    recommendation:'Run both in parallel — certify SOPs in weeks 1–2 while piloting AI vision inspection on Birmingham Cell 2 in weeks 2–4.',
+    traditional:'Document and certify only — recovers roughly 38% of COPQ (about £118.6K of a £312K baseline).',
+    ai:'Vision-based first-piece inspection plus an AI setup assistant — recovers roughly 62% of COPQ (about £193.4K).',
+    roi:'AI incremental benefit: £74.8K annually across the group'},
+  {id:'t5',domain:'Supply Chain',severity:'warning',title:'Component Shortage Predicted (4–6 Days)',category:'Supply Chain',site:'birmingham',roles:['supplychain','plant'],
+    rootCause:'Bracket-assembly steel stock is at 48 units against a weekly burn of 65; Ashbourne Steel’s lead time has drifted from 5 to 8 days. Without action, 3–4 orders are at risk of short-shipping.',
+    decision:'Expedite the existing purchase order, split the order across a backup supplier, or trim the incoming production forecast?',
+    recommendation:'Split the order — expedite 30 units from Ashbourne and source 30 from the backup supplier, holding total expedite cost to roughly £315.',
+    traditional:'Increase safety stock across the board — ties up working capital and does not address the underlying lead-time drift.',
+    ai:'Shortage predicted 4–6 days out from live inventory plus supplier lead-time telemetry, enabling a targeted split order.',
+    roi:'Expedite cost £315 vs prevention value £23K–£47K — 70×+ ROI'},
+  {id:'t6',domain:'Supply Chain',severity:'warning',title:'Supplier Quality Trend — Hutmen Regional Supply',category:'Supply Chain',site:'katowice',roles:['supplychain','quality'],
+    rootCause:'Hutmen Regional Supply’s OTIF has fallen to 81%, with dimensional variance on 8 of the last 20 shipments — the same batches implicated in the Katowice weld-cell RFT slippage.',
+    decision:'Escalate to the supplier for a process audit, tighten incoming AQL sampling, or qualify a backup supplier for Katowice?',
+    recommendation:'Escalate now, move to tighter AQL sampling (n=125 vs n=50) until the trend reverses, and begin qualifying a second Katowice-region supplier in parallel.',
+    traditional:'Wait for the quarterly supplier review to flag the trend — losses continue for weeks in the meantime.',
+    ai:'Continuous OTIF and dimensional-variance tracking flags the trend within days of it starting.',
+    roi:'Prevents an estimated 23 incoming rejects over the next 4 weeks'},
+  {id:'t7',domain:'Energy',severity:'warning',title:'Abnormal Energy Spike — Likely Compressed-Air Leak',category:'Energy',site:'birmingham',roles:['plant','energy'],
+    rootCause:'Compressed-air consumption is trending 18% above baseline (72kW vs a 61kW average) — a pattern consistent with a line leak rather than increased demand.',
+    decision:'Schedule an ultrasonic leak-detection survey, or wait for the next planned maintenance shutdown to inspect?',
+    recommendation:'Run the survey this week (a 2-hour job, roughly £150) and fix any leaks found (£400–800 budget).',
+    traditional:'Leaks are typically only found during scheduled shutdowns — 2–3 months of wasted energy in the meantime.',
+    ai:'Consumption-pattern monitoring flags the abnormal draw within days of it starting.',
+    roi:'Prevention payback: 1–3 months at roughly £2.8K/month wasted'},
+  {id:'t8',domain:'Financial Performance',severity:'critical',title:'FX Exposure — EUR/GBP Steel Contracts',category:'Financial',site:'group',roles:['cfo','coo','supplychain'],
+    rootCause:'Katowice’s steel purchases are priced in EUR but sold through the Birmingham GBP price book with no forward cover — recent EUR/GBP moves have compressed group margin.',
+    decision:'Continue reviewing FX exposure quarterly, or activate the Datonix FX Risk Monitor agent for daily tracking with forward-cover suggestions?',
+    recommendation:'Activate the FX Risk Monitor agent (pending CFO approval in AI Agent Governance) and set a forward-cover threshold.',
+    traditional:'Quarterly FX review — exposure is only spotted after the margin hit has already happened.',
+    ai:'Daily FX Risk Monitor flags exposure and suggests forward cover before the rate move bites.',
+    roi:'Estimated margin protection: £30K–£60K annually'},
+  {id:'t9',domain:'Financial Performance',severity:'warning',title:'Capacity Oversold Against Coventry Ramp-Up',category:'Financial',site:'coventry',roles:['cfo','plant','supplychain'],
+    rootCause:'Coventry’s finishing capacity was sold into the order book ahead of the Deacom ERP go-live, so committed volumes currently outstrip verified throughput data for the site.',
+    decision:'Slow the Coventry sales ramp until Deacom is live, or accept the data gap and manage manually until go-live?',
+    recommendation:'Manage manually with weekly capacity checks until Deacom go-live, prioritised as the critical path for full Site Digital Twin coverage.',
+    traditional:'Manual capacity tracking by the site team — works, but slow to catch overcommitment.',
+    ai:'Once Deacom is connected, live capacity vs order-book tracking flags overcommitment automatically.',
+    roi:'Recoverable margin once resolved: £24.4K annually (58% AI recovery vs 30% traditional)'},
+  {id:'t10',domain:'Service & Logistics',severity:'warning',title:'Customer Churn Risk — Repeat OTIF Misses',category:'Service',site:'group',roles:['coo','plant'],
+    rootCause:'Three customer accounts show 3+ late deliveries in the last 8 weeks, driven by the Birmingham changeover drift and the Katowice quality slippage compounding on shared order lines.',
+    decision:'Wait to see if the underlying fixes resolve delivery performance, or proactively communicate with at-risk accounts now?',
+    recommendation:'Communicate proactively now, paired with the AI OTIF risk score so delays are caught and communicated 5 days before the customer would otherwise notice.',
+    traditional:'React to complaints after a missed delivery — trust is already damaged by the time it is addressed.',
+    ai:'OTIF risk scoring flags at-risk orders 5 days early, giving time to recover or communicate proactively.',
+    roi:'Revenue at risk: £340K annually across 3 accounts · AI-assisted recovery of ~£226K if 2 of 3 are retained'},
+  {id:'t11',domain:'Engineering & Process',severity:'warning',title:'ECO Cycle Time Drift — Bracket Redesign Backlog',category:'Engineering',site:'group',roles:['plant','coo'],
+    rootCause:'Engineering change orders for the bracket-assembly redesign are taking 26 days on average against an 18-day target; BOM-accuracy checks are manual and only run at final release, so downstream errors surface late on the shop floor.',
+    decision:'Add a dedicated ECO reviewer to clear the backlog, or introduce automated BOM-accuracy validation earlier in the design cycle?',
+    recommendation:'Automate BOM-accuracy validation at each ECO stage-gate rather than only at final release, and clear the current backlog with a two-week focused sprint.',
+    traditional:'Add headcount to clear the backlog manually — reduces cycle time to about 22 days, but the BOM-accuracy gap remains.',
+    ai:'Automated BOM-accuracy validation at each stage-gate — cuts cycle time to about 16 days and catches errors before they reach the shop floor.',
+    roi:'Estimated reduction in downstream rework: £14K–£22K annually'}
+];
+var DEC_DOMAINS=['Production','Asset Reliability','Quality','Supply Chain','Energy','Service & Logistics','Engineering & Process','Financial Performance'];
+var DOMAIN_OVERVIEW=[
+  {icon:'⚙️',name:'Production',kpis:'OEE, throughput, cycle time, scrap rate, schedule adherence'},
+  {icon:'🔧',name:'Asset Reliability',kpis:'MTBF, MTTR, downtime, failure prediction, maintenance cost'},
+  {icon:'✅',name:'Quality',kpis:'RFT, defect rate, NCR, rework, warranty cost'},
+  {icon:'📦',name:'Supply Chain',kpis:'Forecast accuracy, supplier OTIF, lead-time variance, inventory'},
+  {icon:'⚡',name:'Energy',kpis:'Energy/unit, abnormal consumption, peak demand, carbon'},
+  {icon:'🚚',name:'Service & Logistics',kpis:'OTIF, inventory turns, logistics cost, SLA compliance'},
+  {icon:'🏭',name:'Engineering & Process',kpis:'ECO cycle time, BOM accuracy, design quality, time-to-market'},
+  {icon:'💰',name:'Financial Performance',kpis:'Cost/unit, margin, working capital, variance'}
+];
+
+function sevClass(s){return s==='critical'?'critical':s==='warning'?'warning':'info';}
+function statusColor(s){return s==='good'?'var(--success)':s==='critical'?'var(--danger)':'var(--amber)';}
+
+function renderKpiCards(kpis){
+  return kpis.map(function(k){
+    return '<div class="kpi-card"><div class="kpi-top"><span class="kpi-label">'+k.l+'</span></div><div class="kpi-val">'+k.v+'</div><div class="kpi-target" style="color:'+statusColor(k.s)+'">'+k.t+'</div></div>';
+  }).join('');
+}
+function renderTriggerCard(t){
+  return '<div class="decision-trigger '+sevClass(t.severity)+'">'+
+    '<div class="dt-header"><div><div class="dt-title">'+t.title+'</div><div class="dt-category">'+t.category+(t.site!=='group'?(' · '+t.site.charAt(0).toUpperCase()+t.site.slice(1)):' · Group-wide')+'</div></div><span class="tag '+(t.severity==='critical'?'tag-danger':t.severity==='warning'?'tag-amber':'tag-teal')+'">'+t.severity+'</span></div>'+
+    '<div class="dt-grid"><div class="dt-box"><div class="dt-box-label">Root Cause</div><div class="dt-box-content">'+t.rootCause+'</div></div><div class="dt-box"><div class="dt-box-label">Decision</div><div class="dt-box-content">'+t.decision+'</div></div></div>'+
+    '<div class="dt-fix-compare"><div class="dt-fix-box dt-fix-trad"><div class="dt-fix-label" style="color:var(--amber)">Traditional</div>'+t.traditional+'</div><div class="dt-fix-box dt-fix-ai"><div class="dt-fix-label" style="color:var(--teal)">AI-Enhanced</div>'+t.ai+'</div></div>'+
+    '<div class="dt-rec"><div class="dt-rec-label">✦ Recommended Action</div>'+t.recommendation+'</div>'+
+    '<div class="dt-roi"><strong style="color:var(--success)">Expected Impact:</strong> '+t.roi+'</div>'+
+  '</div>';
+}
+
+var decCurrentRole='plant', decCurrentScope='group';
+function renderDecisions(roleId,scope){
+  decCurrentRole=roleId;decCurrentScope=scope;
+  var role=DEC_ROLES.find(function(r){return r.id===roleId;});
+  document.getElementById('roleChipRow').innerHTML=DEC_ROLES.map(function(r){
+    return '<div class="role-chip'+(r.id===roleId?' active':'')+'" onclick="renderDecisions(\''+r.id+'\',decCurrentScope)"><span class="rc-icon">'+r.icon+'</span>'+r.name+'</div>';
+  }).join('');
+  document.getElementById('decisionScopeRow').innerHTML=DEC_SCOPES.map(function(s){
+    return '<span class="site-pill'+(s[0]===scope?' active':'')+'" onclick="renderDecisions(decCurrentRole,\''+s[0]+'\')">'+s[1]+'</span>';
+  }).join('');
+  document.getElementById('decisionRoleIntro').textContent=role.intro;
+  document.getElementById('decisionKpiGrid').innerHTML=renderKpiCards(ROLE_KPIS[roleId][scope]);
+  var filtered=TRIGGERS_LIB.filter(function(t){return t.roles.indexOf(roleId)>-1 && (scope==='group'||t.site===scope||t.site==='group');});
+  document.getElementById('decisionTriggerList').innerHTML=filtered.length?filtered.map(renderTriggerCard).join(''):'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">No active triggers for this role at this scope right now.</div>';
+}
+
+function setDecisionsView(e,view){
+  e.preventDefault();
+  document.querySelectorAll('#decisionsViewTabs .tab').forEach(function(t){t.classList.remove('active');});
+  e.currentTarget.classList.add('active');
+  document.getElementById('decisionsByRole').style.display=view==='role'?'block':'none';
+  document.getElementById('decisionsByDomain').style.display=view==='domain'?'block':'none';
+  if(view==='domain' && !window.__domainOverviewInit){window.__domainOverviewInit=true;renderDomainOverview();}
+}
+function renderDomainOverview(){
+  document.getElementById('domainOverviewGrid').innerHTML=DOMAIN_OVERVIEW.map(function(d){
+    var count=TRIGGERS_LIB.filter(function(t){return t.domain===d.name;}).length;
+    return '<div class="domain-card" onclick="goToDomainFailureModes(\''+d.name+'\')">'+
+      '<div class="domain-icon">'+d.icon+'</div>'+
+      '<div class="domain-name">'+d.name+'</div>'+
+      '<div class="domain-kpis">'+d.kpis+'</div>'+
+      '<div class="domain-count"><span class="tag '+(count?'tag-amber':'tag-dim')+'">'+count+' active failure mode'+(count===1?'':'s')+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+function goToDomainFailureModes(domainName){
+  nav(null,'failure-modes');
+  window.__fmInit=true;
+  renderFailureModes(domainName);
+}
+
+function renderFailureModes(domain){
+  document.getElementById('fmCount').textContent=TRIGGERS_LIB.length;
+  document.getElementById('fmDomainCount').textContent=DEC_DOMAINS.length;
+  document.getElementById('fmDomainRow').innerHTML=['all'].concat(DEC_DOMAINS).map(function(d){
+    var label=d==='all'?'All Domains':d;
+    return '<span class="tag '+(d===domain?'tag-blue':'tag-dim')+'" style="cursor:pointer;padding:6px 12px;font-size:11px" onclick="renderFailureModes(\''+d+'\')">'+label+'</span>';
+  }).join('');
+  var filtered=domain==='all'?TRIGGERS_LIB:TRIGGERS_LIB.filter(function(t){return t.domain===domain;});
+  document.getElementById('fmList').innerHTML=filtered.map(renderTriggerCard).join('');
+}
+
+function renderSupplyChainTriggers(){
+  var filtered=TRIGGERS_LIB.filter(function(t){return t.domain==='Supply Chain';});
+  document.getElementById('scTriggerList').innerHTML=filtered.map(renderTriggerCard).join('');
+}
+
+function renderSiteOps(siteId){
+  var d=SITE_DATA[siteId];
+  document.getElementById('siteOpsPillRow').innerHTML=Object.keys(SITE_DATA).map(function(k){
+    var s=SITE_DATA[k];
+    var dotColor=s.status==='Live'?'var(--success)':s.status==='Active'?'var(--blue)':'var(--amber)';
+    return '<span class="site-pill'+(k===siteId?' active':'')+'" onclick="renderSiteOps(\''+k+'\')"><span class="sp-dot" style="background:'+dotColor+'"></span>'+s.flag+' '+s.name+'</span>';
+  }).join('');
+  document.getElementById('siteOpsKpiGrid').innerHTML=renderKpiCards(ROLE_KPIS.plant[siteId]);
+  document.getElementById('siteOpsProduction').innerHTML=d.production.steps.slice(0,4).map(function(s){
+    return '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11.5px"><span style="color:var(--dim);font-family:var(--mono)">'+s[0]+'</span><span>'+s[1]+'</span></div>';
+  }).join('')+'<div style="font-size:10.5px;color:var(--muted);margin-top:8px">'+d.machinery[0][0]+' — '+d.machinery[0][2]+'</div>';
+  document.getElementById('siteOpsQuality').innerHTML=ROLE_KPIS.quality[siteId].slice(0,3).map(function(k){
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11.5px"><span style="color:var(--muted)">'+k.l+'</span><span style="font-weight:700;color:'+statusColor(k.s)+'">'+k.v+'</span></div>';
+  }).join('');
+  document.getElementById('siteOpsMaintenance').innerHTML=d.maintenance.map(function(m){
+    var statusTag=m[2]==='Overdue'?'tag-danger':m[2]==='Scheduled'?'tag-blue':m[2]==='In Progress'?'tag-amber':'tag-success';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px"><span>'+m[0]+'</span><span class="tag '+statusTag+'">'+m[2]+'</span></div>';
+  }).join('');
+  var filtered=TRIGGERS_LIB.filter(function(t){return t.site===siteId;});
+  document.getElementById('siteOpsTriggerList').innerHTML=filtered.length?filtered.map(renderTriggerCard).join(''):'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">No site-specific triggers active right now.</div>';
+}
+
+/* Init */
+document.addEventListener('DOMContentLoaded',function(){
+  renderOrgTree();
+  document.querySelectorAll('.nav-item').forEach(function(n){n.addEventListener('click',closeSidebar);});
+});
+</script>
+
+</body></html>

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
+import { useDomain } from "@/common/contexts/DomainContext";
 
 const routeNames: Record<string, string> = {
   "/enterprise-twin": "Enterprise Twin",
@@ -37,20 +38,42 @@ const routeNames: Record<string, string> = {
   "/admin/user-roles": "User Roles",
   "/admin/users": "Users",
   "/admin/user-sessions": "User Sessions",
+  "/site-twin": "Site Digital Twin",
+  "/connectors": "Connector Mapping",
+  "/decisions": "Role-Based Decisions",
+  "/failure-modes": "Failure Modes Library",
+  "/supply-chain": "Supply Chain",
+  "/site-ops": "Site Operations",
+  "/work-orders": "Work Order Lifecycle",
+  "/work-orders/create": "Create Work Order",
+  "/work-orders/routing": "Routing Builder",
+  "/resources": "Resource Management",
+  "/enterprise-twin/summary": "Twin Summary",
+};
+
+const manufacturingRouteNames: Record<string, string> = {
+  "/ai-agents": "AI Agent Governance",
+  "/dashboard": "Enterprise Twin",
+  "/resources": "Resource Management",
+  "/timesheets": "Shift & Timesheets",
+  "/accounting": "Billing & Accounting",
 };
 
 export function AecBreadcrumbBar() {
   const location = useLocation();
+  const domain = useDomain();
   const parts = location.pathname.split("/").filter(Boolean);
+  const home = domain.defaultRoute ?? "/enterprise-twin";
+  const names = domain.id === "manufacturing" ? { ...routeNames, ...manufacturingRouteNames } : routeNames;
 
   return (
     <div className="flex h-9 shrink-0 items-center gap-1.5 border-b border-[color:var(--page-breadcrumb-border)] bg-[color:var(--page-breadcrumb-bg)] px-5 text-[11px] text-[color:var(--page-muted)]">
-      <Link to="/enterprise-twin" className="hover:text-[color:var(--page-text)]">
+      <Link to={home} className="hover:text-[color:var(--page-text)]">
         Home
       </Link>
       {parts.map((_, i) => {
         const path = "/" + parts.slice(0, i + 1).join("/");
-        const label = routeNames[path] ?? parts[i].replace(/-/g, " ");
+        const label = names[path] ?? parts[i].replace(/-/g, " ");
         const isLast = i === parts.length - 1;
         return (
           <span key={path} className="flex items-center gap-1.5">

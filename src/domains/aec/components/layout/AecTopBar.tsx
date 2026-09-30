@@ -6,6 +6,7 @@ import { useDomain } from "@/common/contexts/DomainContext";
 import { DatonixLogo } from "@/common/components/DatonixLogo";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
 import { AecTwinSelector } from "@/domains/aec/components/AecTwinSelector";
+import { MfgSiteSelector } from "@/domains/manufacturing/components/MfgSiteSelector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,11 +39,12 @@ export function AecTopBar() {
   return (
     <>
       <header className="flex h-[52px] shrink-0 items-center gap-2.5 border-b border-[color:var(--shell-sidebar-border)] bg-[color:var(--shell-topbar)] px-4">
-        <Link to={isAdminRoute ? "/admin" : "/enterprise-twin"} className="mr-1 shrink-0">
+        <Link to={isAdminRoute ? "/admin" : domain.defaultRoute ?? "/enterprise-twin"} className="mr-1 shrink-0">
           <DatonixLogo tagline={`${domain.label} Enterprise Ops`} size="sm" />
         </Link>
 
-        {!isAdminRoute && <AecTwinSelector />}
+        {!isAdminRoute && domain.id === "aec" && <AecTwinSelector />}
+        {!isAdminRoute && domain.id === "manufacturing" && <MfgSiteSelector />}
 
         <button
           type="button"
@@ -51,7 +53,7 @@ export function AecTopBar() {
         >
           <Search className="h-3.5 w-3.5 text-[color:var(--shell-muted)]" />
           <span className="flex-1 text-left text-[12.5px] text-[color:var(--shell-muted)]">
-            Search projects, resources, rate cards, invoices…
+            Search {domain.id === "manufacturing" ? "work orders, sites, resources, suppliers…" : "projects, resources, rate cards, invoices…"}
           </span>
           <span className="font-mono text-[9.5px] text-[color:var(--shell-muted)]">⌘K</span>
         </button>

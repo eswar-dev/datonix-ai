@@ -8,14 +8,7 @@ import { useDomain } from "@/common/contexts/DomainContext";
 import { adminNavItems } from "@/common/config/adminNav";
 import type { DomainNavItem } from "@/domains/types";
 import { useAecApp } from "@/domains/aec/context/AecAppContext";
-
-const PARENT_PATHS = [
-  "/data-ingestion",
-  "/projects",
-  "/resources/planning",
-  "/timesheets",
-  "/accounting",
-] as const;
+import { useManufacturingSite } from "@/domains/manufacturing/context/ManufacturingSiteContext";
 
 function NavBadge({ item }: { item: DomainNavItem }) {
   if (item.badge === undefined) return null;
@@ -35,9 +28,14 @@ function NavBadge({ item }: { item: DomainNavItem }) {
 
 function isPathActive(pathname: string, path: string): boolean {
   if (path === "/projects") return pathname === "/projects";
+  if (path === "/dashboard") return pathname === "/dashboard";
   if (path === "/resources/planning") {
     return pathname === "/resources/planning" || pathname === "/resources/add";
   }
+  if (path === "/resources") {
+    return pathname === "/resources" || pathname === "/resources/add";
+  }
+  if (path === "/work-orders") return pathname === "/work-orders";
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
@@ -95,16 +93,63 @@ function NavItemLink({
 }
 
 export function AecSidebar() {
+  const domain = useDomain();
+  if (domain.id === "manufacturing") return <ManufacturingConnectedSidebar />;
+  return <AecConnectedSidebar />;
+}
+
+function AecConnectedSidebar() {
+  const domain = useDomain();
+  const { navBadges, activeTwin } = useAecApp();
+  const items = useMemo(() => applyBadges(domain.nav, navBadges), [domain.nav, navBadges]);
+  return (
+    <ShellSidebar
+      items={items}
+      entity={{
+        label: "Active Entity",
+        name: activeTwin.entities[0]?.name ?? "Select entity",
+        sub: `${activeTwin.name} · ${activeTwin.reportingCurrency}`,
+      }}
+    />
+  );
+}
+
+function ManufacturingConnectedSidebar() {
+  const domain = useDomain();
+  const { activeSite } = useManufacturingSite();
+  return (
+    <ShellSidebar
+      items={domain.nav}
+      entity={{
+        label: "Active Site",
+        name: activeSite.full,
+        sub: `Riverside Fabrication Group · ${activeSite.currency}`,
+      }}
+    />
+  );
+}
+
+function ShellSidebar({
+  items,
+  entity,
+}: {
+  items: DomainNavItem[];
+  entity: { label: string; name: string; sub: string };
+}) {
   const { collapsed, toggle } = useSidebarState();
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const domain = useDomain();
-  const { navBadges, activeTwin } = useAecApp();
   const pathname = location.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
-
-  const items = useMemo(() => applyBadges(domain.nav, navBadges), [domain.nav, navBadges]);
+  const parentPaths = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of items) {
+      if (item.parentPath) set.add(item.parentPath);
+    }
+    return [...set];
+  }, [items]);
 
   const childrenByParent = useMemo(() => {
     const map = new Map<string, DomainNavItem[]>();
@@ -125,7 +170,7 @@ export function AecSidebar() {
     setExpanded((prev) => {
       const next = { ...prev };
       let changed = false;
-      for (const parent of PARENT_PATHS) {
+      for (const parent of parentPaths) {
         if (userClosedRef.current.has(parent)) continue;
         const children = childrenByParent.get(parent) ?? [];
         const childActive = children.some((c) => isPathActive(pathname, c.path));
@@ -137,10 +182,10 @@ export function AecSidebar() {
       }
       return changed ? next : prev;
     });
-  }, [pathname, childrenByParent]);
+  }, [pathname, childrenByParent, parentPaths]);
 
   useEffect(() => {
-    for (const parent of PARENT_PATHS) {
+    for (const parent of parentPaths) {
       const children = childrenByParent.get(parent) ?? [];
       const childActive = children.some((c) => isPathActive(pathname, c.path));
       const parentActive = isPathActive(pathname, parent);
@@ -148,7 +193,7 @@ export function AecSidebar() {
         userClosedRef.current.delete(parent);
       }
     }
-  }, [pathname, childrenByParent]);
+  }, [pathname, childrenByParent, parentPaths]);
 
   const toggleGroup = (path: string) => {
     setExpanded((prev) => {
@@ -305,14 +350,12 @@ export function AecSidebar() {
         <div className="border-t border-[color:var(--shell-sidebar-border)] px-2.5 py-2.5">
           <div className="rounded-lg border border-[#00C4A7]/18 bg-[#00C4A7]/6 px-2.5 py-2">
             <p className="text-[8.5px] font-bold uppercase tracking-wider text-[#00C4A7]">
-              Active Entity
+              {entity.label}
             </p>
             <p className="mt-0.5 text-[11px] font-semibold text-[color:var(--shell-text)]">
-              {activeTwin.entities[0]?.name ?? "Select entity"}
+              {entity.name}
             </p>
-            <p className="text-[9px] text-[color:var(--shell-muted)]">
-              {activeTwin.name} · {activeTwin.reportingCurrency}
-            </p>
+            <p className="text-[9px] text-[color:var(--shell-muted)]">{entity.sub}</p>
           </div>
         </div>
       )}

@@ -10,9 +10,4 @@ export const aecLoginConfig: DomainLoginConfig = {
   heroAlt: "AEC project leader with holographic project intelligence dashboards",
   highlights: ["Utilization & staffing", "Bid win-rate analytics", "Schedule & margin risk"],
   theme: DATONIX_LOGIN_THEME,
-  demoAccounts: [
-    { label: "Managing Principal", email: "alex@meridianarchitects.com", password: "datonix2026" },
-    { label: "Senior Architect", email: "priya@meridianarchitects.com", password: "datonix2026" },
-    { label: "Director of Operations", email: "victoria@meridianarchitects.com", password: "datonix2026" },
-  ],
 };

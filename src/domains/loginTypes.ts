@@ -1,9 +1,3 @@
-export interface DomainLoginDemoAccount {
-  label: string;
-  email: string;
-  password: string;
-}
-
 export interface DomainLoginTheme {
   pageBackground: string;
   panelBackground: string;
@@ -25,5 +19,4 @@ export interface DomainLoginConfig {
   heroAlt: string;
   highlights: string[];
   theme: DomainLoginTheme;
-  demoAccounts: DomainLoginDemoAccount[];
 }
