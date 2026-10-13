@@ -3,6 +3,7 @@ import {
   Award,
   Banknote,
   Bot,
+  BarChart3,
   Clock,
   Database,
   Factory,
@@ -10,9 +11,9 @@ import {
   GitBranchPlus,
   Globe,
   Inbox,
-  Layers,
   LayoutDashboard,
   ListChecks,
+  Layers,
   Network,
   Package,
   ClipboardPlus,
@@ -23,6 +24,7 @@ import {
   Shuffle,
   UserPlus,
   Users,
+  User,
   Workflow,
 } from "lucide-react";
 import type { DomainConfig } from "@/domains/types";
@@ -31,7 +33,7 @@ import EnterpriseTwin, { TwinSummary } from "./pages/EnterpriseTwin";
 import MultiTwinManager from "./pages/MultiTwinManager";
 import SiteDigitalTwin from "./pages/SiteDigitalTwin";
 import ConnectorMapping from "./pages/ConnectorMapping";
-import RoleBasedDecisions, { FailureModesLibrary } from "./pages/Decisions";
+import RoleBasedDecisions, { FailureDiagnosticsLibrary } from "./pages/Decisions";
 import SupplyChain, { SiteOperations } from "./pages/SupplyChain";
 import OrgHierarchy from "./pages/OrgHierarchy";
 import ResourceManagement, { AddResource, SharedAllocation, SkillMatrix } from "./pages/Resources";
@@ -44,10 +46,12 @@ import {
   ShiftTimesheets,
   WorkOrderLifecycle,
 } from "./pages/Operations";
+import MfgDashboard from "./pages/Dashboard";
 import ExecutiveDashboard, {
   AiAgentGovernance,
   ComplianceLayer,
-  Reports,
+  MfgAdmin,
+  MfgReports,
 } from "./pages/Intelligence";
 
 export const manufacturingConfig: DomainConfig = {
@@ -76,7 +80,7 @@ export const manufacturingConfig: DomainConfig = {
       badge: "8 roles",
       badgeType: "live",
     },
-    { title: "Failure Modes Library", path: "/failure-modes", icon: AlertTriangle, group: "Decision Intelligence" },
+    { title: "Failure Diagnostics Library", path: "/failure-modes", icon: AlertTriangle, group: "Decision Intelligence" },
     { title: "Supply Chain", path: "/supply-chain", icon: Package, group: "Decision Intelligence" },
     { title: "Site Operations", path: "/site-ops", icon: Settings, group: "Decision Intelligence" },
     { title: "Org Hierarchy", path: "/org-chart", icon: Network, group: "Organisation" },
@@ -135,12 +139,41 @@ export const manufacturingConfig: DomainConfig = {
       path: "/timesheets",
       icon: Clock,
       group: "People & Resources",
-      badge: 5,
+      badge: 3,
       badgeType: "count",
     },
     { title: "Billing & Accounting", path: "/accounting", icon: Banknote, group: "Finance" },
     { title: "Currency Intelligence", path: "/currency", icon: Globe, group: "Finance" },
-    { title: "Executive Dashboard", path: "/dashboard/executive", icon: LayoutDashboard, group: "Intelligence Hub" },
+    {
+      title: "Dashboard",
+      path: "/dashboard",
+      icon: LayoutDashboard,
+      group: "Intelligence Hub",
+    },
+    {
+      title: "My View",
+      path: "/dashboard/my",
+      icon: User,
+      group: "Intelligence Hub",
+      nested: true,
+      parentPath: "/dashboard",
+    },
+    {
+      title: "Executive View",
+      path: "/dashboard/executive",
+      icon: BarChart3,
+      group: "Intelligence Hub",
+      nested: true,
+      parentPath: "/dashboard",
+    },
+    {
+      title: "Multi-Site View",
+      path: "/dashboard/multi-site",
+      icon: Factory,
+      group: "Intelligence Hub",
+      nested: true,
+      parentPath: "/dashboard",
+    },
     {
       title: "AI Agent Governance",
       path: "/ai-agents",
@@ -151,7 +184,7 @@ export const manufacturingConfig: DomainConfig = {
     },
     { title: "Reports", path: "/reports", icon: FileBarChart, group: "Intelligence Hub" },
     { title: "Administration", path: "/admin", icon: Shield, group: "Platform" },
-    { title: "Compliance Layer", path: "/compliance", icon: ShieldCheck, group: "Platform" },
+    { title: "Compliance", path: "/compliance", icon: ShieldCheck, group: "Platform" },
   ],
   routes: [
     { path: "/enterprise-twin", Component: EnterpriseTwin },
@@ -160,7 +193,7 @@ export const manufacturingConfig: DomainConfig = {
     { path: "/site-twin", Component: SiteDigitalTwin },
     { path: "/connectors", Component: ConnectorMapping },
     { path: "/decisions", Component: RoleBasedDecisions },
-    { path: "/failure-modes", Component: FailureModesLibrary },
+    { path: "/failure-modes", Component: FailureDiagnosticsLibrary },
     { path: "/supply-chain", Component: SupplyChain },
     { path: "/site-ops", Component: SiteOperations },
     { path: "/org-chart", Component: OrgHierarchy },
@@ -175,10 +208,13 @@ export const manufacturingConfig: DomainConfig = {
     { path: "/timesheets", Component: ShiftTimesheets },
     { path: "/accounting", Component: BillingAccounting },
     { path: "/currency", Component: CurrencyIntelligence },
-    { path: "/dashboard", Component: EnterpriseTwin },
-    { path: "/dashboard/executive", Component: ExecutiveDashboard },
+    { path: "/dashboard", Component: MfgDashboard },
+    { path: "/dashboard/my", Component: MfgDashboard },
+    { path: "/dashboard/executive", Component: MfgDashboard },
+    { path: "/dashboard/multi-site", Component: MfgDashboard },
     { path: "/ai-agents", Component: AiAgentGovernance },
-    { path: "/reports", Component: Reports },
+    { path: "/reports", Component: MfgReports },
     { path: "/compliance", Component: ComplianceLayer },
+    { path: "/admin", Component: MfgAdmin },
   ],
 };

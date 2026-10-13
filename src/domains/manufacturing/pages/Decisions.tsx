@@ -93,7 +93,7 @@ export default function RoleBasedDecisions() {
                   key={d.name}
                   type="button"
                   onClick={() => navigate(`/failure-modes?domain=${encodeURIComponent(d.name)}`)}
-                  className="rounded-[9px] border border-[color:var(--page-border)] bg-[color:var(--page-card)] p-4 text-center hover:border-[color:var(--page-accent)]"
+                  className="rounded-[9px] border border-[color:var(--page-border)] bg-[color:var(--page-card)] p-4 text-center hover:border-[color:var(--page-accent)] transition-colors"
                 >
                   <div className="mb-2 flex justify-center">
                     <MfgGlyph icon={DOMAIN_ICONS[d.name] ?? DOMAIN_ICONS.Production} tone="brand" size="lg" />
@@ -115,14 +115,14 @@ export default function RoleBasedDecisions() {
   );
 }
 
-export function FailureModesLibrary() {
+export function FailureDiagnosticsLibrary() {
   const [params] = useSearchParams();
   const [domain, setDomain] = useState(params.get("domain") ?? "all");
   const filtered = domain === "all" ? TRIGGERS : TRIGGERS.filter((t) => t.domain === domain);
   return (
     <div className="space-y-4">
       <AecPageHeader
-        title="Failure Modes Library"
+        title="Failure Diagnostics Library"
         subtitle="Every known failure mode across the group, organised by decision domain — root cause, traditional vs AI-enhanced fix, and quantified impact."
       />
       <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
